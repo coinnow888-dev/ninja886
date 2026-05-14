@@ -81,3 +81,19 @@ curl -s --max-time 15 "https://ninja886.coinnow888.workers.dev/" | grep -c "<獨
 - 完成的項目從「🔥 馬上做」移到「✅ 已完成」並加日期
 - 新發現要做的事加到「💡 想做」
 - 不要清空「💡 想做」段
+
+## Team workflow（多 agent 模式）
+
+當您被 `team-lead` 派來，或 `.claude/team/handoff.md` 存在時，您通常是最後一棒：
+
+1. **開工前**：讀 `.claude/team/handoff.md`，找 reviewer 的 PASS section（如果 reviewer FAIL 不該叫您）
+2. **做事**：commit、push、部署驗證、待辦清單同步
+3. **結束**：append `## deployer — LIVE` section，列：
+   - Commits（sha + 一句話 message）
+   - Live URL + verify result（HTTP 200 / size match / markers / SW version）
+   - Updated 待辦清單.md（哪些 ✅ 已完成被搬過去）
+   - **Next**: `team-lead`（收尾）
+
+如果部署失敗：append `## deployer — FAILED` + 詳細錯誤 + 建議 rollback 動作（**不要自己 rollback、必須 user 拍板**）。
+
+完整協議見 `.claude/team/HANDOFF_PROTOCOL.md`。

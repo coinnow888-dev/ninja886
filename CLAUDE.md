@@ -116,10 +116,42 @@ macOS Darwin 25.2 上 Preview MCP 的子程序在沙箱裡：
 
 ## 子代理（.claude/agents/）
 
+### 單一專科
+
 需要修改命理算法 → `fortune-engine`
 需要改 CSS / 佈局 → `ui-designer`
 要發版 / 處理 git → `deployer`
 寫完功能要 review → `reviewer`
 排優先順序 / 規劃功能 → `product-manager`
 
-可以用 `Agent` 工具呼叫，或在對話中問「找 fortune-engine 看看這段」。
+### Team 協作模式（推薦：多步驟任務）
+
+`team-lead` — 多步驟任務的 orchestrator。收到複雜請求時派它，它會：
+1. 拆解工作 → 寫 `.claude/team/handoff.md` task spec
+2. 派 PM 排序 → ui-designer / fortune-engine 實作 → reviewer 審 → deployer 發版
+3. 處理 reviewer 退回（rework loop）
+4. 收尾回報
+
+何時用 team-lead vs 單一專科：
+
+| 任務性質 | 用 |
+|---|---|
+| 「我有 N 件新需求」 | team-lead |
+| 「幫我規劃 X 功能」 | team-lead |
+| 「修這個 bug + 順便看 UX」 | team-lead |
+| 「改一個 CSS 細節」 | 直接派 ui-designer |
+| 「八字算法 1990 年的有錯」 | 直接派 fortune-engine |
+| 「commit 推上去」 | 直接派 deployer |
+
+### 交接協議
+
+`.claude/team/HANDOFF_PROTOCOL.md` 是 multi-agent workflow 的規格，每個 agent 在 team 模式下：
+- 開工前讀 handoff.md
+- 結束時 append 自己的 section（含 status、output、Next）
+- 不覆寫前面棒次的 section（rework 用 round 2 標記）
+
+完整 spec 見該檔。
+
+### 直接呼叫 vs Team 模式
+
+agents 預設**單獨呼叫也能跑**（沒有 handoff.md 就照常工作）。team 模式只在 `team-lead` 啟動或主動建立 handoff.md 時觸發。

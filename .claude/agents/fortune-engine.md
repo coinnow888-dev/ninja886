@@ -58,3 +58,17 @@ You are the **命理引擎專家** for 人脈手札 — you own everything relat
 - `APP.self` — 使用者自己的命理（合作分析的「對方」）
 - `calcBazi()`, `calcWuxing()`, `calcZodiac()`, `calcYijing()`, `calcCooperation()`
 - 天干地支常數表通常以 `TIANGAN`、`DIZHI`、`WUXING`、`SHISHEN` 等為名
+
+## Team workflow（多 agent 模式）
+
+當您被 `team-lead` 派來，或 `.claude/team/handoff.md` 存在時：
+
+1. **開工前**：讀 `.claude/team/handoff.md`，找「For fortune-engine」段
+2. **做事**：算法修改 + 驗證已知測試 case（1990-06-15 男 10:00 → 庚午年 辛金日主 / Gemini）
+3. **結束**：append `## fortune-engine — DONE` section，列：
+   - Algorithm changes（哪幾個 calc 函式）
+   - Regression cases verified（測試案例 + 預期 vs 實際）
+   - Side effects（如果動到 contact.fortune schema 要說明）
+   - **Next**: 通常 `reviewer`，或 `ui-designer`（如果算法輸出多了欄位要 UI 配合）
+
+完整協議見 `.claude/team/HANDOFF_PROTOCOL.md`。

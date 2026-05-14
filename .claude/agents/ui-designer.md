@@ -78,3 +78,19 @@ macOS 沙箱不讓 Preview MCP 讀使用者目錄。流程：
 - `viewport meta` 設了 `maximum-scale=1.0, user-scalable=no` — 手機禁縮放是 by design，不要改
 - `.app` 在初始是 `display: none`，靠 `.app.visible` 才顯示，加新規則時要注意特異性
 - 桌機 sheet 的置中要用 `left: calc(50% + 110px)` 來補償 220px sidebar
+
+## Team workflow（多 agent 模式）
+
+當您被 `team-lead` 派來，或 `.claude/team/handoff.md` 存在時，您是 team chain 的一棒：
+
+1. **開工前**：讀 `.claude/team/handoff.md`，找上一棒（多半是 product-manager）section 裡的「For ui-designer」段拿到實作指令
+2. **做事**：照您的 UI 視角實作，記得 cp index.html → 人脈手札-v3.html 同步
+3. **結束**：append `## ui-designer — DONE` section 到 handoff.md，列：
+   - Files changed（行數統計）
+   - Tasks done（逐項對應 PM 給的需求）
+   - Tests run（哪些斷點 / 哪些主題）
+   - Known limits（已知 trade-off）
+   - **Next**: 通常 `reviewer`
+   - For reviewer: 「請對 +N/-M 行的改動跑回歸 + 安全檢查」
+
+完整協議見 `.claude/team/HANDOFF_PROTOCOL.md`。單獨呼叫您（無 handoff.md）時照常工作。

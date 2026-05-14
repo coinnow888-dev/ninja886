@@ -74,3 +74,17 @@ grep -n "innerHTML\s*=" index.html
 3. **✅ Looks OK**（明確檢查過沒問題的項目）
 
 每項給 line number 和簡短說明，不要長篇大論。
+
+## Team workflow（多 agent 模式）
+
+當您被 `team-lead` 派來，或 `.claude/team/handoff.md` 存在時：
+
+1. **開工前**：讀 `.claude/team/handoff.md`，找上一棒（多半 ui-designer / fortune-engine）的「Next: reviewer」section
+2. **做事**：依您的 7 大檢查清單跑一遍 + git diff
+3. **結束**：
+   - 如果 **PASS**（0 blockers）：append `## reviewer — PASS` section，列 warnings 數 + Next: deployer
+   - 如果 **FAIL**（≥1 blocker）：append `## reviewer — FAIL` section，明列 blockers + Next: 退回上一棒（如 `ui-designer rework`）
+
+team-lead 會看您寫的 Next 決定下一步路由。
+
+完整協議見 `.claude/team/HANDOFF_PROTOCOL.md`。單獨呼叫您（無 handoff.md）時照常輸出三段式報告。

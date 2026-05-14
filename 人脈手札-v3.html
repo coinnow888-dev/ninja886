@@ -455,6 +455,20 @@ body {
   font-size: 18px; color: var(--fg3);
 }
 
+.sort-row { display: flex; justify-content: flex-end; margin-top: 8px; }
+.sort-select {
+  background: var(--bg2);
+  border: 1px solid var(--bg4);
+  border-radius: 8px;
+  color: var(--fg2);
+  font-family: var(--serif);
+  font-size: 13px;
+  padding: 6px 10px;
+  cursor: pointer;
+  outline: none;
+}
+.sort-select:focus { border-color: var(--accent); }
+
 .filter-chips {
   display: flex; gap: 8px;
   padding: 12px 20px;
@@ -538,6 +552,7 @@ body {
 .ci-trust { display: flex; gap: 2px; margin-top: 6px; justify-content: flex-end; }
 .ci-trust i { width: 6px; height: 6px; border-radius: 50%; background: var(--bg4); }
 .ci-trust i.on { background: var(--accent); }
+.ci-lastseen { font-size: 11px; color: var(--fg3); font-family: var(--mono); margin-top: 4px; }
 
 .empty-list { padding: 60px 20px; text-align: center; color: var(--fg3); }
 .empty-list .big { font-size: 48px; opacity: 0.3; margin-bottom: 16px; }
@@ -854,6 +869,21 @@ body {
 .detail-actions .btn { flex: 1; min-width: 80px; }
 .detail-actions .btn-deep { flex: 1 0 100%; background: linear-gradient(135deg, var(--accent), var(--accent2, var(--accent))); color: var(--fg); border: none; font-weight: 700; letter-spacing: 0.08em; }
 .detail-actions .btn-deep:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* 深入識人 CTA + 結果（hero 正下方） */
+.deep-cta-block { padding: 12px 20px 4px; }
+.btn-deep-hero {
+  display: block; width: 100%;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2, var(--accent)));
+  color: var(--fg); border: none; border-radius: 14px;
+  font-family: var(--display); font-size: 16px; font-weight: 700; letter-spacing: 0.08em;
+  cursor: pointer; transition: all 0.2s;
+  box-shadow: 0 4px 18px var(--accent-glow, rgba(196,59,59,0.25));
+}
+.btn-deep-hero:active { transform: scale(0.98); }
+.btn-deep-hero:disabled { opacity: 0.5; cursor: not-allowed; }
+.detail-lastseen { font-size: 12px; color: var(--fg3); font-family: var(--mono); margin-top: 6px; letter-spacing: 0.05em; }
 
 /* Deep Profile (multi-agent) */
 .deep-profile { padding: 4px 20px 20px; }
@@ -1177,9 +1207,9 @@ body {
         <div class="ob-choice-title">東方</div>
         <div class="ob-choice-desc">以天干地支、五行、卦象解讀人的本質</div>
         <div class="ob-choice-tags">
-          <span class="ob-tag">八字</span>
-          <span class="ob-tag">數字易經</span>
-          <span class="ob-tag">五行</span>
+          <span class="ob-tag">了解性格</span>
+          <span class="ob-tag">工作風格</span>
+          <span class="ob-tag">合作預測</span>
         </div>
       </div>
       <div class="ob-choice ob-west" onclick="chooseTheme('west')">
@@ -1187,9 +1217,9 @@ body {
         <div class="ob-choice-title">Western</div>
         <div class="ob-choice-desc">用星座、四元素、行星能量洞察性格與關係</div>
         <div class="ob-choice-tags">
-          <span class="ob-tag">Zodiac</span>
-          <span class="ob-tag">Elements</span>
-          <span class="ob-tag">Aspects</span>
+          <span class="ob-tag">Personality</span>
+          <span class="ob-tag">Work Style</span>
+          <span class="ob-tag">Compatibility</span>
         </div>
       </div>
     </div>
@@ -1223,6 +1253,7 @@ body {
         <div class="search-wrap">
           <input class="search-input" id="searchInput" type="text" placeholder="搜尋姓名、標籤、領域..." oninput="renderList()">
         </div>
+        <div class="sort-row"><select id="sortMode" class="sort-select" onchange="setSortMode(this.value)"></select></div>
       </div>
       <div class="filter-chips" id="filterChips"></div>
       <div class="contact-list" id="contactList"></div>
@@ -1247,15 +1278,14 @@ body {
         <div class="field">
           <label>API Key</label>
           <div class="api-key-field">
-            <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-...">
-            <button class="btn btn-sm btn-secondary" onclick="saveApiKey()">保存</button>
+            <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-..." readonly>
+            <button class="btn btn-sm btn-secondary" id="apiKeyBtn" onclick="apiKeyButtonClick()">儲存</button>
           </div>
           <div class="api-status" id="apiStatus"></div>
         </div>
         <div style="font-size:13px; color:var(--fg3); line-height:1.7; margin-top:10px">
-          <strong style="color:var(--fg2)">不填也能用「深入識人」</strong>（免費版，每天每 IP 限 3 次，用 Haiku 4.5）。<br>
-          填了 Key 會：解除次數上限、改用 Sonnet 4.5（深度分析品質更高）、名片 OCR 也會運作。<br>
-          Key 只存在您的裝置 IndexedDB，到 <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:var(--accent)">console.anthropic.com</a> 取得。
+          不填也能用「深入識人」（免費版，每日 IP 限 3 次）。<br>
+          填了會解除上限 + 啟用名片 OCR。<a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:var(--accent)">到 console.anthropic.com 取得</a>
         </div>
       </div>
       <div class="settings-group">
@@ -1267,7 +1297,7 @@ body {
       <div class="settings-group">
         <div class="settings-group-title">回饋</div>
         <div class="settings-item"><div><div class="si-label">📩 回報問題 / 給建議</div><div class="si-desc">直接寫信給開發者</div></div><button class="btn btn-sm btn-secondary" onclick="openFeedback()">回報</button></div>
-        <div class="settings-item"><div><div class="si-label">未來打算收費，您的意見？</div><div class="si-desc">純收意見，這個按鈕不收錢</div></div><button class="btn btn-sm btn-secondary" onclick="recordPricingInterest()">告訴我想法</button></div>
+        <div class="settings-item"><div><div class="si-label">未來打算收費，您贊成的話點 Yes</div><div class="si-desc">點愈多次代表愈多人想付</div></div><button class="btn btn-sm btn-secondary" onclick="recordPricingInterest()">Yes</button></div>
         <div style="font-size:12px;color:var(--fg3);margin-top:8px;line-height:1.6">
           版本：v3 · <a href="https://github.com/coinnow888-dev/ninja886" target="_blank" style="color:var(--accent)">GitHub</a>
         </div>
@@ -1329,7 +1359,10 @@ body {
 
     <div class="section-label">主觀觀察</div>
     <div class="field"><label>信任度</label><div class="trust-row" id="fTrustRow"><div class="trust-circle" data-t="1" onclick="setTrust(1)">1</div><div class="trust-circle" data-t="2" onclick="setTrust(2)">2</div><div class="trust-circle" data-t="3" onclick="setTrust(3)">3</div><div class="trust-circle" data-t="4" onclick="setTrust(4)">4</div><div class="trust-circle" data-t="5" onclick="setTrust(5)">5</div></div></div>
-    <div class="field"><label>互動頻率</label><select id="fFreq"><option value="">未填</option><option>每週</option><option>每月</option><option>每季</option><option>每年</option><option>少於每年</option></select></div>
+    <div class="row row-2">
+      <div class="field"><label>互動頻率</label><select id="fFreq"><option value="">未填</option><option>每週</option><option>每月</option><option>每季</option><option>每年</option><option>少於每年</option></select></div>
+      <div class="field"><label>上次見面</label><input type="date" id="fLastSeen"></div>
+    </div>
     <div class="field"><label>性格特質（逗號分隔）</label><input type="text" id="fTraits" placeholder="理性, 直接, 行動派"></div>
     <div class="field"><label>筆記 <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()">🎤 語音</button></label><textarea id="fNotes" placeholder="第一印象、合作經驗..."></textarea></div>
   </div>
@@ -1989,11 +2022,12 @@ function dbGet(s,k){return _withDB(()=>new Promise((r,j)=>{const t=db.transactio
 function dbGetAll(s){return _withDB(()=>new Promise((r,j)=>{const t=db.transaction(s,'readonly');const q=t.objectStore(s).getAll();q.onsuccess=()=>r(q.result||[]);q.onerror=e=>j(q.error||e);t.onabort=e=>j(t.error||e);}));}
 function dbDel(s,k){return _withDB(()=>new Promise((r,j)=>{const t=db.transaction(s,'readwrite');t.objectStore(s).delete(k);t.oncomplete=()=>r();t.onerror=e=>j(t.error||e);t.onabort=e=>j(t.error||e);}));}
 function dbClear(s){return _withDB(()=>new Promise((r,j)=>{const t=db.transaction(s,'readwrite');t.objectStore(s).clear();t.oncomplete=()=>r();t.onerror=e=>j(t.error||e);t.onabort=e=>j(t.error||e);}));}
+function dbDelete(s,k){return _withDB(()=>new Promise((r,j)=>{const t=db.transaction(s,'readwrite');t.objectStore(s).delete(k);t.oncomplete=()=>r();t.onerror=e=>j(t.error||e);t.onabort=e=>j(t.error||e);}));}
 
 // ============================================================
 // APP STATE
 // ============================================================
-const APP={theme:'east',contacts:[],self:null,editingId:null,filter:'',trust:0,method:'bazi',apiKey:'',recording:false,recognition:null,initialized:false,deviceId:'',_welcomeSeen:false};
+const APP={theme:'east',contacts:[],self:null,editingId:null,filter:'',trust:0,method:'bazi',apiKey:'',recording:false,recognition:null,initialized:false,deviceId:'',_welcomeSeen:false,sortBy:'created'};
 
 // ============================================================
 // SCHEMA / SYNC RULES — forward-compat for future cloud sync
@@ -2233,7 +2267,32 @@ function getAvatarText(c){
   return c.fortune?.zodiac?.symbol||c.name.charAt(0);
 }
 
+function daysAgo(ts){
+  if(!ts)return '';
+  const d=Math.floor((Date.now()-ts)/86400000);
+  if(d<0)return '未來';
+  if(d===0)return APP.theme==='east'?'今天':'today';
+  if(d<30)return APP.theme==='east'?(d+' 天前'):(d+'d ago');
+  if(d<365)return APP.theme==='east'?(Math.floor(d/30)+' 個月前'):(Math.floor(d/30)+'mo ago');
+  return APP.theme==='east'?(Math.floor(d/365)+' 年前'):(Math.floor(d/365)+'y ago');
+}
+
+function renderSortDropdown(){
+  const sel=$('sortMode');if(!sel)return;
+  const isEast=APP.theme==='east';
+  const opts=isEast?[['created','最近新增'],['lastSeen','最近見面'],['name','名字 A-Z']]
+                    :[['created','Most recent'],['lastSeen','Last seen'],['name','Name A-Z']];
+  sel.innerHTML=opts.map(([v,l])=>`<option value="${v}"${APP.sortBy===v?' selected':''}>${l}</option>`).join('');
+}
+
+async function setSortMode(v){
+  APP.sortBy=v;
+  try{await dbPut('meta',{key:'_local:sortBy',data:v});}catch(e){console.error('setSortMode dbPut failed',e);}
+  renderList();
+}
+
 function renderList(){
+  renderSortDropdown();
   const q=$('searchInput').value.toLowerCase();
   let list=APP.contacts.filter(c=>{
     if(q){const hay=[c.name,c.alias,c.field,c.role,c.company,(c.traits||[]).join(','),c.notes].join(' ').toLowerCase();if(!hay.includes(q))return false;}
@@ -2246,6 +2305,19 @@ function renderList(){
     }
     return true;
   });
+
+  // 排序
+  if(APP.sortBy==='lastSeen'){
+    list.sort((a,b)=>{
+      const av=a.lastSeenAt||0, bv=b.lastSeenAt||0;
+      if(av===bv)return (b.createdAt||0)-(a.createdAt||0);
+      return bv-av; // 有 lastSeenAt 的優先（desc），沒有的（0）排最後
+    });
+  }else if(APP.sortBy==='name'){
+    list.sort((a,b)=>(a.name||'').localeCompare(b.name||'','zh-Hant'));
+  }else{
+    list.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  }
 
   const el=$('contactList');
   if(!list.length){el.innerHTML=`<div class="empty-list"><div class="big">${APP.theme==='east'?'☯':'✦'}</div><div class="t">${APP.contacts.length?'沒有符合條件的人脈':'尚未記錄任何人脈'}</div></div>`;return;}
@@ -2260,8 +2332,9 @@ function renderList(){
     const harmonyStr=harmony!=null?'★'.repeat(Math.min(harmony,5)):'';
     const trust=c.trust||0;
     const dots=[1,2,3,4,5].map(i=>`<i class="${i<=trust?'on':''}"></i>`).join('');
+    const lastSeenStr=c.lastSeenAt?daysAgo(c.lastSeenAt):'';
     const _active=(APP.editingId===c.id&&matchMedia('(min-width: 1024px)').matches)?' data-active="1"':'';
-    return `<div class="contact-item" data-id="${c.id}"${_active} onclick="showDetail('${c.id}')"><div class="ci-avatar ${avClass}">${avText}</div><div class="ci-body"><div class="ci-name">${esc(c.name)}${c.alias?' · '+esc(c.alias):''}</div>${sub?`<div class="ci-sub">${esc(sub)}</div>`:''}</div><div class="ci-right">${coopMode?`<div class="ci-coop">${coopIcon?coopIcon+' ':''}${esc(coopMode.split(' ·')[0])}</div>`:''}<div class="ci-trust">${harmonyStr||dots}</div></div></div>`;
+    return `<div class="contact-item" data-id="${c.id}"${_active} onclick="showDetail('${c.id}')"><div class="ci-avatar ${avClass}">${avText}</div><div class="ci-body"><div class="ci-name">${esc(c.name)}${c.alias?' · '+esc(c.alias):''}</div>${sub?`<div class="ci-sub">${esc(sub)}</div>`:''}</div><div class="ci-right">${coopMode?`<div class="ci-coop">${coopIcon?coopIcon+' ':''}${esc(coopMode.split(' ·')[0])}</div>`:''}<div class="ci-trust">${harmonyStr||dots}</div>${lastSeenStr?`<div class="ci-lastseen">${lastSeenStr}</div>`:''}</div></div>`;
   }).join('');
 }
 
@@ -2276,21 +2349,23 @@ function showDetail(id){
   APP.editingId=id;
   const avClass=getAvatarClass(c);
   const avText=esc(getAvatarText(c));
-  let html=`<div class="detail-hero"><div class="detail-avatar ${avClass}">${avText}</div><div class="detail-name">${esc(c.name)}</div><div class="detail-sub">${[c.role,c.field,c.company].filter(Boolean).join(' · ')||'—'}</div></div>`;
+  let html=`<div class="detail-hero"><div class="detail-avatar ${avClass}">${avText}</div><div class="detail-name">${esc(c.name)}</div><div class="detail-sub">${[c.role,c.field,c.company].filter(Boolean).join(' · ')||'—'}</div>${c.lastSeenAt?`<div class="detail-lastseen">${APP.theme==='east'?'上次見面：':'Last seen: '}${daysAgo(c.lastSeenAt)}</div>`:''}</div>`;
 
-  if(c.phone||c.email){
-    html+=`<div class="detail-section"><div class="detail-section-title">${APP.theme==='east'?'聯絡方式':'CONTACT'}</div><div class="detail-grid">`;
-    if(c.phone)html+=`<div class="dg-item"><div class="key">TEL</div><div class="val"><a href="tel:${esc(c.phone)}" style="color:var(--fg);text-decoration:none">${esc(c.phone)}</a></div></div>`;
-    if(c.email)html+=`<div class="dg-item"><div class="key">EMAIL</div><div class="val" style="font-size:12px;word-break:break-all"><a href="mailto:${esc(c.email)}" style="color:var(--fg);text-decoration:none">${esc(c.email)}</a></div></div>`;
-    html+=`</div></div>`;
-  }
+  // ===== 深入識人 CTA + 結果（從底部移到 hero 正下方） =====
+  const _deepLabel=APP.theme==='east'?(c.deepProfile?'重新分析':'深入識人 · AI'):(c.deepProfile?'Re-analyze':'Deep Read · AI');
+  html+=`<div class="deep-cta-block"><button class="btn btn-deep btn-deep-hero" id="deepDiveBtn" onclick="deepDive('${c.id}')">✦ ${_deepLabel}</button><div id="deepProfileArea">${renderDeepProfile(c)}</div></div>`;
 
   // Fortune section(s) — 多種命理時逐一展示
+  // 新順序：合作分析（coopBuf）放在前，命理畫像（profileBuf）放在後
   const _fortunes=(c.fortunes&&c.fortunes.length)?c.fortunes:(c.fortune?[c.fortune]:[]);
   const _multi=_fortunes.length>1;
   const _methodLabel=(m)=>m==='bazi'?'八字':m==='yijing'?'數字易經':m==='zodiac'?(APP.theme==='east'?'星座':'Zodiac'):'';
+  let coopBuf='', profileBuf='';
+  // 把所有 html+= 累積到 profileBuf 或 coopBuf 而非 html，由迴圈尾把兩段加回 html
+  const _savedHtml=html;
   for(const f of _fortunes){
     const _suffix=_multi?` · ${_methodLabel(f.method)}`:'';
+    html=''; // 用 html 當暫存桶（命理畫像區段）
     html+=`<div class="detail-section"><div class="detail-section-title">${APP.theme==='east'?'命理畫像':'ASTRO PROFILE'}${_suffix}</div>`;
     if(APP.theme==='east'){
       if(f.method==='bazi'&&f.profile){
@@ -2368,6 +2443,9 @@ function showDetail(id){
       }
     }
     html+=`</div>`;
+    // 命理畫像區段結束 — 累積到 profileBuf
+    profileBuf+=html;
+    html='';
 
     if(f.cooperation){
       const co=f.cooperation;
@@ -2418,6 +2496,19 @@ function showDetail(id){
       }
       html+=`</div>`;
     }
+    // 合作分析區段結束 — 累積到 coopBuf
+    coopBuf+=html;
+    html='';
+  }
+  // 還原並按新順序輸出：合作分析在前、命理畫像在後
+  html=_savedHtml+coopBuf+profileBuf;
+
+  // 聯絡方式（移到命理畫像後 / 觀察前）
+  if(c.phone||c.email){
+    html+=`<div class="detail-section"><div class="detail-section-title">${APP.theme==='east'?'聯絡方式':'CONTACT'}</div><div class="detail-grid">`;
+    if(c.phone)html+=`<div class="dg-item"><div class="key">TEL</div><div class="val"><a href="tel:${esc(c.phone)}" style="color:var(--fg);text-decoration:none">${esc(c.phone)}</a></div></div>`;
+    if(c.email)html+=`<div class="dg-item"><div class="key">EMAIL</div><div class="val" style="font-size:12px;word-break:break-all"><a href="mailto:${esc(c.email)}" style="color:var(--fg);text-decoration:none">${esc(c.email)}</a></div></div>`;
+    html+=`</div></div>`;
   }
 
   // Observations
@@ -2431,11 +2522,8 @@ function showDetail(id){
   if(c.notes)html+=`<div class="detail-section"><div class="detail-section-title">MEMO</div><div style="font-size:14px;line-height:1.8;color:var(--fg2);white-space:pre-wrap">${esc(c.notes)}</div></div>`;
   if(c.source)html+=`<div class="detail-section"><div style="font-size:13px;color:var(--fg3)">${APP.theme==='east'?'認識方式':'Source'}：${esc(c.source)}</div></div>`;
 
-  // Deep Profile (multi-agent AI insights)
-  html+=`<div class="detail-section"><div class="detail-section-title">${APP.theme==='east'?'深入識人':'DEEP READ'}</div><div id="deepProfileArea">${renderDeepProfile(c)}</div></div>`;
-
-  const _deepLabel=APP.theme==='east'?(c.deepProfile?'重新分析':'深入識人 · AI'):(c.deepProfile?'Re-analyze':'Deep Read · AI');
-  html+=`<div class="detail-actions"><button class="btn btn-deep" id="deepDiveBtn" onclick="deepDive('${c.id}')">✦ ${_deepLabel}</button><button class="btn btn-danger" onclick="deleteEntry('${c.id}')">移除</button><button class="btn btn-secondary" onclick="switchTab('contacts')">返回</button><button class="btn btn-primary" onclick="editEntry('${c.id}')">編輯</button></div>`;
+  // 深入識人 CTA + 結果已在 hero 正下方，底部只保留 移除/返回/編輯
+  html+=`<div class="detail-actions"><button class="btn btn-danger" onclick="deleteEntry('${c.id}')">移除</button><button class="btn btn-secondary" onclick="switchTab('contacts')">返回</button><button class="btn btn-primary" onclick="editEntry('${c.id}')">編輯</button></div>`;
 
   $('pageDetail').innerHTML=html;
   const _isDesktop=matchMedia('(min-width: 1024px)').matches;
@@ -2458,7 +2546,7 @@ function showDetail(id){
 function openAddSheet(){
   APP.editingId=null;
   $('sheetTitle').textContent=APP.theme==='east'?'新增人脈':'New Contact';
-  clearForm();openSheet();
+  clearForm();renderScanArea();openSheet();
 }
 
 function editEntry(id){
@@ -2480,11 +2568,13 @@ function editEntry(id){
   if($('fGender'))$('fGender').value=c.gender||'';
   if($('fNumber'))$('fNumber').value=c.number||'';
   $('fFreq').value=c.frequency||'';
+  if($('fLastSeen'))$('fLastSeen').value=c.lastSeenAt?new Date(c.lastSeenAt).toISOString().slice(0,10):'';
   $('fTraits').value=(c.traits||[]).join(', ');
   $('fNotes').value=c.notes||'';
   if(APP.theme==='east'&&c.fortune?.method)switchMethod(c.fortune.method);
   APP.trust=c.trust||0;
   document.querySelectorAll('#fTrustRow .trust-circle').forEach((el,i)=>el.classList.toggle('on',i<APP.trust));
+  renderScanArea();
   openSheet();
 }
 
@@ -2494,6 +2584,7 @@ function clearForm(){
   if($('fRole'))$('fRole').value='';
   if($('fGender'))$('fGender').value='';
   $('fFreq').value='';
+  if($('fLastSeen'))$('fLastSeen').value='';
   APP.trust=0;
   document.querySelectorAll('#fTrustRow .trust-circle').forEach(c=>c.classList.remove('on'));
   $('scanPreview').style.display='none';
@@ -2509,6 +2600,7 @@ async function saveEntry(){
   try{
   const name=$('fName')?.value?.trim();
   if(!name){toast('請輸入姓名');return;}
+  const _lsRaw=$('fLastSeen')?.value;
   const c={
     id:APP.editingId||('c_'+Date.now()+'_'+Math.random().toString(36).slice(2,8)),
     name,alias:$('fAlias')?.value?.trim()||'',phone:$('fPhone')?.value?.trim()||'',email:$('fEmail')?.value?.trim()||'',
@@ -2516,6 +2608,7 @@ async function saveEntry(){
     source:$('fSource')?.value?.trim()||'',gender:$('fGender')?.value||'',frequency:$('fFreq')?.value||'',
     traits:($('fTraits')?.value||'').split(/[,，]/).map(s=>s.trim()).filter(Boolean),
     notes:($('fNotes')?.value||'').trim(),trust:APP.trust,
+    lastSeenAt:_lsRaw?new Date(_lsRaw).getTime():null,
     createdAt:APP.editingId?(APP.contacts.find(x=>x.id===APP.editingId)?.createdAt||Date.now()):Date.now(),
     updatedAt:Date.now()
   };
@@ -2617,7 +2710,23 @@ async function quickSave(){
 // ============================================================
 // CARD OCR
 // ============================================================
-function triggerScan(){if(!APP.apiKey){toast('請先在設定填入 API Key');return;}$('scanFile').click();}
+function triggerScan(){
+  if(!APP.apiKey){
+    closeSheet();
+    switchTab('settings');
+    setTimeout(()=>{const el=$('apiKeyInput');if(el)el.scrollIntoView({behavior:'smooth',block:'center'});},300);
+    return;
+  }
+  $('scanFile').click();
+}
+function renderScanArea(){
+  const prompt=$('scanPrompt');if(!prompt)return;
+  if(APP.apiKey){
+    prompt.innerHTML=`<div class="icon">📸</div><div class="text">拍攝或上傳名片</div><div class="sub">自動辨識姓名、電話、Email</div>`;
+  }else{
+    prompt.innerHTML=`<div class="icon">📸</div><div class="text" style="font-weight:600">名片掃描需要 Claude API Key</div><div class="sub" style="margin-top:6px;font-family:var(--serif);font-size:12px;color:var(--fg3);line-height:1.6">「深入識人」有免費版，但 OCR 還要 API Key</div><div class="sub" style="margin-top:10px;color:var(--accent);font-size:13px;font-family:var(--serif)">→ 點此到設定頁填寫</div>`;
+  }
+}
 
 async function handleScan(e){
   const file=e.target.files[0];if(!file)return;
@@ -2765,7 +2874,44 @@ function customConfirm(msg){
 // ============================================================
 // SETTINGS / DATA
 // ============================================================
-function saveApiKey(){APP.apiKey=$('apiKeyInput').value.trim();if(APP.apiKey){dbPut('meta',{key:'apiKey',data:APP.apiKey});$('apiStatus').className='api-status ok';$('apiStatus').textContent='✓ 已保存';toast('已保存');}else{$('apiStatus').textContent='請輸入 Key';}}
+function renderApiKeyUI(){
+  const input=$('apiKeyInput'),btn=$('apiKeyBtn'),status=$('apiStatus');
+  if(!input||!btn||!status)return;
+  if(APP.apiKey){
+    input.value=APP.apiKey;
+    input.setAttribute('readonly','');
+    btn.textContent='清除';
+    btn.className='btn btn-sm btn-danger';
+    status.className='api-status ok';
+    status.textContent='✓ 已設定';
+  }else{
+    input.value='';
+    input.removeAttribute('readonly');
+    btn.textContent='儲存';
+    btn.className='btn btn-sm btn-secondary';
+    status.className='api-status';
+    status.textContent='';
+  }
+  if(typeof renderScanArea==='function')renderScanArea();
+}
+function apiKeyButtonClick(){if(APP.apiKey){clearApiKey();}else{saveApiKey();}}
+async function saveApiKey(){
+  const input=$('apiKeyInput');
+  const v=input.value.trim();
+  if(!v){$('apiStatus').textContent='請輸入 Key';return;}
+  APP.apiKey=v;
+  try{await dbPut('meta',{key:'apiKey',data:APP.apiKey});}catch(e){console.error('saveApiKey dbPut failed',e);}
+  renderApiKeyUI();
+  toast('已儲存');
+}
+async function clearApiKey(){
+  const ok=await customConfirm('確定要清除 API Key？清除後將回到免費版（每日 IP 限 3 次）');
+  if(!ok)return;
+  APP.apiKey='';
+  try{await dbDelete('meta','apiKey');}catch(e){console.error('clearApiKey dbDelete failed',e);}
+  renderApiKeyUI();
+  toast('已清除');
+}
 
 function exportData(){
   const blob=new Blob([JSON.stringify({version:3,theme:APP.theme,selfProfile:APP.self,contacts:APP.contacts,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'});
@@ -2793,7 +2939,7 @@ async function clearAllData(){
   if(!ok)return;
   await dbClear('contacts');await dbClear('meta');
   APP.contacts=[];APP.self=null;APP.apiKey='';
-  renderList();renderSelfSetup();toast('已清除');
+  renderList();renderSelfSetup();renderApiKeyUI();toast('已清除');
 }
 
 // ============================================================
@@ -2806,16 +2952,21 @@ function openFeedback(){
 }
 
 // 純收集點擊意願，不真的收費。每點一次就記到 IndexedDB 的 meta 並 toast。
+// 先 toast 再 dbPut — UI 一定有反饋，即使 DB 失敗也只在 console 紀錄
 async function recordPricingInterest(){
-  const prev=await dbGet('meta','pricingInterest');
-  const count=(prev?.data?.count||0)+1;
-  const lastAt=Date.now();
-  await dbPut('meta',{key:'pricingInterest',data:{count,lastAt}});
+  let count=1;
+  try{
+    const prev=await dbGet('meta','pricingInterest');
+    count=(prev?.data?.count||0)+1;
+  }catch(e){console.error('recordPricingInterest dbGet failed',e);}
   if(count===1){
     toast('已記錄您的意願 · 感謝');
   }else{
     toast(`已記錄第 ${count} 次點擊 · 感謝`);
   }
+  try{
+    await dbPut('meta',{key:'pricingInterest',data:{count,lastAt:Date.now()}});
+  }catch(e){console.error('recordPricingInterest dbPut failed',e);}
 }
 
 // ============================================================
@@ -3062,7 +3213,10 @@ if('serviceWorker' in navigator){
   const selfData=await dbGet('meta','self');if(selfData)APP.self=selfData.data;
   const welcomeSeenData=await dbGet('meta','_local:welcomeSeen');
   APP._welcomeSeen=!!welcomeSeenData?.data;
-  const keyData=await dbGet('meta','apiKey');if(keyData){APP.apiKey=keyData.data;$('apiKeyInput').value=APP.apiKey;$('apiStatus').className='api-status ok';$('apiStatus').textContent='✓ 已設定';}
+  const sortByData=await dbGet('meta','_local:sortBy');
+  if(sortByData?.data)APP.sortBy=sortByData.data;
+  const keyData=await dbGet('meta','apiKey');if(keyData){APP.apiKey=keyData.data;}
+  renderApiKeyUI();
   const themeData=await dbGet('meta','theme');
   if(themeData){
     APP.theme=themeData.data;

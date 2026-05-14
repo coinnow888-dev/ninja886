@@ -98,6 +98,56 @@ body {
   animation: obFadeOut 0.6s ease forwards;
 }
 
+/* Self-Welcome screen — shown after first-time self setup completes */
+.self-welcome {
+  position: fixed; inset: 0;
+  z-index: 998;
+  background: var(--bg);
+  display: none;
+  flex-direction: column;
+  overflow-y: auto;
+  animation: obFadeIn 0.4s ease;
+}
+.self-welcome.visible { display: flex; }
+.sw-header {
+  padding: 40px 24px 12px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.sw-title {
+  font-family: var(--display);
+  font-size: 24px; font-weight: 900;
+  color: var(--accent);
+  letter-spacing: 0.06em;
+  margin-bottom: 6px;
+}
+.sw-sub {
+  font-size: 13px;
+  color: var(--fg3);
+  font-family: var(--mono);
+  letter-spacing: 0.1em;
+}
+.sw-body {
+  flex: 1;
+  padding: 0 0 100px;
+  overflow-y: auto;
+}
+.sw-cta {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  background: linear-gradient(180deg, transparent, var(--bg) 30%);
+  padding: 20px 16px calc(20px + var(--safe-b));
+  display: flex;
+  gap: 10px;
+  z-index: 999;
+}
+.sw-cta .btn { flex: 1; padding: 14px; font-size: 15px; font-weight: 700; }
+@media (min-width: 1024px) {
+  .sw-header { padding-top: 56px; }
+  .sw-body { max-width: 720px; margin: 0 auto; width: 100%; }
+  .sw-cta { left: 50%; transform: translateX(-50%); right: auto; max-width: 720px; width: 100%; }
+}
+
 @keyframes obFadeOut { from { opacity: 1; } to { opacity: 0; } }
 
 .ob-bg {
@@ -1148,6 +1198,11 @@ body {
 </div>
 
 <!-- ============================
+     SELF WELCOME (first-time, after self setup)
+     ============================ -->
+<div class="self-welcome" id="selfWelcome"></div>
+
+<!-- ============================
      MAIN APP
      ============================ -->
 <div class="app" id="app">
@@ -1938,7 +1993,7 @@ function dbClear(s){return _withDB(()=>new Promise((r,j)=>{const t=db.transactio
 // ============================================================
 // APP STATE
 // ============================================================
-const APP={theme:'east',contacts:[],self:null,editingId:null,filter:'',trust:0,method:'bazi',apiKey:'',recording:false,recognition:null,initialized:false,deviceId:''};
+const APP={theme:'east',contacts:[],self:null,editingId:null,filter:'',trust:0,method:'bazi',apiKey:'',recording:false,recognition:null,initialized:false,deviceId:'',_welcomeSeen:false};
 
 // ============================================================
 // SCHEMA / SYNC RULES — forward-compat for future cloud sync
@@ -1979,7 +2034,104 @@ function chooseTheme(theme){
   dbPut('meta',{key:'theme',data:theme});
   applyTheme(theme);
   $('onboarding').classList.add('hiding');
-  setTimeout(()=>{$('onboarding').style.display='none';$('app').classList.add('visible');},600);
+  setTimeout(()=>{
+    $('onboarding').style.display='none';
+    $('app').classList.add('visible');
+    // First-time guided flow: no self profile yet → open self setup immediately
+    if(!APP.self){
+      setTimeout(()=>editSelf(true), 250);
+    }
+  },600);
+}
+
+// ============================================================
+// SELF WELCOME — first-time analysis review after self setup
+// ============================================================
+function shouldShowSelfWelcome(){
+  // Only first-time: no contacts yet, and haven't seen welcome before
+  // (Caller also ensures APP.self is now set.)
+  return APP.contacts.length === 0 && !APP._welcomeSeen;
+}
+
+function renderSelfFortuneAnalysisHTML(){
+  if(!APP.self?.fortune)return '<div style="text-align:center;padding:60px 20px;color:var(--fg3)">尚未設定命理資料</div>';
+  const f=APP.self.fortune;
+  const isEast=APP.theme==='east';
+  let html='';
+  // Hero
+  if(isEast && f.profile){
+    const p=f.profile, sb=f.stemBranch;
+    const avText=sb?.day?.s||'我';
+    html+=`<div class="detail-hero"><div class="detail-avatar av-${(p.dayMaster==='木'?'wood':p.dayMaster==='火'?'fire':p.dayMaster==='土'?'earth':p.dayMaster==='金'?'metal':p.dayMaster==='水'?'water':'none')}">${esc(avText)}</div><div class="detail-name">${isEast?'您的命理畫像':'Your Astro Profile'}</div><div class="detail-sub">${sb?.day?.s||''}${sb?.day?.b||''} · ${p.dayMaster}${p.dayYinYang||''}</div></div>`;
+  }else if(!isEast && f.zodiac){
+    const z=f.zodiac;
+    html+=`<div class="detail-hero"><div class="detail-avatar av-none">${z.symbol||'✦'}</div><div class="detail-name">Your Astro Profile</div><div class="detail-sub">${z.symbol} ${z.zh} · ${z.element}</div></div>`;
+  }
+
+  // Fortune section
+  html+=`<div class="detail-section"><div class="detail-section-title">${isEast?'命理畫像':'PROFILE'}</div>`;
+  if(isEast && f.profile){
+    const p=f.profile, sb=f.stemBranch;
+    if(p.fourPillars){
+      html+=`<div style="background:var(--bg);padding:14px;border-radius:10px;margin-bottom:12px;font-family:var(--mono);font-size:13px;text-align:center;letter-spacing:0.15em;color:var(--accent2)">${p.fourPillars}</div>`;
+    }
+    html+=`<div class="detail-grid">
+      <div class="dg-item"><div class="key">日主</div><div class="val">${sb?.day?.s||''}${sb?.day?.b||''} · ${p.dayMaster}${p.dayYinYang||''}</div></div>
+      <div class="dg-item"><div class="key">${p.strength?.strength||''}</div><div class="val" style="font-size:13px">${p.strength?.desc||''}</div></div>
+      <div class="dg-item"><div class="key">最強</div><div class="val">${p.strongest||'—'}</div></div>
+      <div class="dg-item"><div class="key">缺</div><div class="val">${p.missing?.length?p.missing.join('、'):(p.weakest?p.weakest+'(弱)':'—')}</div></div>
+    </div>`;
+    if(p.wuxingPct){
+      const wxColors={木:'#4CAF50',火:'#f44336',土:'#FF9800',金:'#FFD700',水:'#2196F3'};
+      html+=`<div style="background:var(--bg);padding:14px;border-radius:10px;margin-top:12px"><div style="font-family:var(--mono);font-size:11px;color:var(--fg3);margin-bottom:10px">五行分佈</div>`;
+      for(const[wx,pct] of Object.entries(p.wuxingPct)){
+        html+=`<div style="display:flex;align-items:center;margin-bottom:6px"><span style="width:24px;font-size:13px;font-weight:600">${wx}</span><div style="flex:1;height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;margin:0 8px"><div style="width:${pct}%;height:100%;background:${wxColors[wx]};border-radius:4px"></div></div><span style="width:32px;font-size:11px;color:var(--fg3);text-align:right">${pct}%</span></div>`;
+      }
+      html+=`</div>`;
+    }
+    if(p.stemProfile){
+      const sp=p.stemProfile;
+      html+=`<div class="coop-card" style="margin-top:12px;border-color:var(--bg4)"><div class="mode">${sp.name} · ${sp.nature}</div><div class="advice" style="white-space:pre-line"><strong>性格：</strong>${sp.traits}\n\n<strong>工作風格：</strong>${sp.work}\n\n<strong>社交面：</strong>${sp.social}\n\n<strong>盲區：</strong>${sp.weakness}</div></div>`;
+    }
+    if(p.strength?.advice){
+      html+=`<div style="background:var(--bg);padding:14px;border-radius:10px;margin-top:12px;font-size:13px;line-height:1.7;color:var(--fg2)"><span style="color:var(--accent);font-weight:700">${p.strength.strength}</span> — ${p.strength.advice}</div>`;
+    }
+  }else if(!isEast && f.zodiac){
+    const z=f.zodiac;
+    html+=`<div class="detail-grid">
+      <div class="dg-item"><div class="key">SIGN</div><div class="val">${z.symbol} ${z.zh}</div></div>
+      <div class="dg-item"><div class="key">ELEMENT</div><div class="val">${z.element}</div></div>
+      <div class="dg-item"><div class="key">MODE</div><div class="val">${z.mode}</div></div>
+      <div class="dg-item"><div class="key">RULER</div><div class="val">${z.ruler}</div></div>
+    </div>`;
+    html+=`<div class="coop-card" style="margin-top:12px;border-color:var(--bg4)"><div class="mode">${z.symbol} ${z.zh} — ${z.name}</div><div class="advice" style="white-space:pre-line"><strong>性格：</strong>${z.traits||''}\n\n<strong>工作風格：</strong>${z.work||''}\n\n<strong>陰暗面：</strong>${z.shadow||''}</div></div>`;
+  }
+  html+=`</div>`;
+  return html;
+}
+
+function showSelfWelcome(){
+  const sw=$('selfWelcome');
+  sw.innerHTML=`
+    <div class="sw-header">
+      <div class="sw-title">${APP.theme==='east'?'這就是您':'This is you'}</div>
+      <div class="sw-sub">${APP.theme==='east'?'PERSONALITY PROFILE':'PERSONALITY PROFILE'}</div>
+    </div>
+    <div class="sw-body">${renderSelfFortuneAnalysisHTML()}</div>
+    <div class="sw-cta">
+      <button class="btn btn-secondary" onclick="dismissSelfWelcome(false)">${APP.theme==='east'?'稍後再說':'Later'}</button>
+      <button class="btn btn-primary" onclick="dismissSelfWelcome(true)">${APP.theme==='east'?'建立第一個人脈 →':'Add first contact →'}</button>
+    </div>`;
+  sw.classList.add('visible');
+}
+
+async function dismissSelfWelcome(thenAddContact){
+  APP._welcomeSeen=true;
+  try{ await dbPut('meta',{key:'_local:welcomeSeen',data:true}); }catch{}
+  $('selfWelcome').classList.remove('visible');
+  if(thenAddContact){
+    setTimeout(()=>openAddSheet(), 250);
+  }
 }
 
 function applyTheme(theme){
@@ -2529,9 +2681,14 @@ function renderSelfSetup(){
   }
 }
 
-function editSelf(){
+function editSelf(isFirstTime){
   const body=$('selfSheetBody');
-  $('selfSheetTitle').textContent=APP.theme==='east'?'我的命理':'My Astro Profile';
+  if(isFirstTime){
+    $('selfSheetTitle').textContent=APP.theme==='east'?'歡迎！先設定您自己':'Welcome! Set up yourself';
+  }else{
+    $('selfSheetTitle').textContent=APP.theme==='east'?'我的命理':'My Astro Profile';
+  }
+  APP._editSelfIsFirstTime=!!isFirstTime;
   if(APP.theme==='east'){
     body.innerHTML=`
       <div class="row row-3">
@@ -2560,7 +2717,7 @@ function closeSelfSheet(){
   setTimeout(()=>$('selfSheetOverlay').classList.remove('active'),350);
 }
 
-function saveSelf(){
+async function saveSelf(){
   try{
   const m=parseInt($('selfMonth')?.value);
   const d=parseInt($('selfDay')?.value);
@@ -2573,16 +2730,24 @@ function saveSelf(){
     const hour=hVal===''||hVal==null?null:parseInt(hVal);
     const sb=getSB(y,m,d,hour);
     const profile=wuxingProfile(sb);
-    APP.self={...(APP.self||{}), year:y, month:m, day:d, hour, fortune:{stemBranch:sb, profile}};
+    APP.self={...(APP.self||{}), year:y, month:m, day:d, hour, fortune:{method:'bazi', stemBranch:sb, profile}};
   }else{
     const zodiac=getZodiac(m,d);
     // 保留已有 year/hour，方便切回東方時直接重算八字
-    APP.self={...(APP.self||{}), month:m, day:d, fortune:{zodiac}};
+    APP.self={...(APP.self||{}), month:m, day:d, fortune:{method:'zodiac', zodiac}};
   }
-  dbPut('meta',{key:'self',data:APP.self});
+  await dbPut('meta',{key:'self',data:APP.self});
   APP.contacts.forEach(c=>{if(c.fortune){c.fortune.cooperation=calcCoop(APP.self,c.fortune);dbPut('contacts',c);}});
+  const wasFirstTime=APP._editSelfIsFirstTime===true;
+  APP._editSelfIsFirstTime=false;
   closeSelfSheet();
-  renderSelfSetup();renderList();toast('已保存，合作分析已更新');
+  renderSelfSetup();renderList();
+  // First-time guided flow: show analysis review → "建立第一個人脈"
+  if(wasFirstTime && shouldShowSelfWelcome()){
+    setTimeout(()=>showSelfWelcome(), 400);
+  }else{
+    toast('已保存，合作分析已更新');
+  }
   }catch(e){toast('保存錯誤：'+e.message);console.error(e);}
 }
 
@@ -2895,6 +3060,8 @@ if('serviceWorker' in navigator){
   const allContacts=await dbGetAll('contacts');
   APP.contacts=allContacts.filter(c=>!c._deletedAt);
   const selfData=await dbGet('meta','self');if(selfData)APP.self=selfData.data;
+  const welcomeSeenData=await dbGet('meta','_local:welcomeSeen');
+  APP._welcomeSeen=!!welcomeSeenData?.data;
   const keyData=await dbGet('meta','apiKey');if(keyData){APP.apiKey=keyData.data;$('apiKeyInput').value=APP.apiKey;$('apiStatus').className='api-status ok';$('apiStatus').textContent='✓ 已設定';}
   const themeData=await dbGet('meta','theme');
   if(themeData){

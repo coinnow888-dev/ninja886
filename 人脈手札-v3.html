@@ -1149,11 +1149,6 @@ body {
     box-shadow: inset 3px 0 0 var(--accent);
   }
 
-  /* Hide redundant 返回 (back) button when detail is always visible */
-  .page#pageDetail .detail-actions button.btn-secondary[onclick*="switchTab"] {
-    display: none;
-  }
-
   /* Search bar stays sticky inside the list column */
   .search-bar { padding: 16px; }
   .contact-list { padding: 0 16px 24px; }
@@ -2523,7 +2518,11 @@ function showDetail(id){
   if(c.source)html+=`<div class="detail-section"><div style="font-size:13px;color:var(--fg3)">${APP.theme==='east'?'認識方式':'Source'}：${esc(c.source)}</div></div>`;
 
   // 深入識人 CTA + 結果已在 hero 正下方，底部只保留 移除/返回/編輯
-  html+=`<div class="detail-actions"><button class="btn btn-danger" onclick="deleteEntry('${c.id}')">移除</button><button class="btn btn-secondary" onclick="switchTab('contacts')">返回</button><button class="btn btn-primary" onclick="editEntry('${c.id}')">編輯</button></div>`;
+  // 「返回」只在手機/平板渲染：桌機 master-detail 兩欄並排不需要返回鍵
+  const _backBtn = matchMedia('(max-width: 1023px)').matches
+    ? `<button class="btn btn-secondary" onclick="switchTab('contacts')">返回</button>`
+    : '';
+  html+=`<div class="detail-actions"><button class="btn btn-danger" onclick="deleteEntry('${c.id}')">移除</button>${_backBtn}<button class="btn btn-primary" onclick="editEntry('${c.id}')">編輯</button></div>`;
 
   $('pageDetail').innerHTML=html;
   const _isDesktop=matchMedia('(min-width: 1024px)').matches;

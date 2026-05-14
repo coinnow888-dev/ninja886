@@ -918,10 +918,154 @@ body {
 
 .dialog-btns .btn { flex: 1; padding: 14px; }
 
-@media (min-width: 768px) {
-  .app-content { max-width: 600px; margin: 0 auto; }
-  .tab-bar { max-width: 600px; left: 50%; transform: translateX(-50%); border-radius: 16px 16px 0 0; }
-  .fab { right: calc(50% - 280px); }
+@media (min-width: 768px) and (max-width: 1023px) {
+  .app-content { max-width: 720px; margin: 0 auto; }
+  .tab-bar { max-width: 720px; left: 50%; transform: translateX(-50%); border-radius: 16px 16px 0 0; }
+  .fab { right: calc(50% - 340px); }
+}
+
+/* ============================
+   DESKTOP MASTER-DETAIL (>=1024px)
+   ============================ */
+@media (min-width: 1024px) {
+  /* Header stays full width but adds left padding for sidebar */
+  .app-header {
+    padding-left: 240px;
+  }
+
+  /* Bottom tab bar becomes a left sidebar */
+  .tab-bar {
+    position: fixed;
+    top: 64px;
+    bottom: 0;
+    left: 0;
+    right: auto;
+    width: 220px;
+    height: auto;
+    max-width: none;
+    transform: none;
+    padding: 16px 0 24px;
+    flex-direction: column;
+    align-items: stretch;
+    border-top: none;
+    border-right: 1px solid var(--bg3);
+    border-radius: 0;
+    z-index: 40;
+  }
+  .tab {
+    flex: none;
+    flex-direction: row;
+    justify-content: flex-start;
+    padding: 14px 24px;
+    gap: 14px;
+    font-size: 14px;
+    border-radius: 0;
+    width: 100%;
+  }
+  .tab .tab-icon { font-size: 20px; }
+  .tab.active {
+    background: var(--bg2);
+    box-shadow: inset 3px 0 0 var(--accent);
+  }
+
+  /* Content area: master-detail flex container */
+  .app-content {
+    margin-left: 220px;
+    max-width: none;
+    padding: 0;
+    padding-bottom: 0;
+    display: flex;
+    align-items: stretch;
+    height: calc(100vh - 64px);
+    overflow: hidden;
+  }
+
+  /* Each page becomes a scrollable column */
+  .page {
+    overflow-y: auto;
+    height: 100%;
+  }
+
+  /* Contacts list: fixed-width left pane (when active) */
+  .page#pageContacts.active {
+    display: block;
+    flex: 0 0 380px;
+    border-right: 1px solid var(--bg3);
+  }
+
+  /* Detail: always visible right pane when contacts list is active */
+  .page#pageContacts.active ~ .page#pageDetail {
+    display: block;
+    flex: 1;
+    padding: 28px 36px;
+  }
+  /* Empty-state placeholder when no contact selected */
+  .page#pageContacts.active ~ .page#pageDetail:empty::before {
+    content: '從左側選擇一位人脈查看詳情';
+    display: block;
+    text-align: center;
+    padding: 120px 20px;
+    color: var(--fg3);
+    font-size: 14px;
+    font-family: var(--mono);
+    letter-spacing: 0.1em;
+  }
+  /* Settings page: centered, max-width */
+  .page#pageSettings.active {
+    display: block;
+    flex: 1;
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 28px 36px;
+  }
+
+  /* Hover state for contact rows (mouse-driven) */
+  .contact-item:hover { background: var(--bg3); border-color: var(--bg4); }
+  .contact-item[data-active="1"] {
+    background: var(--bg3);
+    border-color: var(--accent);
+    box-shadow: inset 3px 0 0 var(--accent);
+  }
+
+  /* Hide redundant 返回 (back) button when detail is always visible */
+  .page#pageDetail .detail-actions button.btn-secondary[onclick*="switchTab"] {
+    display: none;
+  }
+
+  /* Search bar stays sticky inside the list column */
+  .search-bar { padding: 16px; }
+  .contact-list { padding: 0 16px 24px; }
+
+  /* FAB sits at bottom-right of viewport, clear of sidebar */
+  .fab {
+    bottom: 32px;
+    right: 32px;
+  }
+
+  /* Sheets become centered modal dialogs (offset for sidebar) */
+  .sheet {
+    bottom: auto;
+    top: 50%;
+    left: calc(50% + 110px);
+    right: auto;
+    width: min(640px, calc(100vw - 280px));
+    max-height: 86vh;
+    border-radius: 16px;
+    border: 1px solid var(--bg3);
+    transform: translate(-50%, calc(-50% + 24px));
+    opacity: 0;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+  }
+  .sheet.open {
+    transform: translate(-50%, -50%);
+    opacity: 1;
+  }
+  .sheet-handle { display: none; }
+
+  /* Onboarding cards: bigger on desktop */
+  .ob-content { max-width: 720px; }
+  .ob-choices { gap: 24px; }
+  .ob-choice { padding: 40px 28px; }
 }
 </style>
 </head>
@@ -1872,7 +2016,8 @@ function renderList(){
     const harmonyStr=harmony!=null?'★'.repeat(Math.min(harmony,5)):'';
     const trust=c.trust||0;
     const dots=[1,2,3,4,5].map(i=>`<i class="${i<=trust?'on':''}"></i>`).join('');
-    return `<div class="contact-item" onclick="showDetail('${c.id}')"><div class="ci-avatar ${avClass}">${avText}</div><div class="ci-body"><div class="ci-name">${esc(c.name)}${c.alias?' · '+esc(c.alias):''}</div>${sub?`<div class="ci-sub">${esc(sub)}</div>`:''}</div><div class="ci-right">${coopMode?`<div class="ci-coop">${coopIcon?coopIcon+' ':''}${esc(coopMode.split(' ·')[0])}</div>`:''}<div class="ci-trust">${harmonyStr||dots}</div></div></div>`;
+    const _active=(APP.editingId===c.id&&matchMedia('(min-width: 1024px)').matches)?' data-active="1"':'';
+    return `<div class="contact-item" data-id="${c.id}"${_active} onclick="showDetail('${c.id}')"><div class="ci-avatar ${avClass}">${avText}</div><div class="ci-body"><div class="ci-name">${esc(c.name)}${c.alias?' · '+esc(c.alias):''}</div>${sub?`<div class="ci-sub">${esc(sub)}</div>`:''}</div><div class="ci-right">${coopMode?`<div class="ci-coop">${coopIcon?coopIcon+' ':''}${esc(coopMode.split(' ·')[0])}</div>`:''}<div class="ci-trust">${harmonyStr||dots}</div></div></div>`;
   }).join('');
 }
 
@@ -2045,8 +2190,18 @@ function showDetail(id){
   html+=`<div class="detail-actions"><button class="btn btn-danger" onclick="deleteEntry('${c.id}')">移除</button><button class="btn btn-secondary" onclick="switchTab('contacts')">返回</button><button class="btn btn-primary" onclick="editEntry('${c.id}')">編輯</button></div>`;
 
   $('pageDetail').innerHTML=html;
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  $('pageDetail').classList.add('active');
+  const _isDesktop=matchMedia('(min-width: 1024px)').matches;
+  if(_isDesktop){
+    // Master-detail: keep contacts list visible, just populate detail pane
+    $('pageContacts').classList.add('active');
+    // Highlight the selected contact row
+    document.querySelectorAll('.contact-item[data-active]').forEach(el=>el.removeAttribute('data-active'));
+    const _row=document.querySelector(`.contact-item[data-id="${id}"]`);
+    if(_row)_row.setAttribute('data-active','1');
+  }else{
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    $('pageDetail').classList.add('active');
+  }
 }
 
 // ============================================================

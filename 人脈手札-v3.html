@@ -1935,7 +1935,35 @@ function dbClear(s){return _withDB(()=>new Promise((r,j)=>{const t=db.transactio
 // ============================================================
 // APP STATE
 // ============================================================
-const APP={theme:'east',contacts:[],self:null,editingId:null,filter:'',trust:0,method:'bazi',apiKey:'',recording:false,recognition:null,initialized:false};
+const APP={theme:'east',contacts:[],self:null,editingId:null,filter:'',trust:0,method:'bazi',apiKey:'',recording:false,recognition:null,initialized:false,deviceId:''};
+
+// ============================================================
+// SCHEMA / SYNC RULES — forward-compat for future cloud sync
+// ============================================================
+// Convention:
+// - meta keys starting with "_local:" are device-only, NEVER sync to cloud
+// - DEVICE_ONLY_META_KEYS lists legacy keys that should also stay device-only
+// - DERIVED_CONTACT_FIELDS are recomputed from raw data, don't sync (save space, avoid float drift)
+// - Each contact has _v (schema version), _deviceId (last writer), _deletedAt (soft delete)
+const CURRENT_SCHEMA_V = 1;
+const SYNC_RULES = {
+  DEVICE_ONLY_META_KEYS: ['apiKey', 'pricingInterest'],
+  DERIVED_CONTACT_FIELDS: ['fortune', 'fortunes', 'deepProfile'],
+};
+
+async function ensureDeviceId(){
+  const stored=await dbGet('meta','_local:deviceId');
+  if(stored?.data)return stored.data;
+  const id='d_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,10);
+  await dbPut('meta',{key:'_local:deviceId',data:id});
+  return id;
+}
+
+function stampContact(c){
+  c._v=CURRENT_SCHEMA_V;
+  c._deviceId=APP.deviceId||'unknown';
+  return c;
+}
 const $=id=>document.getElementById(id);
 const esc=s=>s?String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])):'';
 function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
@@ -2370,6 +2398,7 @@ async function saveEntry(){
     }
   }
 
+  stampContact(c);
   await dbPut('contacts',c);
   const idx=APP.contacts.findIndex(x=>x.id===c.id);
   if(idx>=0)APP.contacts[idx]=c;else APP.contacts.push(c);
@@ -2380,8 +2409,20 @@ async function saveEntry(){
 async function deleteEntry(id){
   const ok=await customConfirm('確定要移除這筆人脈？');
   if(!ok)return;
-  await dbDel('contacts',id);
-  APP.contacts=APP.contacts.filter(c=>c.id!==id);
+  // Soft delete: mark _deletedAt so cloud sync (future) can propagate the removal.
+  // Record stays in IndexedDB; APP.contacts only holds live ones.
+  const c=APP.contacts.find(x=>x.id===id);
+  if(c){
+    c._deletedAt=Date.now();
+    c.updatedAt=Date.now();
+    stampContact(c);
+    await dbPut('contacts',c);
+  }else{
+    // Already not in live list — try to fetch from DB and stamp
+    const raw=await dbGet('contacts',id);
+    if(raw){raw._deletedAt=Date.now();raw.updatedAt=Date.now();stampContact(raw);await dbPut('contacts',raw);}
+  }
+  APP.contacts=APP.contacts.filter(x=>x.id!==id);
   switchTab('contacts');toast('已移除');
 }
 
@@ -2846,7 +2887,10 @@ if('serviceWorker' in navigator){
 
 (async function(){
   await openDB();
-  APP.contacts=await dbGetAll('contacts');
+  APP.deviceId=await ensureDeviceId();
+  // Load contacts; filter out soft-deleted (kept in DB for sync, hidden from UI)
+  const allContacts=await dbGetAll('contacts');
+  APP.contacts=allContacts.filter(c=>!c._deletedAt);
   const selfData=await dbGet('meta','self');if(selfData)APP.self=selfData.data;
   const keyData=await dbGet('meta','apiKey');if(keyData){APP.apiKey=keyData.data;$('apiKeyInput').value=APP.apiKey;$('apiStatus').className='api-status ok';$('apiStatus').textContent='✓ 已設定';}
   const themeData=await dbGet('meta','theme');

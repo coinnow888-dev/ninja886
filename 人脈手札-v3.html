@@ -792,8 +792,39 @@ body {
 .coop-card .advice strong { color: var(--accent); }
 .coop-card .warning { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--bg4); font-size: 13px; color: var(--fg3); }
 
-.detail-actions { display: flex; gap: 12px; padding: 20px; }
-.detail-actions .btn { flex: 1; }
+.detail-actions { display: flex; gap: 12px; padding: 20px; flex-wrap: wrap; }
+.detail-actions .btn { flex: 1; min-width: 80px; }
+.detail-actions .btn-deep { flex: 1 0 100%; background: linear-gradient(135deg, var(--accent), var(--accent2, var(--accent))); color: var(--fg); border: none; font-weight: 700; letter-spacing: 0.08em; }
+.detail-actions .btn-deep:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Deep Profile (multi-agent) */
+.deep-profile { padding: 4px 20px 20px; }
+.dp-meta { font-size: 11px; color: var(--fg3); margin-bottom: 12px; font-family: var(--mono); letter-spacing: 0.1em; display: flex; justify-content: space-between; align-items: center; }
+.dp-meta .dp-stale { color: var(--accent); cursor: pointer; text-decoration: underline; }
+.dp-agent { background: var(--bg2); border: 1px solid var(--bg3); border-radius: 12px; padding: 16px 18px; margin-bottom: 14px; position: relative; }
+.dp-agent-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--bg3); }
+.dp-agent-badge { display: inline-flex; width: 28px; height: 28px; align-items: center; justify-content: center; background: var(--accent); color: var(--fg); border-radius: 50%; font-size: 14px; font-weight: 700; flex-shrink: 0; }
+.dp-agent-title { font-weight: 700; font-size: 14px; color: var(--accent); letter-spacing: 0.05em; }
+.dp-agent-body { font-size: 14px; line-height: 1.75; color: var(--fg2); }
+.dp-agent-body p { margin: 0 0 8px; }
+.dp-agent-body ul { margin: 6px 0; padding-left: 20px; }
+.dp-agent-body li { margin-bottom: 4px; }
+.dp-agent-body .label { display: inline-block; font-size: 11px; color: var(--accent); font-family: var(--mono); letter-spacing: 0.1em; margin-right: 6px; }
+.dp-angle { padding: 10px 12px; background: var(--bg); border-radius: 10px; margin-bottom: 8px; }
+.dp-angle-title { font-weight: 700; color: var(--fg); margin-bottom: 4px; font-size: 14px; }
+.dp-angle-detail { font-size: 13px; color: var(--fg2); line-height: 1.7; margin-bottom: 8px; }
+.dp-meter { display: flex; gap: 10px; font-size: 11px; color: var(--fg3); font-family: var(--mono); }
+.dp-meter span { display: flex; align-items: center; gap: 4px; }
+.dp-meter b { color: var(--fg2); }
+.dp-bar { display: inline-block; width: 60px; height: 4px; background: var(--bg3); border-radius: 2px; overflow: hidden; vertical-align: middle; }
+.dp-bar i { display: block; height: 100%; background: var(--accent); }
+.dp-bar.friction i { background: #888; }
+.dp-progress { padding: 24px; text-align: center; color: var(--fg3); font-size: 13px; font-family: var(--mono); letter-spacing: 0.1em; }
+.dp-progress-bar { width: 100%; height: 4px; background: var(--bg3); border-radius: 2px; overflow: hidden; margin-top: 12px; }
+.dp-progress-bar i { display: block; height: 100%; background: var(--accent); transition: width 0.5s ease; }
+.dp-spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--bg3); border-top-color: var(--accent); border-radius: 50%; animation: dpspin 0.8s linear infinite; vertical-align: middle; margin-right: 8px; }
+@keyframes dpspin { to { transform: rotate(360deg); } }
+.dp-error { padding: 16px; background: var(--bg2); border: 1px solid #c43b3b; border-radius: 10px; color: #ff8888; font-size: 13px; margin-bottom: 14px; }
 
 /* Settings */
 .settings-group { padding: 20px; border-bottom: 1px solid var(--bg3); }
@@ -2187,7 +2218,11 @@ function showDetail(id){
   if(c.notes)html+=`<div class="detail-section"><div class="detail-section-title">MEMO</div><div style="font-size:14px;line-height:1.8;color:var(--fg2);white-space:pre-wrap">${esc(c.notes)}</div></div>`;
   if(c.source)html+=`<div class="detail-section"><div style="font-size:13px;color:var(--fg3)">${APP.theme==='east'?'認識方式':'Source'}：${esc(c.source)}</div></div>`;
 
-  html+=`<div class="detail-actions"><button class="btn btn-danger" onclick="deleteEntry('${c.id}')">移除</button><button class="btn btn-secondary" onclick="switchTab('contacts')">返回</button><button class="btn btn-primary" onclick="editEntry('${c.id}')">編輯</button></div>`;
+  // Deep Profile (multi-agent AI insights)
+  html+=`<div class="detail-section"><div class="detail-section-title">${APP.theme==='east'?'深入識人':'DEEP READ'}</div><div id="deepProfileArea">${renderDeepProfile(c)}</div></div>`;
+
+  const _deepLabel=APP.theme==='east'?(c.deepProfile?'重新分析':'深入識人 · AI'):(c.deepProfile?'Re-analyze':'Deep Read · AI');
+  html+=`<div class="detail-actions"><button class="btn btn-deep" id="deepDiveBtn" onclick="deepDive('${c.id}')">✦ ${_deepLabel}</button><button class="btn btn-danger" onclick="deleteEntry('${c.id}')">移除</button><button class="btn btn-secondary" onclick="switchTab('contacts')">返回</button><button class="btn btn-primary" onclick="editEntry('${c.id}')">編輯</button></div>`;
 
   $('pageDetail').innerHTML=html;
   const _isDesktop=matchMedia('(min-width: 1024px)').matches;
@@ -2520,6 +2555,203 @@ async function clearAllData(){
   await dbClear('contacts');await dbClear('meta');
   APP.contacts=[];APP.self=null;APP.apiKey='';
   renderList();renderSelfSetup();toast('已清除');
+}
+
+// ============================================================
+// DEEP READ — Multi-agent AI insights (3 agents collaborate)
+// ============================================================
+const DEEP_MODEL='claude-sonnet-4-5';
+const DEEP_MAX_TOKENS=1500;
+
+function _hashStr(s){let h=0;for(let i=0;i<s.length;i++){h=((h<<5)-h+s.charCodeAt(i))|0;}return h.toString(36);}
+function dpVersion(c){
+  return _hashStr(JSON.stringify({
+    f:c.fortune,
+    n:c.notes||'',
+    role:c.role||'',field:c.field||'',company:c.company||'',
+    sf:APP.self?.fortune||null,
+    t:APP.theme
+  }));
+}
+
+function _fortuneSummary(c){
+  if(!c.fortune)return '（無命理資料）';
+  const f=c.fortune;
+  if(f.method==='bazi'&&f.profile){
+    const sb=f.stemBranch||{};
+    return `八字四柱：${sb.year?.s||''}${sb.year?.b||''} ${sb.month?.s||''}${sb.month?.b||''} ${sb.day?.s||''}${sb.day?.b||''} ${sb.hour?.s||''}${sb.hour?.b||''}；日主：${sb.day?.s||''}${sb.day?.b||''} (${f.profile.dayMaster}${f.profile.dayYinYang})；身強弱：${f.profile.strength?.strength||''} - ${f.profile.strength?.desc||''}；最強：${f.profile.strongest}；最弱：${f.profile.weakest}；五行分布：${JSON.stringify(f.profile.counts||{})}`;
+  }
+  if(f.method==='zodiac'&&f.zodiac){
+    return `星座：${f.zodiac.zh}/${f.zodiac.name}；元素：${f.zodiac.element}；模式：${f.zodiac.mode}；守護星：${f.zodiac.ruler}；特質：${f.zodiac.traits||''}`;
+  }
+  if(f.method==='yijing'){
+    return `數字易經：${JSON.stringify(f).slice(0,300)}`;
+  }
+  return JSON.stringify(f).slice(0,400);
+}
+
+function renderDeepProfile(c){
+  const dp=c.deepProfile;
+  if(!dp||!dp.fortuneAnalysis)return '';
+  const isStale=dp.version!==dpVersion(c);
+  const dateStr=new Date(dp.generatedAt).toLocaleString('zh-TW',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+  const staleNote=isStale?`<span class="dp-stale" onclick="deepDive('${c.id}')">資料已變更 · 重新分析</span>`:`<span>已快取</span>`;
+  let html=`<div class="deep-profile">`;
+  html+=`<div class="dp-meta"><span>${dateStr}</span>${staleNote}</div>`;
+  // Agent 1: 命理分析師
+  const fa=dp.fortuneAnalysis;
+  if(fa){
+    html+=`<div class="dp-agent"><div class="dp-agent-head"><span class="dp-agent-badge">命</span><span class="dp-agent-title">${APP.theme==='east'?'命理分析師':'ASTRO ANALYST'}</span></div><div class="dp-agent-body">`;
+    if(fa.essence)html+=`<p><span class="label">本質</span>${esc(fa.essence)}</p>`;
+    if(fa.strengths?.length)html+=`<p><span class="label">優勢</span></p><ul>${fa.strengths.map(s=>`<li>${esc(s)}</li>`).join('')}</ul>`;
+    if(fa.blindspots?.length)html+=`<p><span class="label">盲區</span></p><ul>${fa.blindspots.map(s=>`<li>${esc(s)}</li>`).join('')}</ul>`;
+    if(fa.energyPattern)html+=`<p><span class="label">能量模式</span>${esc(fa.energyPattern)}</p>`;
+    html+=`</div></div>`;
+  }
+  // Agent 2: 合作策略師
+  const co=dp.cooperation;
+  if(co){
+    html+=`<div class="dp-agent"><div class="dp-agent-head"><span class="dp-agent-badge">合</span><span class="dp-agent-title">${APP.theme==='east'?'合作策略師':'COOP STRATEGIST'}</span></div><div class="dp-agent-body">`;
+    if(co.angles)for(const a of co.angles){
+      const harmony=Math.max(0,Math.min(100,a.harmony||0));
+      const friction=Math.max(0,Math.min(100,a.friction||0));
+      html+=`<div class="dp-angle"><div class="dp-angle-title">${esc(a.title||'')}</div><div class="dp-angle-detail">${esc(a.detail||'')}</div><div class="dp-meter"><span><b>契合</b><span class="dp-bar"><i style="width:${harmony}%"></i></span>${harmony}</span><span><b>摩擦</b><span class="dp-bar friction"><i style="width:${friction}%"></i></span>${friction}</span></div></div>`;
+    }
+    if(co.summary)html+=`<p style="margin-top:10px"><span class="label">總結</span>${esc(co.summary)}</p>`;
+    html+=`</div></div>`;
+  }
+  // Agent 3: 對話顧問
+  const cv=dp.conversation;
+  if(cv){
+    html+=`<div class="dp-agent"><div class="dp-agent-head"><span class="dp-agent-badge">話</span><span class="dp-agent-title">${APP.theme==='east'?'對話顧問':'CONVERSATION ADVISOR'}</span></div><div class="dp-agent-body">`;
+    if(cv.questions?.length)html+=`<p><span class="label">可問</span></p><ul>${cv.questions.map(q=>`<li>${esc(q)}</li>`).join('')}</ul>`;
+    if(cv.avoidances?.length)html+=`<p><span class="label">避開</span></p><ul>${cv.avoidances.map(q=>`<li>${esc(q)}</li>`).join('')}</ul>`;
+    if(cv.followUp)html+=`<p><span class="label">下次見面</span>${esc(cv.followUp)}</p>`;
+    html+=`</div></div>`;
+  }
+  html+=`</div>`;
+  return html;
+}
+
+async function callDeepAgent(systemPrompt,userPrompt){
+  const resp=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':APP.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({
+      model:DEEP_MODEL,
+      max_tokens:DEEP_MAX_TOKENS,
+      system:systemPrompt,
+      messages:[{role:'user',content:userPrompt}]
+    })
+  });
+  if(!resp.ok){
+    const err=await resp.text();
+    throw new Error(`API ${resp.status}: ${err.slice(0,200)}`);
+  }
+  const data=await resp.json();
+  if(data.error)throw new Error(data.error.message||'API 錯誤');
+  const text=data.content.map(c=>c.text||'').join('');
+  const cleaned=text.replace(/```json|```/g,'').trim();
+  const start=cleaned.indexOf('{');
+  const end=cleaned.lastIndexOf('}');
+  if(start===-1||end===-1)throw new Error('回傳格式錯誤（找不到 JSON）');
+  return JSON.parse(cleaned.slice(start,end+1));
+}
+
+async function agentFortuneAnalyst(c){
+  const sys='你是命理分析師。根據人物的八字或星座資料，洞察其人格本質、能量模式、優勢與盲區。語氣中性、實用導向，避免迷信用詞（不要寫「貴人運」、「事業運勢」這類）。用 framework 角度解讀，不講玄學。一律用繁體中文回應。';
+  const user=`對方資料：
+身份：${c.role||'—'}
+領域：${c.field||'—'}
+${_fortuneSummary(c)}
+
+請以 JSON 格式回傳，不要任何 JSON 之外的文字。Schema：
+{
+  "essence": "100-200 字描述對方本質（不要寫姓名）",
+  "strengths": ["優勢1（一句話）", "優勢2", "優勢3"],
+  "blindspots": ["盲區1（一句話）", "盲區2"],
+  "energyPattern": "60-100 字描述能量模式"
+}`;
+  return await callDeepAgent(sys,user);
+}
+
+async function agentCooperationStrategist(c,fa){
+  const sys='你是合作策略師。根據對方人格畫像、使用者自己的命理、對方角色與領域，提出 3 個具體的合作切入點。每個切入點評估契合度與摩擦點（0-100）。實用導向，避免空話。一律用繁體中文回應。';
+  const selfFortune=APP.self?.fortune?_fortuneSummary({fortune:APP.self.fortune}):'（使用者尚未設定自己的命理）';
+  const user=`對方人格畫像（命理分析師輸出）：
+${JSON.stringify(fa,null,2)}
+
+對方角色：${c.role||'—'}
+對方領域：${c.field||'—'}
+對方公司：${c.company||'—'}
+
+使用者自己：${selfFortune}
+
+請以 JSON 格式回傳，不要任何 JSON 之外的文字。Schema：
+{
+  "angles": [
+    {"title":"切入點標題（10字內）", "detail":"50-80字具體建議", "harmony": 整數0-100, "friction": 整數0-100},
+    {第二個},
+    {第三個}
+  ],
+  "summary": "60-100字總結兩人合作的整體模式"
+}`;
+  return await callDeepAgent(sys,user);
+}
+
+async function agentConversationAdvisor(c,fa,co){
+  const sys='你是對話顧問。根據前面分析，給使用者下次見對方時的具體建議：可問的問題、要避開的話題、後續可 follow-up 的點。實用、可帶走、口語化。一律用繁體中文回應。';
+  const user=`對方畫像：
+${JSON.stringify(fa,null,2)}
+
+合作策略：
+${JSON.stringify(co,null,2)}
+
+使用者對對方的筆記：${c.notes||'（無）'}
+
+請以 JSON 格式回傳，不要任何 JSON 之外的文字。Schema：
+{
+  "questions": ["可問問題1（口語化）", "可問問題2", "可問問題3"],
+  "avoidances": ["避開的話題1（後面附「為何」一句說明）", "避開2"],
+  "followUp": "40-60字描述下次見面後可以 follow-up 的一個具體動作"
+}`;
+  return await callDeepAgent(sys,user);
+}
+
+async function deepDive(contactId){
+  if(!APP.apiKey){toast('請先到設定填寫 API Key');return;}
+  const c=APP.contacts.find(x=>x.id===contactId);
+  if(!c){toast('找不到該人脈');return;}
+  if(!c.fortune){toast('需先填寫出生資訊');return;}
+  const area=$('deepProfileArea');
+  const btn=$('deepDiveBtn');
+  if(btn)btn.disabled=true;
+  const updateProgress=(step,label)=>{
+    if(area)area.innerHTML=`<div class="dp-progress"><div><span class="dp-spinner"></span>${label}</div><div class="dp-progress-bar"><i style="width:${step*33.3}%"></i></div></div>`;
+  };
+  try{
+    updateProgress(1,APP.theme==='east'?'(1/3) 命理分析師思考中...':'(1/3) Astro Analyst...');
+    const fortuneAnalysis=await agentFortuneAnalyst(c);
+    updateProgress(2,APP.theme==='east'?'(2/3) 合作策略師思考中...':'(2/3) Coop Strategist...');
+    const cooperation=await agentCooperationStrategist(c,fortuneAnalysis);
+    updateProgress(3,APP.theme==='east'?'(3/3) 對話顧問思考中...':'(3/3) Conversation Advisor...');
+    const conversation=await agentConversationAdvisor(c,fortuneAnalysis,cooperation);
+    c.deepProfile={
+      fortuneAnalysis,cooperation,conversation,
+      version:dpVersion(c),
+      generatedAt:Date.now()
+    };
+    c.updatedAt=Date.now();
+    await dbPut('contacts',c);
+    if(area)area.innerHTML=renderDeepProfile(c);
+    if(btn){btn.disabled=false;btn.innerHTML=`✦ ${APP.theme==='east'?'重新分析':'Re-analyze'}`;}
+    toast(APP.theme==='east'?'深入識人完成':'Deep read complete');
+  }catch(err){
+    console.error('deepDive failed',err);
+    if(area)area.innerHTML=`<div class="dp-error">分析失敗：${esc(err.message||'未知錯誤')}</div>`+(c.deepProfile?renderDeepProfile(c):'');
+    if(btn)btn.disabled=false;
+    toast('分析失敗，請重試');
+  }
 }
 
 function switchTab(name){

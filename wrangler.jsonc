@@ -9,12 +9,10 @@
     "directory": ".",
     "binding": "ASSETS",
     "not_found_handling": "single-page-application"
-  }
-  // KV namespace for rate limiting — uncomment after creating KV in dashboard:
-  // "kv_namespaces": [
-  //   { "binding": "RATE_LIMIT", "id": "<paste-your-kv-namespace-id-here>" }
-  // ]
-  //
+  },
+  "kv_namespaces": [
+    { "binding": "RATE_LIMIT", "id": "540737bf6fdc4423852c63aaa4a5f40d" }
+  ]
   // Set ANTHROPIC_API_KEY as encrypted secret in dashboard:
   //   Workers & Pages → ninja886 → Settings → Variables → Add encrypted variable
 }

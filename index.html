@@ -1177,7 +1177,7 @@ body {
         <div id="selfSetupArea"></div>
       </div>
       <div class="settings-group">
-        <div class="settings-group-title">名片 OCR（Claude API）</div>
+        <div class="settings-group-title">Claude API Key（選填）</div>
         <div class="field">
           <label>API Key</label>
           <div class="api-key-field">
@@ -1186,8 +1186,10 @@ body {
           </div>
           <div class="api-status" id="apiStatus"></div>
         </div>
-        <div style="font-size:13px; color:var(--fg3); line-height:1.6; margin-top:8px">
-          Key 只存在你的裝置中。用於名片拍照辨識。
+        <div style="font-size:13px; color:var(--fg3); line-height:1.7; margin-top:10px">
+          <strong style="color:var(--fg2)">不填也能用「深入識人」</strong>（免費版，每天每 IP 限 3 次，用 Haiku 4.5）。<br>
+          填了 Key 會：解除次數上限、改用 Sonnet 4.5（深度分析品質更高）、名片 OCR 也會運作。<br>
+          Key 只存在您的裝置 IndexedDB，到 <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:var(--accent)">console.anthropic.com</a> 取得。
         </div>
       </div>
       <div class="settings-group">
@@ -1895,12 +1897,24 @@ async function recomputeAllForTheme(){
 // IndexedDB
 // ============================================================
 const DB_NAME='renmai_v3';let db=null;
-function openDB(){return new Promise((res,rej)=>{const r=indexedDB.open(DB_NAME,1);r.onupgradeneeded=e=>{const d=e.target.result;if(!d.objectStoreNames.contains('contacts'))d.createObjectStore('contacts',{keyPath:'id'});if(!d.objectStoreNames.contains('meta'))d.createObjectStore('meta',{keyPath:'key'});};r.onsuccess=e=>{db=e.target.result;res(db);};r.onerror=e=>rej(e);});}
-function dbPut(s,d){return new Promise((r,j)=>{const t=db.transaction(s,'readwrite');t.objectStore(s).put(d);t.oncomplete=()=>r();t.onerror=e=>j(e);});}
-function dbGet(s,k){return new Promise((r,j)=>{const t=db.transaction(s,'readonly');const q=t.objectStore(s).get(k);q.onsuccess=()=>r(q.result||null);q.onerror=e=>j(e);});}
-function dbGetAll(s){return new Promise((r,j)=>{const t=db.transaction(s,'readonly');const q=t.objectStore(s).getAll();q.onsuccess=()=>r(q.result||[]);q.onerror=e=>j(e);});}
-function dbDel(s,k){return new Promise((r,j)=>{const t=db.transaction(s,'readwrite');t.objectStore(s).delete(k);t.oncomplete=()=>r();t.onerror=e=>j(e);});}
-function dbClear(s){return new Promise((r,j)=>{const t=db.transaction(s,'readwrite');t.objectStore(s).clear();t.oncomplete=()=>r();t.onerror=e=>j(e);});}
+function openDB(){return new Promise((res,rej)=>{const r=indexedDB.open(DB_NAME,1);r.onupgradeneeded=e=>{const d=e.target.result;if(!d.objectStoreNames.contains('contacts'))d.createObjectStore('contacts',{keyPath:'id'});if(!d.objectStoreNames.contains('meta'))d.createObjectStore('meta',{keyPath:'key'});};r.onsuccess=e=>{db=e.target.result;db.onclose=()=>{db=null;};db.onversionchange=()=>{try{db.close();}catch{}db=null;};res(db);};r.onerror=e=>rej(e);});}
+// iOS Safari / mobile browsers can close idle IndexedDB connections.
+// Wrap every operation: ensure connection is alive, retry once on InvalidStateError.
+async function _withDB(op){
+  if(!db)await openDB();
+  try{return await op();}
+  catch(e){
+    if(e&&(e.name==='InvalidStateError'||/closing|closed/i.test(e.message||''))){
+      db=null;await openDB();return await op();
+    }
+    throw e;
+  }
+}
+function dbPut(s,d){return _withDB(()=>new Promise((r,j)=>{const t=db.transaction(s,'readwrite');t.objectStore(s).put(d);t.oncomplete=()=>r();t.onerror=e=>j(t.error||e);t.onabort=e=>j(t.error||e);}));}
+function dbGet(s,k){return _withDB(()=>new Promise((r,j)=>{const t=db.transaction(s,'readonly');const q=t.objectStore(s).get(k);q.onsuccess=()=>r(q.result||null);q.onerror=e=>j(q.error||e);t.onabort=e=>j(t.error||e);}));}
+function dbGetAll(s){return _withDB(()=>new Promise((r,j)=>{const t=db.transaction(s,'readonly');const q=t.objectStore(s).getAll();q.onsuccess=()=>r(q.result||[]);q.onerror=e=>j(q.error||e);t.onabort=e=>j(t.error||e);}));}
+function dbDel(s,k){return _withDB(()=>new Promise((r,j)=>{const t=db.transaction(s,'readwrite');t.objectStore(s).delete(k);t.oncomplete=()=>r();t.onerror=e=>j(t.error||e);t.onabort=e=>j(t.error||e);}));}
+function dbClear(s){return _withDB(()=>new Promise((r,j)=>{const t=db.transaction(s,'readwrite');t.objectStore(s).clear();t.oncomplete=()=>r();t.onerror=e=>j(t.error||e);t.onabort=e=>j(t.error||e);}));}
 
 // ============================================================
 // APP STATE
@@ -2633,20 +2647,40 @@ function renderDeepProfile(c){
   return html;
 }
 
+// Two paths:
+//  - 有自己的 API Key → 直接打 api.anthropic.com（無上限、用 Sonnet 4.5、自費）
+//  - 沒填 Key → 走 /api/deep-read proxy（免費版、Haiku 4.5、每 IP/day 3 次）
 async function callDeepAgent(systemPrompt,userPrompt){
-  const resp=await fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','x-api-key':APP.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-    body:JSON.stringify({
-      model:DEEP_MODEL,
-      max_tokens:DEEP_MAX_TOKENS,
-      system:systemPrompt,
-      messages:[{role:'user',content:userPrompt}]
-    })
-  });
+  const usingByoKey=!!APP.apiKey;
+  let resp;
+  if(usingByoKey){
+    resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':APP.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({
+        model:DEEP_MODEL,
+        max_tokens:DEEP_MAX_TOKENS,
+        system:systemPrompt,
+        messages:[{role:'user',content:userPrompt}]
+      })
+    });
+  }else{
+    resp=await fetch('/api/deep-read',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({system:systemPrompt,user:userPrompt})
+    });
+  }
   if(!resp.ok){
-    const err=await resp.text();
-    throw new Error(`API ${resp.status}: ${err.slice(0,200)}`);
+    let msg=`API ${resp.status}`;
+    try{
+      const errBody=await resp.json();
+      if(errBody?.error?.message)msg=errBody.error.message;
+    }catch{
+      const txt=await resp.text();
+      msg=`${msg}: ${txt.slice(0,200)}`;
+    }
+    throw new Error(msg);
   }
   const data=await resp.json();
   if(data.error)throw new Error(data.error.message||'API 錯誤');
@@ -2719,7 +2753,6 @@ ${JSON.stringify(co,null,2)}
 }
 
 async function deepDive(contactId){
-  if(!APP.apiKey){toast('請先到設定填寫 API Key');return;}
   const c=APP.contacts.find(x=>x.id===contactId);
   if(!c){toast('找不到該人脈');return;}
   if(!c.fortune){toast('需先填寫出生資訊');return;}
@@ -2748,9 +2781,11 @@ async function deepDive(contactId){
     toast(APP.theme==='east'?'深入識人完成':'Deep read complete');
   }catch(err){
     console.error('deepDive failed',err);
-    if(area)area.innerHTML=`<div class="dp-error">分析失敗：${esc(err.message||'未知錯誤')}</div>`+(c.deepProfile?renderDeepProfile(c):'');
+    const msg=err.message||'未知錯誤';
+    if(area)area.innerHTML=`<div class="dp-error">${esc(msg)}</div>`+(c.deepProfile?renderDeepProfile(c):'');
     if(btn)btn.disabled=false;
-    toast('分析失敗，請重試');
+    // Show meaningful short messages (like rate-limit) directly, fallback for long stack traces
+    toast(msg.length<120?msg:'分析失敗，請重試');
   }
 }
 

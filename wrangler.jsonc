@@ -1,0 +1,20 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ninja886",
+  "main": "worker.js",
+  "compatibility_date": "2026-05-13",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  "assets": {
+    "directory": ".",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application"
+  }
+  // KV namespace for rate limiting — uncomment after creating KV in dashboard:
+  // "kv_namespaces": [
+  //   { "binding": "RATE_LIMIT", "id": "<paste-your-kv-namespace-id-here>" }
+  // ]
+  //
+  // Set ANTHROPIC_API_KEY as encrypted secret in dashboard:
+  //   Workers & Pages → ninja886 → Settings → Variables → Add encrypted variable
+}

@@ -1,0 +1,1924 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1a1310">
+<title>人脈手札</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;700;900&family=DM+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #1a1310;
+  --bg2: #231e1a;
+  --bg3: #2e2722;
+  --bg4: #3a322c;
+  --fg: #e8e0d4;
+  --fg2: #b8ae9e;
+  --fg3: #8a7e70;
+  --cinnabar: #c43b3b;
+  --cinnabar-glow: rgba(196,59,59,0.25);
+  --gold: #c9a84c;
+  --gold-dim: rgba(201,168,76,0.15);
+  --jade: #5a9a6a;
+  --water: #4a82b0;
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-t: env(safe-area-inset-top, 0px);
+  --tab-h: 64px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; }
+
+body {
+  font-family: 'Noto Serif TC', 'Georgia', serif;
+  background: var(--bg);
+  color: var(--fg);
+  overscroll-behavior: none;
+}
+
+/* ===== APP SHELL ===== */
+.app {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  padding: calc(var(--safe-t) + 12px) 20px 12px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--bg3);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.app-brand {
+  display: flex; align-items: center; gap: 12px;
+}
+
+.app-seal {
+  width: 36px; height: 36px;
+  background: var(--cinnabar);
+  color: var(--fg);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 900;
+  transform: rotate(-3deg);
+  box-shadow: 1px 1px 0 rgba(0,0,0,0.5);
+}
+
+.app-title {
+  font-size: 22px; font-weight: 900; letter-spacing: 0.06em;
+}
+
+.app-actions {
+  display: flex; gap: 8px;
+}
+
+.icon-btn {
+  width: 40px; height: 40px;
+  background: var(--bg2);
+  border: 1px solid var(--bg4);
+  color: var(--fg2);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.icon-btn:active { background: var(--bg4); transform: scale(0.92); }
+.icon-btn.active { background: var(--cinnabar); color: var(--fg); border-color: var(--cinnabar); }
+
+/* ===== SCROLLABLE CONTENT ===== */
+.app-content {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: calc(var(--tab-h) + var(--safe-b) + 80px);
+}
+
+/* ===== BOTTOM TABS ===== */
+.tab-bar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: calc(var(--tab-h) + var(--safe-b));
+  padding-bottom: var(--safe-b);
+  background: var(--bg);
+  border-top: 1px solid var(--bg3);
+  display: flex;
+  z-index: 50;
+}
+
+.tab {
+  flex: 1;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 4px;
+  color: var(--fg3);
+  font-size: 10px; letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: color 0.15s;
+  border: none; background: transparent;
+  font-family: 'DM Mono', monospace;
+}
+
+.tab .tab-icon { font-size: 22px; transition: transform 0.15s; }
+.tab.active { color: var(--cinnabar); }
+.tab.active .tab-icon { transform: scale(1.1); }
+
+/* FAB */
+.fab {
+  position: fixed;
+  bottom: calc(var(--tab-h) + var(--safe-b) + 16px);
+  right: 20px;
+  width: 60px; height: 60px;
+  background: var(--cinnabar);
+  color: var(--fg);
+  border: none; border-radius: 16px;
+  font-size: 28px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 20px var(--cinnabar-glow), 0 2px 8px rgba(0,0,0,0.4);
+  z-index: 51;
+  transition: all 0.2s;
+}
+
+.fab:active { transform: scale(0.9); }
+
+/* ===== PAGE: CONTACTS LIST ===== */
+.page { display: none; padding: 0; }
+.page.active { display: block; }
+
+.search-bar {
+  padding: 16px 20px 8px;
+  position: sticky; top: 0;
+  background: var(--bg);
+  z-index: 5;
+}
+
+.search-input {
+  width: 100%;
+  padding: 14px 16px 14px 42px;
+  background: var(--bg2);
+  border: 1px solid var(--bg4);
+  border-radius: 12px;
+  color: var(--fg);
+  font-family: 'Noto Serif TC', serif;
+  font-size: 15px;
+  outline: none;
+}
+
+.search-input::placeholder { color: var(--fg3); }
+.search-input:focus { border-color: var(--cinnabar); background: var(--bg3); }
+
+.search-wrap { position: relative; }
+.search-wrap::before {
+  content: '⌕'; position: absolute;
+  left: 14px; top: 50%; transform: translateY(-50%);
+  font-size: 18px; color: var(--fg3);
+}
+
+.filter-chips {
+  display: flex; gap: 8px;
+  padding: 12px 20px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.filter-chips::-webkit-scrollbar { display: none; }
+
+.chip {
+  flex-shrink: 0;
+  padding: 8px 16px;
+  background: var(--bg2);
+  border: 1px solid var(--bg4);
+  border-radius: 20px;
+  color: var(--fg2);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: 'Noto Serif TC', serif;
+}
+
+.chip.active { background: var(--cinnabar); border-color: var(--cinnabar); color: var(--fg); }
+
+.contact-list { padding: 0 16px; }
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  margin-bottom: 8px;
+  background: var(--bg2);
+  border: 1px solid var(--bg3);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+
+.contact-item::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--cinnabar);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.contact-item:active { background: var(--bg3); }
+.contact-item:active::before { opacity: 1; }
+
+.ci-avatar {
+  width: 48px; height: 48px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 900;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.ci-avatar.木 { background: rgba(90,154,106,0.2); color: var(--jade); }
+.ci-avatar.火 { background: rgba(196,59,59,0.2); color: var(--cinnabar); }
+.ci-avatar.土 { background: var(--gold-dim); color: var(--gold); }
+.ci-avatar.金 { background: rgba(200,200,190,0.15); color: var(--fg2); }
+.ci-avatar.水 { background: rgba(74,130,176,0.2); color: var(--water); }
+.ci-avatar.none { background: var(--bg3); color: var(--fg3); }
+
+.ci-body { flex: 1; min-width: 0; }
+
+.ci-name {
+  font-size: 17px; font-weight: 700;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.ci-sub {
+  font-size: 12px; color: var(--fg3);
+  margin-top: 3px;
+  font-family: 'DM Mono', monospace;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.ci-right {
+  text-align: right; flex-shrink: 0;
+}
+
+.ci-coop {
+  font-size: 11px;
+  color: var(--gold);
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.ci-trust {
+  display: flex; gap: 2px; margin-top: 6px; justify-content: flex-end;
+}
+
+.ci-trust i {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--bg4);
+}
+
+.ci-trust i.on { background: var(--cinnabar); }
+
+.empty-list {
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--fg3);
+}
+
+.empty-list .big { font-size: 48px; opacity: 0.3; margin-bottom: 16px; }
+.empty-list .t { font-size: 18px; font-weight: 700; color: var(--fg2); margin-bottom: 8px; }
+.empty-list .d { font-family: 'Playfair Display', serif; font-style: italic; font-size: 14px; }
+
+/* ===== BOTTOM SHEET (replaces modal) ===== */
+.sheet-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 100;
+}
+
+.sheet-overlay.active { display: block; }
+
+.sheet {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  max-height: 95vh;
+  background: var(--bg2);
+  border-radius: 20px 20px 0 0;
+  z-index: 101;
+  display: flex; flex-direction: column;
+  transform: translateY(100%);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  padding-bottom: var(--safe-b);
+}
+
+.sheet.open { transform: translateY(0); }
+
+.sheet-handle {
+  width: 36px; height: 4px;
+  background: var(--bg4);
+  border-radius: 2px;
+  margin: 10px auto 0;
+  flex-shrink: 0;
+}
+
+.sheet-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--bg3);
+  flex-shrink: 0;
+}
+
+.sheet-title {
+  font-size: 20px; font-weight: 700;
+  display: flex; align-items: center; gap: 10px;
+}
+
+.sheet-title .seal {
+  width: 28px; height: 28px;
+  background: var(--cinnabar);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 900;
+  transform: rotate(-3deg);
+}
+
+.sheet-close {
+  width: 36px; height: 36px;
+  background: var(--bg3);
+  border: none; border-radius: 50%;
+  color: var(--fg2);
+  font-size: 18px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.sheet-body {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 20px;
+}
+
+.sheet-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--bg3);
+  display: flex; gap: 12px;
+  flex-shrink: 0;
+}
+
+.sheet-footer .btn { flex: 1; }
+
+/* ===== FORMS ===== */
+.field {
+  margin-bottom: 16px;
+}
+
+.field label {
+  display: block;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--fg3);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.field label .req { color: var(--cinnabar); }
+
+.field input, .field select, .field textarea {
+  width: 100%;
+  padding: 14px 16px;
+  background: var(--bg);
+  border: 1px solid var(--bg4);
+  border-radius: 10px;
+  color: var(--fg);
+  font-family: 'Noto Serif TC', serif;
+  font-size: 16px;
+  outline: none;
+  -webkit-appearance: none;
+  transition: border-color 0.15s;
+}
+
+.field input:focus, .field select:focus, .field textarea:focus {
+  border-color: var(--cinnabar);
+}
+
+.field textarea { min-height: 80px; resize: vertical; line-height: 1.6; }
+
+.field select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%238a7e70' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+}
+
+.row { display: grid; gap: 12px; }
+.row-2 { grid-template-columns: 1fr 1fr; }
+.row-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+.section-label {
+  font-size: 14px; font-weight: 700;
+  color: var(--cinnabar);
+  margin: 24px 0 14px;
+  display: flex; align-items: center; gap: 10px;
+}
+
+.section-label::before {
+  content: ''; width: 3px; height: 14px; background: var(--cinnabar); border-radius: 1px;
+}
+
+.method-tabs {
+  display: flex;
+  background: var(--bg);
+  border-radius: 10px;
+  padding: 3px;
+  margin-bottom: 14px;
+}
+
+.method-tab {
+  flex: 1;
+  padding: 10px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: var(--fg3);
+  font-family: 'Noto Serif TC', serif;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.method-tab.active { background: var(--cinnabar); color: var(--fg); }
+
+.trust-row {
+  display: flex; gap: 8px; padding: 8px 0;
+}
+
+.trust-circle {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: 2px solid var(--bg4);
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px;
+  color: transparent;
+}
+
+.trust-circle.on {
+  border-color: var(--cinnabar);
+  background: var(--cinnabar-glow);
+  color: var(--cinnabar);
+}
+
+.btn {
+  padding: 16px 24px;
+  border: none;
+  border-radius: 12px;
+  font-family: 'Noto Serif TC', serif;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+}
+
+.btn:active { transform: scale(0.96); }
+.btn-primary { background: var(--cinnabar); color: var(--fg); }
+.btn-secondary { background: var(--bg3); color: var(--fg2); }
+.btn-danger { background: transparent; color: var(--cinnabar); border: 1px solid var(--cinnabar); }
+.btn-sm { padding: 10px 16px; font-size: 13px; border-radius: 8px; }
+
+/* ===== CARD SCAN ===== */
+.scan-area {
+  background: var(--bg);
+  border: 2px dashed var(--bg4);
+  border-radius: 14px;
+  padding: 32px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.scan-area:active { border-color: var(--cinnabar); background: var(--bg2); }
+
+.scan-area .icon { font-size: 36px; margin-bottom: 8px; }
+.scan-area .text { font-size: 14px; color: var(--fg2); }
+.scan-area .sub { font-size: 12px; color: var(--fg3); margin-top: 4px; font-family: 'DM Mono', monospace; }
+
+.scan-preview {
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: 10px;
+  display: none;
+  margin: 0 auto 12px;
+}
+
+.scan-result {
+  background: var(--bg);
+  border: 1px solid var(--jade);
+  border-radius: 10px;
+  padding: 14px;
+  margin-top: 12px;
+  display: none;
+}
+
+.scan-result .sr-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--jade);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 8px;
+}
+
+.scan-result .sr-item {
+  font-size: 14px;
+  padding: 4px 0;
+  display: flex;
+  gap: 8px;
+}
+
+.scan-result .sr-key {
+  color: var(--fg3);
+  min-width: 60px;
+  flex-shrink: 0;
+}
+
+.scanning-indicator {
+  display: none;
+  padding: 20px;
+  text-align: center;
+  color: var(--gold);
+  font-size: 14px;
+}
+
+.scanning-indicator .dots::after {
+  content: '';
+  animation: dots 1.5s infinite;
+}
+
+@keyframes dots {
+  0% { content: ''; }
+  25% { content: '.'; }
+  50% { content: '..'; }
+  75% { content: '...'; }
+}
+
+/* ===== VOICE INPUT ===== */
+.voice-btn {
+  display: inline-flex;
+  align-items: center; gap: 8px;
+  padding: 8px 14px;
+  background: var(--bg);
+  border: 1px solid var(--bg4);
+  border-radius: 20px;
+  color: var(--fg2);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: 'Noto Serif TC', serif;
+}
+
+.voice-btn.recording {
+  background: var(--cinnabar-glow);
+  border-color: var(--cinnabar);
+  color: var(--cinnabar);
+  animation: pulse 1.2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--cinnabar-glow); }
+  50% { box-shadow: 0 0 0 8px transparent; }
+}
+
+/* ===== DETAIL PAGE ===== */
+.detail-hero {
+  padding: 24px 20px;
+  text-align: center;
+  border-bottom: 1px solid var(--bg3);
+}
+
+.detail-avatar {
+  width: 72px; height: 72px;
+  border-radius: 18px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; font-weight: 900;
+  margin: 0 auto 14px;
+}
+
+.detail-name { font-size: 28px; font-weight: 900; letter-spacing: 0.04em; }
+.detail-sub { font-size: 13px; color: var(--fg3); margin-top: 4px; font-family: 'DM Mono', monospace; }
+
+.detail-section {
+  padding: 20px;
+  border-bottom: 1px solid var(--bg3);
+}
+
+.detail-section-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--cinnabar);
+  margin-bottom: 14px;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.dg-item {
+  background: var(--bg);
+  padding: 12px 14px;
+  border-radius: 10px;
+}
+
+.dg-item .key {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--fg3);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 4px;
+}
+
+.dg-item .val { font-size: 16px; font-weight: 500; }
+
+.coop-card {
+  background: linear-gradient(135deg, var(--bg3) 0%, var(--bg) 100%);
+  border: 1px solid var(--bg4);
+  border-radius: 14px;
+  padding: 18px;
+  margin-top: 12px;
+}
+
+.coop-card .mode {
+  font-size: 17px; font-weight: 700;
+  color: var(--gold);
+  margin-bottom: 10px;
+}
+
+.coop-card .advice {
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--fg2);
+}
+
+.coop-card .advice strong { color: var(--cinnabar); }
+
+.coop-card .warning {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--bg4);
+  font-size: 13px;
+  color: var(--fg3);
+  line-height: 1.6;
+}
+
+.hex-display {
+  display: flex; flex-direction: column;
+  gap: 4px; align-items: center;
+  margin: 14px 0;
+}
+
+.hex-line {
+  width: 48px; height: 6px;
+  background: var(--fg); border-radius: 1px;
+}
+
+.hex-line.broken { background: transparent; position: relative; }
+.hex-line.broken::before, .hex-line.broken::after {
+  content: ''; position: absolute; top: 0; height: 100%; width: 18px;
+  background: var(--fg); border-radius: 1px;
+}
+.hex-line.broken::before { left: 0; }
+.hex-line.broken::after { right: 0; }
+
+.detail-actions {
+  display: flex; gap: 12px; padding: 20px;
+}
+
+.detail-actions .btn { flex: 1; }
+
+/* ===== SETTINGS PAGE ===== */
+.settings-group {
+  padding: 20px;
+  border-bottom: 1px solid var(--bg3);
+}
+
+.settings-group-title {
+  font-size: 14px; font-weight: 700;
+  color: var(--cinnabar);
+  margin-bottom: 16px;
+}
+
+.settings-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--bg3);
+}
+
+.settings-item:last-child { border-bottom: none; }
+
+.si-label {
+  font-size: 15px;
+}
+
+.si-desc {
+  font-size: 12px; color: var(--fg3); margin-top: 2px;
+}
+
+.si-action {
+  flex-shrink: 0;
+}
+
+/* ===== TOAST ===== */
+.toast {
+  position: fixed;
+  top: calc(var(--safe-t) + 16px);
+  left: 50%; transform: translateX(-50%) translateY(-120%);
+  background: var(--bg3);
+  color: var(--fg);
+  padding: 14px 24px;
+  border-radius: 12px;
+  font-size: 14px;
+  z-index: 200;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  border-left: 3px solid var(--cinnabar);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+}
+
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ===== QUICK ADD MODE ===== */
+.quick-add-bar {
+  display: none;
+  position: fixed;
+  bottom: calc(var(--tab-h) + var(--safe-b));
+  left: 0; right: 0;
+  background: var(--bg2);
+  border-top: 1px solid var(--bg3);
+  padding: 12px 16px;
+  z-index: 49;
+  gap: 10px;
+  align-items: center;
+}
+
+.quick-add-bar.active { display: flex; }
+
+.quick-add-bar input {
+  flex: 1;
+  padding: 12px 14px;
+  background: var(--bg);
+  border: 1px solid var(--bg4);
+  border-radius: 10px;
+  color: var(--fg);
+  font-family: 'Noto Serif TC', serif;
+  font-size: 15px;
+  outline: none;
+}
+
+.quick-add-bar input:focus { border-color: var(--cinnabar); }
+
+/* ===== API KEY INPUT ===== */
+.api-key-field {
+  display: flex; gap: 8px; align-items: center;
+}
+
+.api-key-field input {
+  flex: 1;
+  padding: 12px 14px;
+  background: var(--bg);
+  border: 1px solid var(--bg4);
+  border-radius: 10px;
+  color: var(--fg);
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  outline: none;
+}
+
+.api-status {
+  font-size: 12px; margin-top: 6px;
+  font-family: 'DM Mono', monospace;
+}
+
+.api-status.ok { color: var(--jade); }
+.api-status.err { color: var(--cinnabar); }
+
+@media (min-width: 768px) {
+  .app-content { max-width: 600px; margin: 0 auto; }
+  .tab-bar { max-width: 600px; left: 50%; transform: translateX(-50%); border-radius: 16px 16px 0 0; }
+  .fab { right: calc(50% - 280px); }
+  .quick-add-bar { max-width: 600px; left: 50%; transform: translateX(-50%); border-radius: 16px 16px 0 0; }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="app-header">
+    <div class="app-brand">
+      <div class="app-seal">識</div>
+      <div class="app-title">人脈手札</div>
+    </div>
+    <div class="app-actions">
+      <button class="icon-btn" onclick="openQuickAdd()" title="快速新增">⚡</button>
+      <button class="icon-btn" onclick="switchTab('settings')" title="設定">⚙</button>
+    </div>
+  </div>
+
+  <div class="app-content">
+    <!-- PAGE: CONTACTS -->
+    <div class="page active" id="pageContacts">
+      <div class="search-bar">
+        <div class="search-wrap">
+          <input class="search-input" id="searchInput" type="text" placeholder="搜尋姓名、標籤、領域..." oninput="renderList()">
+        </div>
+      </div>
+      <div class="filter-chips" id="filterChips">
+        <button class="chip active" data-filter="" onclick="setFilter(this)">全部</button>
+        <button class="chip" data-filter="木" onclick="setFilter(this)">木</button>
+        <button class="chip" data-filter="火" onclick="setFilter(this)">火</button>
+        <button class="chip" data-filter="土" onclick="setFilter(this)">土</button>
+        <button class="chip" data-filter="金" onclick="setFilter(this)">金</button>
+        <button class="chip" data-filter="水" onclick="setFilter(this)">水</button>
+        <button class="chip" data-filter="相生" onclick="setFilter(this)">相生</button>
+        <button class="chip" data-filter="相剋" onclick="setFilter(this)">相剋</button>
+      </div>
+      <div class="contact-list" id="contactList"></div>
+    </div>
+
+    <!-- PAGE: DETAIL -->
+    <div class="page" id="pageDetail"></div>
+
+    <!-- PAGE: SETTINGS -->
+    <div class="page" id="pageSettings">
+      <div class="settings-group">
+        <div class="settings-group-title">我的命理</div>
+        <div id="selfSetupArea"></div>
+      </div>
+      <div class="settings-group">
+        <div class="settings-group-title">名片 OCR（Claude API）</div>
+        <div class="field">
+          <label>API Key</label>
+          <div class="api-key-field">
+            <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-...">
+            <button class="btn btn-sm btn-secondary" onclick="saveApiKey()">保存</button>
+          </div>
+          <div class="api-status" id="apiStatus"></div>
+        </div>
+        <div style="font-size:13px; color:var(--fg3); line-height:1.6; margin-top:8px">
+          需要 Anthropic API Key 才能使用名片拍照辨識功能。Key 只存在你的裝置中，不會傳到其他地方。
+        </div>
+      </div>
+      <div class="settings-group">
+        <div class="settings-group-title">資料管理</div>
+        <div class="settings-item">
+          <div>
+            <div class="si-label">匯出資料</div>
+            <div class="si-desc">下載 JSON 備份檔</div>
+          </div>
+          <button class="btn btn-sm btn-secondary si-action" onclick="exportData()">匯出</button>
+        </div>
+        <div class="settings-item">
+          <div>
+            <div class="si-label">匯入資料</div>
+            <div class="si-desc">從 JSON 檔還原</div>
+          </div>
+          <button class="btn btn-sm btn-secondary si-action" onclick="document.getElementById('importFile').click()">匯入</button>
+          <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+        </div>
+        <div class="settings-item">
+          <div>
+            <div class="si-label">清除所有資料</div>
+            <div class="si-desc">永久刪除所有人脈記錄</div>
+          </div>
+          <button class="btn btn-sm btn-danger si-action" onclick="clearAllData()">清除</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB BAR -->
+<div class="tab-bar">
+  <button class="tab active" data-tab="contacts" onclick="switchTab('contacts')">
+    <span class="tab-icon">☰</span>
+    <span>人脈</span>
+  </button>
+  <button class="tab" data-tab="settings" onclick="switchTab('settings')">
+    <span class="tab-icon">⚙</span>
+    <span>設定</span>
+  </button>
+</div>
+
+<button class="fab" onclick="openAddSheet()">+</button>
+
+<!-- QUICK ADD BAR -->
+<div class="quick-add-bar" id="quickAddBar">
+  <input type="text" id="qaName" placeholder="姓名">
+  <input type="text" id="qaBirth" placeholder="生日 如 19900315" style="width:140px; flex:none">
+  <button class="btn btn-sm btn-primary" onclick="quickSave()">存</button>
+  <button class="btn btn-sm btn-secondary" onclick="closeQuickAdd()">×</button>
+</div>
+
+<!-- ADD/EDIT SHEET -->
+<div class="sheet-overlay" id="addSheetOverlay" onclick="closeSheet()"></div>
+<div class="sheet" id="addSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-head">
+    <div class="sheet-title">
+      <span class="seal">記</span>
+      <span id="sheetTitle">新增人脈</span>
+    </div>
+    <button class="sheet-close" onclick="closeSheet()">×</button>
+  </div>
+  <div class="sheet-body">
+
+    <!-- CARD SCAN -->
+    <div class="scan-area" id="scanArea" onclick="triggerScan()">
+      <img class="scan-preview" id="scanPreview">
+      <div id="scanPrompt">
+        <div class="icon">📸</div>
+        <div class="text">拍攝或上傳名片</div>
+        <div class="sub">自動辨識姓名、電話、Email</div>
+      </div>
+      <input type="file" id="scanFile" accept="image/*" capture="environment" style="display:none" onchange="handleScan(event)">
+    </div>
+    <div class="scanning-indicator" id="scanningIndicator">
+      <span>辨識中</span><span class="dots"></span>
+    </div>
+    <div class="scan-result" id="scanResult">
+      <div class="sr-title">✓ 辨識結果（已自動填入）</div>
+      <div id="scanResultContent"></div>
+    </div>
+
+    <div class="section-label">基本資料</div>
+    <div class="row row-2">
+      <div class="field"><label>姓名 <span class="req">*</span></label><input type="text" id="fName"></div>
+      <div class="field"><label>暱稱</label><input type="text" id="fAlias"></div>
+    </div>
+    <div class="row row-2">
+      <div class="field"><label>電話</label><input type="tel" id="fPhone"></div>
+      <div class="field"><label>Email</label><input type="email" id="fEmail"></div>
+    </div>
+    <div class="row row-2">
+      <div class="field">
+        <label>身份</label>
+        <select id="fRole">
+          <option value="">未分類</option>
+          <option>客戶</option><option>同事</option><option>主管</option><option>下屬</option>
+          <option>合作夥伴</option><option>供應商</option><option>導師</option><option>朋友</option>
+          <option>同行</option><option>投資人</option>
+        </select>
+      </div>
+      <div class="field"><label>領域</label><input type="text" id="fField"></div>
+    </div>
+    <div class="field"><label>公司 / 組織</label><input type="text" id="fCompany"></div>
+    <div class="field"><label>認識方式</label><input type="text" id="fSource"></div>
+
+    <div class="section-label">命理資料</div>
+    <div class="method-tabs">
+      <button class="method-tab active" data-m="bazi" onclick="switchMethodTab('bazi')">八字</button>
+      <button class="method-tab" data-m="yijing" onclick="switchMethodTab('yijing')">數字易經</button>
+    </div>
+    <div id="fBaziArea">
+      <div class="row row-3">
+        <div class="field"><label>出生年</label><input type="number" id="fYear" placeholder="1990"></div>
+        <div class="field"><label>月</label><input type="number" id="fMonth" placeholder="1-12" min="1" max="12"></div>
+        <div class="field"><label>日</label><input type="number" id="fDay" placeholder="1-31" min="1" max="31"></div>
+      </div>
+      <div class="row row-2">
+        <div class="field"><label>時辰</label><input type="number" id="fHour" placeholder="0-23" min="0" max="23"></div>
+        <div class="field">
+          <label>性別</label>
+          <select id="fGender"><option value="">未填</option><option>男</option><option>女</option></select>
+        </div>
+      </div>
+    </div>
+    <div id="fYijingArea" style="display:none">
+      <div class="field">
+        <label>手機後四碼或生日數字</label>
+        <input type="text" id="fNumber" placeholder="例如 6824" maxlength="8">
+      </div>
+    </div>
+
+    <div class="section-label">主觀觀察</div>
+    <div class="field">
+      <label>信任度</label>
+      <div class="trust-row" id="fTrustRow">
+        <div class="trust-circle" data-t="1" onclick="setTrust(1)">1</div>
+        <div class="trust-circle" data-t="2" onclick="setTrust(2)">2</div>
+        <div class="trust-circle" data-t="3" onclick="setTrust(3)">3</div>
+        <div class="trust-circle" data-t="4" onclick="setTrust(4)">4</div>
+        <div class="trust-circle" data-t="5" onclick="setTrust(5)">5</div>
+      </div>
+    </div>
+    <div class="field">
+      <label>互動頻率</label>
+      <select id="fFreq">
+        <option value="">未填</option>
+        <option>每週</option><option>每月</option><option>每季</option><option>每年</option><option>少於每年</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>性格特質（逗號分隔）</label>
+      <input type="text" id="fTraits" placeholder="理性, 直接, 行動派">
+    </div>
+    <div class="field">
+      <label>筆記
+        <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()">🎤 語音輸入</button>
+      </label>
+      <textarea id="fNotes" placeholder="第一印象、合作經驗..."></textarea>
+    </div>
+  </div>
+  <div class="sheet-footer">
+    <button class="btn btn-secondary" onclick="closeSheet()">取消</button>
+    <button class="btn btn-primary" onclick="saveEntry()">保存</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// FORTUNE ENGINE (same logic, compact)
+// ============================================================
+const HS=['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
+const EB=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+const SE={甲:'木',乙:'木',丙:'火',丁:'火',戊:'土',己:'土',庚:'金',辛:'金',壬:'水',癸:'水'};
+const SYY={甲:'陽',乙:'陰',丙:'陽',丁:'陰',戊:'陽',己:'陰',庚:'陽',辛:'陰',壬:'陽',癸:'陰'};
+const BE={子:'水',丑:'土',寅:'木',卯:'木',辰:'土',巳:'火',午:'火',未:'土',申:'金',酉:'金',戌:'土',亥:'水'};
+const GEN={木:'火',火:'土',土:'金',金:'水',水:'木'};
+const OVR={木:'土',土:'水',水:'火',火:'金',金:'木'};
+
+function getSB(y,m,d,h){
+  const ys=(y-4)%10, yb=(y-4)%12;
+  const ms=((ys%5)*2+m+1)%10, mb=(m+1)%12;
+  const base=new Date(1900,0,1), target=new Date(y,m-1,d);
+  const dd=Math.floor((target-base)/(864e5));
+  const ds=(dd+10)%10, db=((dd%12)+12)%12;
+  let ts=-1,tb=-1;
+  if(h!==null&&h!==undefined&&h!==''){
+    const hh=parseInt(h);
+    tb=Math.floor((hh+1)/2)%12;
+    ts=((ds%5)*2+tb)%10;
+  }
+  return{
+    year:{s:HS[ys],b:EB[yb]},month:{s:HS[ms],b:EB[mb]},
+    day:{s:HS[ds],b:EB[db]},
+    hour:ts>=0?{s:HS[ts],b:EB[tb]}:null
+  };
+}
+
+function wuxingProfile(sb){
+  const c={木:0,火:0,土:0,金:0,水:0};
+  const as=s=>{if(s)c[SE[s]]++};
+  const ab=b=>{if(b)c[BE[b]]++};
+  as(sb.year.s);ab(sb.year.b);as(sb.month.s);ab(sb.month.b);
+  as(sb.day.s);ab(sb.day.b);
+  if(sb.hour){as(sb.hour.s);ab(sb.hour.b);}
+  const dm=SE[sb.day.s], dyy=SYY[sb.day.s];
+  const sorted=Object.entries(c).sort((a,b)=>b[1]-a[1]);
+  return{
+    counts:c,dayMaster:dm,dayMasterStem:sb.day.s,dayYinYang:dyy,
+    strongest:sorted[0][0],weakest:sorted[sorted.length-1][0],
+    missing:Object.entries(c).filter(([,v])=>v===0).map(([k])=>k)
+  };
+}
+
+function elemRel(my,their){
+  if(my===their)return{type:'同類',desc:'同氣相求'};
+  if(GEN[my]===their)return{type:'我生',desc:'你滋養對方'};
+  if(GEN[their]===my)return{type:'生我',desc:'對方滋養你'};
+  if(OVR[my]===their)return{type:'我剋',desc:'你能駕馭對方'};
+  if(OVR[their]===my)return{type:'剋我',desc:'對方制約你'};
+  return{type:'中性',desc:''};
+}
+
+const ET={
+  木:{traits:'有理想、正直、積極、有規劃力',style:'喜成長突破，討厭被限制'},
+  火:{traits:'熱情、有感染力、善表達、直率',style:'能點燃氛圍，情緒起伏明顯'},
+  土:{traits:'穩重、可靠、有耐心、重信用',style:'行動緩但紮實，重關係與承諾'},
+  金:{traits:'果斷、有原則、注重效率、邏輯強',style:'講求標準品質，較難妥協'},
+  水:{traits:'聰明、靈活、善溝通、適應力強',style:'能變通整合，但不易掌握真意'}
+};
+
+function suggestCoop(myP,theirP){
+  if(!myP||!theirP)return null;
+  const myE=myP.dayMaster||myP, theirE=theirP.dayMaster||theirP;
+  const rel=elemRel(typeof myE==='string'?myE:myE,typeof theirE==='string'?theirE:theirE);
+  let mode='',advice='',warning='';
+  switch(rel.type){
+    case '同類':mode='同志夥伴 · 並肩型';
+      advice=`同屬性，思維節奏接近，溝通無摩擦。適合共同創作、雙人合作。`;
+      warning='缺乏互補，遇瓶頸易卡住，需引入第三方視角。';break;
+    case '我生':mode='提攜培育 · 你是給予方';
+      advice=`你會自然想幫助對方，對方從你身上汲取養分。適合「導師-學徒」、「資深-新進」型關係。`;
+      warning='長期單向付出會耗損能量，確認對方能在其他面向回饋。';break;
+    case '生我':mode='貴人提攜 · 對方是給予方';
+      advice=`對方能給你資源、知識、靠山。適合做導師、投資人、介紹人。多向他學習請益。`;
+      warning='不要視為理所當然，需持續維護關係並在強項上回報。';break;
+    case '我剋':mode='主導駕馭 · 適合管理';
+      advice=`你能讓對方按你的方向走。適合「你主導、對方執行」，如下屬、外包、執行者。`;
+      warning='不要過度施壓，給予自主空間反而更能釋放對方能量。';break;
+    case '剋我':mode='受制衡 · 謹慎合作';
+      advice=`在這段關係裡你可能感到壓力或被挑戰。如果對方是上司、客戶，這能逼出你的成長。`;
+      warning='不適合長期合夥，短期專案或階段性合作為佳。';break;
+    default:mode='中性關係';advice='無明顯生剋，互動彈性大。';warning='';
+  }
+  let bonus='';
+  if(myP.missing&&myP.missing.includes(theirE)){
+    bonus=`對方的「${theirE}」正是你命盤所缺，能補你不足，往往帶來意想不到的機會。`;
+  }
+  return{mode,advice,warning,bonus,relation:rel};
+}
+
+const TRIGRAMS=[
+  {name:'坤',lines:[0,0,0],element:'土',meaning:'柔順、包容、承載'},
+  {name:'震',lines:[1,0,0],element:'木',meaning:'行動、突破、雷霆'},
+  {name:'坎',lines:[0,1,0],element:'水',meaning:'智慧、深思、流動'},
+  {name:'兌',lines:[1,1,0],element:'金',meaning:'喜悅、口才、和悅'},
+  {name:'艮',lines:[0,0,1],element:'土',meaning:'止靜、穩重、邊界'},
+  {name:'離',lines:[1,0,1],element:'火',meaning:'光明、外顯、智慧'},
+  {name:'巽',lines:[0,1,1],element:'木',meaning:'進退、柔順、影響力'},
+  {name:'乾',lines:[1,1,1],element:'金',meaning:'剛健、領導、創始'}
+];
+
+function getNumTrigram(s){
+  if(!s)return null;
+  const digits=String(s).replace(/\D/g,'').split('').map(Number);
+  if(!digits.length)return null;
+  return TRIGRAMS[digits.reduce((a,b)=>a+b,0)%8];
+}
+
+// ============================================================
+// IndexedDB STORAGE
+// ============================================================
+const DB_NAME='renmai_v2';
+const DB_VER=1;
+let db=null;
+
+function openDB(){
+  return new Promise((res,rej)=>{
+    const req=indexedDB.open(DB_NAME,DB_VER);
+    req.onupgradeneeded=e=>{
+      const d=e.target.result;
+      if(!d.objectStoreNames.contains('contacts'))d.createObjectStore('contacts',{keyPath:'id'});
+      if(!d.objectStoreNames.contains('meta'))d.createObjectStore('meta',{keyPath:'key'});
+    };
+    req.onsuccess=e=>{db=e.target.result;res(db);};
+    req.onerror=e=>rej(e);
+  });
+}
+
+function dbPut(store,data){
+  return new Promise((res,rej)=>{
+    const tx=db.transaction(store,'readwrite');
+    tx.objectStore(store).put(data);
+    tx.oncomplete=()=>res();
+    tx.onerror=e=>rej(e);
+  });
+}
+
+function dbGet(store,key){
+  return new Promise((res,rej)=>{
+    const tx=db.transaction(store,'readonly');
+    const req=tx.objectStore(store).get(key);
+    req.onsuccess=()=>res(req.result||null);
+    req.onerror=e=>rej(e);
+  });
+}
+
+function dbGetAll(store){
+  return new Promise((res,rej)=>{
+    const tx=db.transaction(store,'readonly');
+    const req=tx.objectStore(store).getAll();
+    req.onsuccess=()=>res(req.result||[]);
+    req.onerror=e=>rej(e);
+  });
+}
+
+function dbDelete(store,key){
+  return new Promise((res,rej)=>{
+    const tx=db.transaction(store,'readwrite');
+    tx.objectStore(store).delete(key);
+    tx.oncomplete=()=>res();
+    tx.onerror=e=>rej(e);
+  });
+}
+
+function dbClear(store){
+  return new Promise((res,rej)=>{
+    const tx=db.transaction(store,'readwrite');
+    tx.objectStore(store).clear();
+    tx.oncomplete=()=>res();
+    tx.onerror=e=>rej(e);
+  });
+}
+
+// ============================================================
+// APP STATE
+// ============================================================
+let contacts=[];
+let selfProfile=null;
+let editingId=null;
+let currentFilter='';
+let currentTrust=0;
+let currentMethod='bazi';
+let apiKey='';
+let recognition=null;
+let isRecording=false;
+
+// ============================================================
+// UI HELPERS
+// ============================================================
+const $=id=>document.getElementById(id);
+const esc=s=>s?String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])):'';
+
+function toast(msg){
+  const t=$('toast');t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+function switchTab(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===name));
+  if(name==='contacts'){
+    $('pageContacts').classList.add('active');
+    renderList();
+  } else if(name==='settings'){
+    $('pageSettings').classList.add('active');
+    renderSelfSetup();
+  }
+}
+
+function showDetailPage(){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  $('pageDetail').classList.add('active');
+}
+
+function setFilter(el){
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  currentFilter=el.dataset.filter;
+  renderList();
+}
+
+function setTrust(n){
+  currentTrust=currentTrust===n?0:n;
+  document.querySelectorAll('#fTrustRow .trust-circle').forEach((c,i)=>{
+    c.classList.toggle('on',i<currentTrust);
+  });
+}
+
+// ============================================================
+// RENDER CONTACT LIST
+// ============================================================
+function renderList(){
+  const q=$('searchInput').value.toLowerCase();
+  let list=contacts.filter(c=>{
+    if(q){
+      const hay=[c.name,c.alias,c.field,c.role,c.company,(c.traits||[]).join(','),c.notes,c.phone,c.email].join(' ').toLowerCase();
+      if(!hay.includes(q))return false;
+    }
+    if(currentFilter){
+      const elem=c.fortune?.profile?.dayMaster||c.fortune?.trigram?.element||'';
+      if(['木','火','土','金','水'].includes(currentFilter)){
+        if(elem!==currentFilter)return false;
+      }
+      if(currentFilter==='相生'){
+        const t=c.fortune?.cooperation?.relation?.type;
+        if(!['我生','生我'].includes(t))return false;
+      }
+      if(currentFilter==='相剋'){
+        const t=c.fortune?.cooperation?.relation?.type;
+        if(!['我剋','剋我'].includes(t))return false;
+      }
+    }
+    return true;
+  });
+
+  const el=$('contactList');
+  if(!list.length){
+    el.innerHTML=`<div class="empty-list">
+      <div class="big">☯</div>
+      <div class="t">${contacts.length?'沒有符合條件的人脈':'尚未記錄任何人脈'}</div>
+      <div class="d">${contacts.length?'Try adjusting your filters':'Tap + to begin'}</div>
+    </div>`;
+    return;
+  }
+
+  el.innerHTML=list.map(c=>{
+    const elem=c.fortune?.profile?.dayMaster||c.fortune?.trigram?.element||'';
+    const avatarClass=elem||'none';
+    const avatarText=elem||c.name.charAt(0);
+    const sub=[c.role,c.field,c.company].filter(Boolean).join(' · ');
+    const coopMode=c.fortune?.cooperation?.mode||'';
+    const trust=c.trust||0;
+    const dots=[1,2,3,4,5].map(i=>`<i class="${i<=trust?'on':''}"></i>`).join('');
+    return `<div class="contact-item" onclick="showDetail('${c.id}')">
+      <div class="ci-avatar ${avatarClass}">${esc(avatarText)}</div>
+      <div class="ci-body">
+        <div class="ci-name">${esc(c.name)}${c.alias?` · ${esc(c.alias)}`:''}</div>
+        ${sub?`<div class="ci-sub">${esc(sub)}</div>`:''}
+      </div>
+      <div class="ci-right">
+        ${coopMode?`<div class="ci-coop">${esc(coopMode.split('·')[0].trim())}</div>`:''}
+        <div class="ci-trust">${dots}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// DETAIL VIEW
+// ============================================================
+function showDetail(id){
+  const c=contacts.find(x=>x.id===id);
+  if(!c)return;
+  editingId=id;
+
+  const elem=c.fortune?.profile?.dayMaster||c.fortune?.trigram?.element||'';
+  const avatarClass=elem||'none';
+
+  let html=`<div class="detail-hero">
+    <div class="detail-avatar ci-avatar ${avatarClass}" style="width:72px;height:72px;font-size:28px;border-radius:18px">${esc(elem||c.name.charAt(0))}</div>
+    <div class="detail-name">${esc(c.name)}</div>
+    <div class="detail-sub">${[c.role,c.field,c.company].filter(Boolean).join(' · ')||'—'}</div>
+  </div>`;
+
+  // Contact info
+  if(c.phone||c.email){
+    html+=`<div class="detail-section"><div class="detail-section-title">聯絡方式</div><div class="detail-grid">`;
+    if(c.phone)html+=`<div class="dg-item"><div class="key">電話</div><div class="val"><a href="tel:${esc(c.phone)}" style="color:var(--fg);text-decoration:none">${esc(c.phone)}</a></div></div>`;
+    if(c.email)html+=`<div class="dg-item"><div class="key">Email</div><div class="val" style="font-size:13px;word-break:break-all"><a href="mailto:${esc(c.email)}" style="color:var(--fg);text-decoration:none">${esc(c.email)}</a></div></div>`;
+    html+=`</div></div>`;
+  }
+
+  // Fortune
+  if(c.fortune){
+    html+=`<div class="detail-section"><div class="detail-section-title">命理畫像</div>`;
+    if(c.fortune.method==='bazi'&&c.fortune.profile){
+      const p=c.fortune.profile,sb=c.fortune.stemBranch;
+      html+=`<div class="detail-grid">
+        <div class="dg-item"><div class="key">出生</div><div class="val">${c.birthYear}/${c.birthMonth}/${c.birthDay}</div></div>
+        <div class="dg-item"><div class="key">日主</div><div class="val">${sb.day.s}${sb.day.b} · ${p.dayMaster}${p.dayYinYang}</div></div>
+        <div class="dg-item"><div class="key">最強</div><div class="val">${p.strongest}</div></div>
+        <div class="dg-item"><div class="key">缺</div><div class="val">${p.missing.length?p.missing.join('、'):p.weakest+'(弱)'}</div></div>
+      </div>`;
+      const trait=ET[p.dayMaster];
+      html+=`<div class="coop-card" style="border-color:var(--bg4)"><div class="advice">${trait.traits}。<br>${trait.style}。</div></div>`;
+    }else if(c.fortune.method==='yijing'&&c.fortune.trigram){
+      const t=c.fortune.trigram;
+      html+=`<div class="detail-grid">
+        <div class="dg-item"><div class="key">數字</div><div class="val">${esc(c.number)}</div></div>
+        <div class="dg-item"><div class="key">本卦</div><div class="val">${t.name}卦 · ${t.element}</div></div>
+      </div>`;
+      html+=`<div class="hex-display">${[...t.lines].reverse().map(l=>`<div class="hex-line ${l===0?'broken':''}"></div>`).join('')}</div>`;
+      html+=`<div class="coop-card" style="border-color:var(--bg4)"><div class="advice"><strong>${t.name}卦</strong> — ${t.meaning}。</div></div>`;
+    }
+    html+=`</div>`;
+
+    if(c.fortune.cooperation){
+      const co=c.fortune.cooperation;
+      html+=`<div class="detail-section"><div class="detail-section-title">合作分析</div>
+        <div class="coop-card">
+          <div class="mode">${co.mode}</div>
+          <div class="advice">${co.advice}${co.bonus?`<br><br><strong>互補加分：</strong>${co.bonus}`:''}</div>
+          ${co.warning?`<div class="warning">⚠ ${co.warning}</div>`:''}
+        </div>
+      </div>`;
+    }
+  }
+
+  // Observations
+  if(c.trust||(c.traits&&c.traits.length)){
+    html+=`<div class="detail-section"><div class="detail-section-title">觀察</div>`;
+    if(c.trust){
+      const dots=[1,2,3,4,5].map(i=>`<i class="${i<=c.trust?'on':''}" style="width:10px;height:10px;border-radius:50%;background:${i<=c.trust?'var(--cinnabar)':'var(--bg4)'};display:inline-block"></i>`).join(' ');
+      html+=`<div style="margin-bottom:12px"><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--fg3)">信任度 </span>${dots}</div>`;
+    }
+    if(c.traits&&c.traits.length){
+      html+=`<div style="display:flex;flex-wrap:wrap;gap:6px">${c.traits.map(t=>`<span class="chip" style="font-size:12px;padding:6px 12px">${esc(t)}</span>`).join('')}</div>`;
+    }
+    html+=`</div>`;
+  }
+
+  if(c.notes){
+    html+=`<div class="detail-section"><div class="detail-section-title">筆記</div>
+      <div style="font-size:14px;line-height:1.8;color:var(--fg2);white-space:pre-wrap">${esc(c.notes)}</div>
+    </div>`;
+  }
+
+  if(c.source){
+    html+=`<div class="detail-section"><div style="font-size:13px;color:var(--fg3)">認識方式：${esc(c.source)}</div></div>`;
+  }
+
+  html+=`<div class="detail-actions">
+    <button class="btn btn-danger" onclick="deleteEntry('${c.id}')">移除</button>
+    <button class="btn btn-secondary" onclick="switchTab('contacts')">返回</button>
+    <button class="btn btn-primary" onclick="editEntry('${c.id}')">編輯</button>
+  </div>`;
+
+  $('pageDetail').innerHTML=html;
+  showDetailPage();
+}
+
+// ============================================================
+// ADD/EDIT SHEET
+// ============================================================
+function openAddSheet(){
+  editingId=null;
+  $('sheetTitle').textContent='新增人脈';
+  clearForm();
+  openSheet();
+}
+
+function editEntry(id){
+  const c=contacts.find(x=>x.id===id);
+  if(!c)return;
+  editingId=id;
+  $('sheetTitle').textContent='編輯';
+  $('fName').value=c.name||'';
+  $('fAlias').value=c.alias||'';
+  $('fPhone').value=c.phone||'';
+  $('fEmail').value=c.email||'';
+  $('fRole').value=c.role||'';
+  $('fField').value=c.field||'';
+  $('fCompany').value=c.company||'';
+  $('fSource').value=c.source||'';
+  $('fYear').value=c.birthYear||'';
+  $('fMonth').value=c.birthMonth||'';
+  $('fDay').value=c.birthDay||'';
+  $('fHour').value=c.birthHour??'';
+  $('fGender').value=c.gender||'';
+  $('fNumber').value=c.number||'';
+  $('fFreq').value=c.frequency||'';
+  $('fTraits').value=(c.traits||[]).join(', ');
+  $('fNotes').value=c.notes||'';
+  switchMethodTab(c.fortune?.method||'bazi');
+  currentTrust=c.trust||0;
+  updateTrustUI();
+  openSheet();
+}
+
+function clearForm(){
+  ['fName','fAlias','fPhone','fEmail','fField','fCompany','fSource','fYear','fMonth','fDay','fHour','fNumber','fTraits','fNotes'].forEach(id=>{$(id).value='';});
+  $('fRole').value='';$('fGender').value='';$('fFreq').value='';
+  currentTrust=0;updateTrustUI();
+  switchMethodTab('bazi');
+  $('scanPreview').style.display='none';
+  $('scanPrompt').style.display='block';
+  $('scanResult').style.display='none';
+  $('scanningIndicator').style.display='none';
+}
+
+function updateTrustUI(){
+  document.querySelectorAll('#fTrustRow .trust-circle').forEach((c,i)=>c.classList.toggle('on',i<currentTrust));
+}
+
+function switchMethodTab(m){
+  currentMethod=m;
+  document.querySelectorAll('.method-tab').forEach(t=>t.classList.toggle('active',t.dataset.m===m));
+  $('fBaziArea').style.display=m==='bazi'?'block':'none';
+  $('fYijingArea').style.display=m==='yijing'?'block':'none';
+}
+
+function openSheet(){
+  $('addSheetOverlay').classList.add('active');
+  requestAnimationFrame(()=>$('addSheet').classList.add('open'));
+}
+
+function closeSheet(){
+  $('addSheet').classList.remove('open');
+  setTimeout(()=>$('addSheetOverlay').classList.remove('active'),350);
+}
+
+async function saveEntry(){
+  const name=$('fName').value.trim();
+  if(!name){toast('請輸入姓名');return;}
+
+  const contact={
+    id:editingId||('c_'+Date.now()+'_'+Math.random().toString(36).slice(2,8)),
+    name,
+    alias:$('fAlias').value.trim(),
+    phone:$('fPhone').value.trim(),
+    email:$('fEmail').value.trim(),
+    role:$('fRole').value,
+    field:$('fField').value.trim(),
+    company:$('fCompany').value.trim(),
+    source:$('fSource').value.trim(),
+    gender:$('fGender').value,
+    frequency:$('fFreq').value,
+    traits:$('fTraits').value.split(/[,，]/).map(s=>s.trim()).filter(Boolean),
+    notes:$('fNotes').value.trim(),
+    trust:currentTrust,
+    createdAt:editingId?(contacts.find(c=>c.id===editingId)?.createdAt||Date.now()):Date.now(),
+    updatedAt:Date.now()
+  };
+
+  // Fortune calc
+  if(currentMethod==='bazi'){
+    const y=parseInt($('fYear').value),m=parseInt($('fMonth').value),d=parseInt($('fDay').value);
+    const h=$('fHour').value;
+    if(y&&m&&d){
+      contact.birthYear=y;contact.birthMonth=m;contact.birthDay=d;
+      contact.birthHour=h===''?null:parseInt(h);
+      const sb=getSB(y,m,d,contact.birthHour);
+      const profile=wuxingProfile(sb);
+      contact.fortune={method:'bazi',stemBranch:sb,profile,
+        cooperation:selfProfile?suggestCoop(selfProfile.fortune.profile,profile):null
+      };
+    }
+  }else{
+    const num=$('fNumber').value.trim();
+    if(num){
+      contact.number=num;
+      const tri=getNumTrigram(num);
+      if(tri){
+        contact.fortune={method:'yijing',trigram:tri,
+          cooperation:selfProfile?suggestCoop(selfProfile.fortune.profile,{dayMaster:tri.element,missing:[]}):null
+        };
+      }
+    }
+  }
+
+  await dbPut('contacts',contact);
+  const idx=contacts.findIndex(c=>c.id===contact.id);
+  if(idx>=0)contacts[idx]=contact;else contacts.push(contact);
+  closeSheet();
+  renderList();
+  toast(editingId?'已更新':'已新增');
+}
+
+async function deleteEntry(id){
+  if(!confirm('確定要移除？'))return;
+  await dbDelete('contacts',id);
+  contacts=contacts.filter(c=>c.id!==id);
+  switchTab('contacts');
+  toast('已移除');
+}
+
+// ============================================================
+// QUICK ADD
+// ============================================================
+function openQuickAdd(){
+  $('quickAddBar').classList.add('active');
+  $('qaName').focus();
+  document.querySelector('.fab').style.display='none';
+}
+
+function closeQuickAdd(){
+  $('quickAddBar').classList.remove('active');
+  $('qaName').value='';$('qaBirth').value='';
+  document.querySelector('.fab').style.display='flex';
+}
+
+async function quickSave(){
+  const name=$('qaName').value.trim();
+  if(!name){toast('請輸入姓名');return;}
+  const birth=$('qaBirth').value.trim();
+  const contact={
+    id:'c_'+Date.now()+'_'+Math.random().toString(36).slice(2,8),
+    name,alias:'',phone:'',email:'',role:'',field:'',company:'',source:'',
+    gender:'',frequency:'',traits:[],notes:'',trust:0,
+    createdAt:Date.now(),updatedAt:Date.now()
+  };
+  // Parse birth
+  if(birth){
+    let y,m,d;
+    if(birth.length===8){y=parseInt(birth.slice(0,4));m=parseInt(birth.slice(4,6));d=parseInt(birth.slice(6,8));}
+    else if(birth.length===6){y=parseInt('19'+birth.slice(0,2));m=parseInt(birth.slice(2,4));d=parseInt(birth.slice(4,6));}
+    if(y&&m&&d){
+      contact.birthYear=y;contact.birthMonth=m;contact.birthDay=d;contact.birthHour=null;
+      const sb=getSB(y,m,d,null);
+      const profile=wuxingProfile(sb);
+      contact.fortune={method:'bazi',stemBranch:sb,profile,
+        cooperation:selfProfile?suggestCoop(selfProfile.fortune.profile,profile):null
+      };
+    }
+  }
+  await dbPut('contacts',contact);
+  contacts.push(contact);
+  $('qaName').value='';$('qaBirth').value='';
+  renderList();
+  toast('快速新增：'+name);
+}
+
+// ============================================================
+// CARD OCR (Claude API Vision)
+// ============================================================
+function triggerScan(){
+  if(!apiKey){toast('請先在設定頁填入 API Key');return;}
+  $('scanFile').click();
+}
+
+async function handleScan(e){
+  const file=e.target.files[0];
+  if(!file)return;
+  // Show preview
+  const url=URL.createObjectURL(file);
+  $('scanPreview').src=url;
+  $('scanPreview').style.display='block';
+  $('scanPrompt').style.display='none';
+  $('scanningIndicator').style.display='block';
+  $('scanResult').style.display='none';
+
+  // Convert to base64
+  const b64=await new Promise((res)=>{
+    const r=new FileReader();
+    r.onload=()=>res(r.result.split(',')[1]);
+    r.readAsDataURL(file);
+  });
+
+  const mediaType=file.type||'image/jpeg';
+
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        messages:[{role:'user',content:[
+          {type:'image',source:{type:'base64',media_type:mediaType,data:b64}},
+          {type:'text',text:'這是一張名片。請辨識上面的資訊並以 JSON 格式回傳，只回傳 JSON，不要任何其他文字。格式：{"name":"姓名","phone":"電話","email":"email","company":"公司","title":"職稱","address":"地址"}。如果某欄位辨識不到就留空字串。'}
+        ]}]
+      })
+    });
+
+    const data=await resp.json();
+    $('scanningIndicator').style.display='none';
+
+    if(data.error){
+      toast('API 錯誤：'+data.error.message);
+      return;
+    }
+
+    const text=data.content.map(c=>c.text||'').join('');
+    const clean=text.replace(/```json|```/g,'').trim();
+    const parsed=JSON.parse(clean);
+
+    // Fill form
+    if(parsed.name)$('fName').value=parsed.name;
+    if(parsed.phone)$('fPhone').value=parsed.phone;
+    if(parsed.email)$('fEmail').value=parsed.email;
+    if(parsed.company)$('fCompany').value=parsed.company;
+    if(parsed.title){
+      // Map title to role if possible
+      const titleLower=(parsed.title||'').toLowerCase();
+      const roleMap={'執行長':'主管','總經理':'主管','經理':'主管','director':'主管','manager':'主管','engineer':'同事','設計':'同事'};
+      for(const[k,v]of Object.entries(roleMap)){
+        if(titleLower.includes(k)){$('fRole').value=v;break;}
+      }
+      // Also put title in field
+      $('fField').value=parsed.title;
+    }
+
+    // Show scan result
+    $('scanResult').style.display='block';
+    let resultHtml='';
+    const labels={name:'姓名',phone:'電話',email:'Email',company:'公司',title:'職稱',address:'地址'};
+    for(const[k,v]of Object.entries(parsed)){
+      if(v)resultHtml+=`<div class="sr-item"><span class="sr-key">${labels[k]||k}</span><span>${esc(v)}</span></div>`;
+    }
+    $('scanResultContent').innerHTML=resultHtml;
+
+  }catch(err){
+    $('scanningIndicator').style.display='none';
+    toast('辨識失敗：'+err.message);
+  }
+
+  e.target.value='';
+}
+
+// ============================================================
+// VOICE INPUT
+// ============================================================
+function toggleVoice(){
+  if(!('webkitSpeechRecognition' in window)&&!('SpeechRecognition' in window)){
+    toast('此瀏覽器不支援語音輸入');return;
+  }
+  const btn=$('voiceBtn');
+  if(isRecording){
+    recognition.stop();
+    isRecording=false;
+    btn.classList.remove('recording');
+    btn.innerHTML='🎤 語音輸入';
+    return;
+  }
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  recognition=new SR();
+  recognition.lang='zh-TW';
+  recognition.continuous=true;
+  recognition.interimResults=true;
+
+  recognition.onresult=(e)=>{
+    let final='',interim='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      if(e.results[i].isFinal)final+=e.results[i][0].transcript;
+      else interim+=e.results[i][0].transcript;
+    }
+    if(final){
+      const ta=$('fNotes');
+      ta.value+=(ta.value?'\n':'')+final;
+    }
+  };
+
+  recognition.onerror=(e)=>{
+    isRecording=false;
+    btn.classList.remove('recording');
+    btn.innerHTML='🎤 語音輸入';
+    if(e.error!=='aborted')toast('語音錯誤：'+e.error);
+  };
+
+  recognition.onend=()=>{
+    if(isRecording){recognition.start();}
+    else{btn.classList.remove('recording');btn.innerHTML='🎤 語音輸入';}
+  };
+
+  recognition.start();
+  isRecording=true;
+  btn.classList.add('recording');
+  btn.innerHTML='⏹ 停止錄音';
+}
+
+// ============================================================
+// SELF PROFILE (settings)
+// ============================================================
+function renderSelfSetup(){
+  const area=$('selfSetupArea');
+  if(selfProfile&&selfProfile.fortune){
+    const p=selfProfile.fortune.profile;
+    const sb=selfProfile.fortune.stemBranch;
+    area.innerHTML=`
+      <div style="background:var(--bg);padding:16px;border-radius:12px;margin-bottom:16px">
+        <div style="font-size:13px;color:var(--fg3);font-family:'DM Mono',monospace;margin-bottom:6px">我的日主</div>
+        <div style="font-size:22px;font-weight:700">${sb.day.s}${sb.day.b} · ${p.dayMaster}${p.dayYinYang}</div>
+        <div style="font-size:13px;color:var(--fg2);margin-top:4px">最強：${p.strongest}${p.missing.length?' · 缺：'+p.missing.join('、'):''}</div>
+      </div>
+      <button class="btn btn-secondary" style="width:100%" onclick="editSelf()">重新設定</button>`;
+  }else{
+    area.innerHTML=`
+      <div style="text-align:center;padding:20px 0;color:var(--fg3)">
+        <div style="font-size:32px;margin-bottom:8px">☯</div>
+        <div>設定後才能看到合作分析</div>
+      </div>
+      <button class="btn btn-primary" style="width:100%" onclick="editSelf()">設定我的命理</button>`;
+  }
+}
+
+function editSelf(){
+  // Use a simple prompt approach for mobile
+  const y=prompt('出生年（西元）',selfProfile?.year||'');
+  if(!y)return;
+  const m=prompt('出生月（1-12）',selfProfile?.month||'');
+  if(!m)return;
+  const d=prompt('出生日（1-31）',selfProfile?.day||'');
+  if(!d)return;
+  const h=prompt('出生時（0-23，不確定留空）',selfProfile?.hour??'');
+
+  const year=parseInt(y),month=parseInt(m),day=parseInt(d);
+  if(!year||!month||!day){toast('格式有誤');return;}
+  const hour=h===''||h===null?null:parseInt(h);
+
+  const sb=getSB(year,month,day,hour);
+  const profile=wuxingProfile(sb);
+
+  selfProfile={year,month,day,hour,fortune:{stemBranch:sb,profile}};
+  dbPut('meta',{key:'self',data:selfProfile});
+
+  // Recalculate all contacts
+  contacts.forEach(c=>{
+    if(c.fortune){
+      if(c.fortune.method==='bazi'&&c.fortune.profile){
+        c.fortune.cooperation=suggestCoop(selfProfile.fortune.profile,c.fortune.profile);
+      }else if(c.fortune.method==='yijing'&&c.fortune.trigram){
+        c.fortune.cooperation=suggestCoop(selfProfile.fortune.profile,{dayMaster:c.fortune.trigram.element,missing:[]});
+      }
+      dbPut('contacts',c);
+    }
+  });
+
+  renderSelfSetup();
+  renderList();
+  toast('已保存命理資料，合作分析已更新');
+}
+
+// ============================================================
+// API KEY
+// ============================================================
+function saveApiKey(){
+  apiKey=$('apiKeyInput').value.trim();
+  if(apiKey){
+    dbPut('meta',{key:'apiKey',data:apiKey});
+    $('apiStatus').className='api-status ok';
+    $('apiStatus').textContent='✓ 已保存';
+    toast('API Key 已保存');
+  }else{
+    $('apiStatus').className='api-status err';
+    $('apiStatus').textContent='請輸入有效的 Key';
+  }
+}
+
+// ============================================================
+// EXPORT / IMPORT
+// ============================================================
+function exportData(){
+  const data={
+    version:2,
+    exportedAt:new Date().toISOString(),
+    selfProfile,
+    contacts
+  };
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='renmai_backup_'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('匯出成功');
+}
+
+async function importData(e){
+  const file=e.target.files[0];
+  if(!file)return;
+  try{
+    const text=await file.text();
+    const data=JSON.parse(text);
+    if(!data.contacts){toast('無效的備份檔');return;}
+    if(!confirm(`將匯入 ${data.contacts.length} 筆人脈，是否繼續？`))return;
+
+    // Import self
+    if(data.selfProfile){
+      selfProfile=data.selfProfile;
+      await dbPut('meta',{key:'self',data:selfProfile});
+    }
+
+    // Import contacts
+    for(const c of data.contacts){
+      await dbPut('contacts',c);
+      const idx=contacts.findIndex(x=>x.id===c.id);
+      if(idx>=0)contacts[idx]=c;else contacts.push(c);
+    }
+
+    renderList();
+    renderSelfSetup();
+    toast(`已匯入 ${data.contacts.length} 筆`);
+  }catch(err){
+    toast('匯入失敗：'+err.message);
+  }
+  e.target.value='';
+}
+
+async function clearAllData(){
+  if(!confirm('確定要清除所有資料？此操作無法復原。'))return;
+  if(!confirm('再次確認：所有人脈和設定都會永久刪除。'))return;
+  await dbClear('contacts');
+  await dbClear('meta');
+  contacts=[];selfProfile=null;apiKey='';
+  renderList();renderSelfSetup();
+  toast('已清除所有資料');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+(async function init(){
+  await openDB();
+  contacts=await dbGetAll('contacts');
+  const selfData=await dbGet('meta','self');
+  if(selfData)selfProfile=selfData.data;
+  const keyData=await dbGet('meta','apiKey');
+  if(keyData){apiKey=keyData.data;$('apiKeyInput').value=apiKey;$('apiStatus').className='api-status ok';$('apiStatus').textContent='✓ 已設定';}
+  renderList();
+  renderSelfSetup();
+})();
+</script>
+</body>
+</html>

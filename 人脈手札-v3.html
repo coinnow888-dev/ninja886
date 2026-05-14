@@ -1,0 +1,2399 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#121018">
+<title>人脈手札</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;700;900&family=DM+Mono:wght@400;500&family=Cinzel:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+/* ============================
+   THEME SYSTEM
+   ============================ */
+:root {
+  /* East theme (default) */
+  --bg: #1a1310;
+  --bg2: #231e1a;
+  --bg3: #2e2722;
+  --bg4: #3a322c;
+  --fg: #e8e0d4;
+  --fg2: #b8ae9e;
+  --fg3: #8a7e70;
+  --accent: #c43b3b;
+  --accent-glow: rgba(196,59,59,0.25);
+  --accent2: #c9a84c;
+  --accent2-dim: rgba(201,168,76,0.15);
+  --elem1: #5a9a6a; /* 木/Earth */
+  --elem2: #c43b3b; /* 火/Fire */
+  --elem3: #c9a84c; /* 土/Air */
+  --elem4: #b0a898; /* 金/Water */
+  --elem5: #4a82b0; /* 水 */
+  --serif: 'Noto Serif TC', 'Georgia', serif;
+  --display: 'Noto Serif TC', serif;
+  --mono: 'DM Mono', monospace;
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-t: env(safe-area-inset-top, 0px);
+  --tab-h: 64px;
+}
+
+[data-theme="west"] {
+  --bg: #0c0a14;
+  --bg2: #151222;
+  --bg3: #1e1a30;
+  --bg4: #2a2540;
+  --fg: #e4e0f0;
+  --fg2: #a8a0c0;
+  --fg3: #6e6888;
+  --accent: #8b6cc7;
+  --accent-glow: rgba(139,108,199,0.25);
+  --accent2: #d4a843;
+  --accent2-dim: rgba(212,168,67,0.15);
+  --elem1: #c74545; /* Fire */
+  --elem2: #8b9a5a; /* Earth */
+  --elem3: #5a8ab0; /* Air */
+  --elem4: #4a82b0; /* Water */
+  --elem5: #8b6cc7;
+  --display: 'Cinzel', serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; }
+
+body {
+  font-family: var(--serif);
+  background: var(--bg);
+  color: var(--fg);
+  overscroll-behavior: none;
+  transition: background 0.5s, color 0.5s;
+}
+
+/* ============================
+   ONBOARDING
+   ============================ */
+.onboarding {
+  position: fixed; inset: 0;
+  z-index: 999;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  background: #0a0a0a;
+  overflow: hidden;
+  animation: obFadeIn 0.6s ease;
+}
+
+@keyframes obFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.onboarding.hiding {
+  animation: obFadeOut 0.6s ease forwards;
+}
+
+@keyframes obFadeOut { from { opacity: 1; } to { opacity: 0; } }
+
+.ob-bg {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at 25% 50%, rgba(196,59,59,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 75% 50%, rgba(139,108,199,0.08) 0%, transparent 50%);
+}
+
+.ob-content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 40px 24px;
+  max-width: 420px;
+  width: 100%;
+}
+
+.ob-title {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 32px;
+  font-weight: 900;
+  color: #e8e0d4;
+  letter-spacing: 0.1em;
+  margin-bottom: 8px;
+  animation: obSlide 0.8s cubic-bezier(0.16,1,0.3,1) 0.2s both;
+}
+
+@keyframes obSlide { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+.ob-sub {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 15px;
+  color: #8a7e70;
+  margin-bottom: 48px;
+  letter-spacing: 0.15em;
+  animation: obSlide 0.8s cubic-bezier(0.16,1,0.3,1) 0.4s both;
+}
+
+.ob-choices {
+  display: flex;
+  gap: 16px;
+  animation: obSlide 0.8s cubic-bezier(0.16,1,0.3,1) 0.6s both;
+}
+
+.ob-choice {
+  flex: 1;
+  padding: 28px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+  border: 2px solid transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.ob-choice::before {
+  content: '';
+  position: absolute; inset: 0;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.ob-choice:active { transform: scale(0.96); }
+
+.ob-east {
+  background: linear-gradient(160deg, #1a1310 0%, #2a1f18 100%);
+  border-color: #3a322c;
+}
+
+.ob-east::before {
+  background: linear-gradient(160deg, rgba(196,59,59,0.1) 0%, rgba(201,168,76,0.05) 100%);
+}
+
+.ob-east:active::before, .ob-east:hover::before { opacity: 1; }
+
+.ob-west {
+  background: linear-gradient(160deg, #0c0a14 0%, #1a1530 100%);
+  border-color: #2a2540;
+}
+
+.ob-west::before {
+  background: linear-gradient(160deg, rgba(139,108,199,0.1) 0%, rgba(212,168,67,0.05) 100%);
+}
+
+.ob-west:active::before, .ob-west:hover::before { opacity: 1; }
+
+.ob-choice:active {
+  border-color: var(--accent, #c43b3b);
+}
+
+.ob-icon {
+  font-size: 42px;
+  margin-bottom: 14px;
+  display: block;
+  position: relative;
+  z-index: 1;
+}
+
+.ob-choice-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  position: relative;
+  z-index: 1;
+}
+
+.ob-east .ob-choice-title {
+  font-family: 'Noto Serif TC', serif;
+  color: #e8e0d4;
+}
+
+.ob-west .ob-choice-title {
+  font-family: 'Cinzel', serif;
+  color: #e4e0f0;
+}
+
+.ob-choice-desc {
+  font-size: 12px;
+  line-height: 1.5;
+  position: relative;
+  z-index: 1;
+}
+
+.ob-east .ob-choice-desc { color: #8a7e70; }
+.ob-west .ob-choice-desc { color: #6e6888; }
+
+.ob-choice-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: center;
+  margin-top: 12px;
+  position: relative;
+  z-index: 1;
+}
+
+.ob-tag {
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-family: 'DM Mono', monospace;
+}
+
+.ob-east .ob-tag { background: rgba(196,59,59,0.15); color: #c43b3b; }
+.ob-west .ob-tag { background: rgba(139,108,199,0.15); color: #8b6cc7; }
+
+.ob-footer {
+  margin-top: 32px;
+  font-size: 12px;
+  color: #555;
+  font-family: 'DM Mono', monospace;
+  animation: obSlide 0.8s cubic-bezier(0.16,1,0.3,1) 0.8s both;
+}
+
+/* ============================
+   APP SHELL
+   ============================ */
+.app {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  display: none;
+}
+
+.app.visible { display: flex; }
+
+.app-header {
+  padding: calc(var(--safe-t) + 12px) 20px 12px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--bg3);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+  z-index: 10;
+  transition: background 0.5s;
+}
+
+.app-brand { display: flex; align-items: center; gap: 12px; }
+
+.app-seal {
+  width: 36px; height: 36px;
+  background: var(--accent);
+  color: var(--fg);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 900;
+  transform: rotate(-3deg);
+  border-radius: 4px;
+  transition: background 0.5s;
+}
+
+.app-title {
+  font-family: var(--display);
+  font-size: 22px; font-weight: 900;
+  letter-spacing: 0.06em;
+  transition: font-family 0.3s;
+}
+
+.app-actions { display: flex; gap: 8px; }
+
+.icon-btn {
+  width: 40px; height: 40px;
+  background: var(--bg2);
+  border: 1px solid var(--bg4);
+  color: var(--fg2);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.icon-btn:active { background: var(--bg4); transform: scale(0.92); }
+
+.app-content {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: calc(var(--tab-h) + var(--safe-b) + 80px);
+}
+
+/* ============================
+   BOTTOM TABS
+   ============================ */
+.tab-bar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: calc(var(--tab-h) + var(--safe-b));
+  padding-bottom: var(--safe-b);
+  background: var(--bg);
+  border-top: 1px solid var(--bg3);
+  display: flex;
+  z-index: 50;
+  transition: background 0.5s;
+}
+
+.tab {
+  flex: 1;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 4px;
+  color: var(--fg3);
+  font-size: 10px;
+  cursor: pointer;
+  transition: color 0.15s;
+  border: none; background: transparent;
+  font-family: var(--mono);
+}
+
+.tab .tab-icon { font-size: 22px; }
+.tab.active { color: var(--accent); }
+
+.fab {
+  position: fixed;
+  bottom: calc(var(--tab-h) + var(--safe-b) + 16px);
+  right: 20px;
+  width: 60px; height: 60px;
+  background: var(--accent);
+  color: var(--fg);
+  border: none; border-radius: 16px;
+  font-size: 28px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 20px var(--accent-glow), 0 2px 8px rgba(0,0,0,0.4);
+  z-index: 51;
+  transition: all 0.2s;
+}
+
+.fab:active { transform: scale(0.9); }
+
+/* ============================
+   PAGES
+   ============================ */
+.page { display: none; }
+.page.active { display: block; }
+
+.search-bar {
+  padding: 16px 20px 8px;
+  position: sticky; top: 0;
+  background: var(--bg);
+  z-index: 5;
+}
+
+.search-input {
+  width: 100%;
+  padding: 14px 16px 14px 42px;
+  background: var(--bg2);
+  border: 1px solid var(--bg4);
+  border-radius: 12px;
+  color: var(--fg);
+  font-family: var(--serif);
+  font-size: 15px;
+  outline: none;
+}
+
+.search-input::placeholder { color: var(--fg3); }
+.search-input:focus { border-color: var(--accent); }
+
+.search-wrap { position: relative; }
+.search-wrap::before {
+  content: '⌕'; position: absolute;
+  left: 14px; top: 50%; transform: translateY(-50%);
+  font-size: 18px; color: var(--fg3);
+}
+
+.filter-chips {
+  display: flex; gap: 8px;
+  padding: 12px 20px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.filter-chips::-webkit-scrollbar { display: none; }
+
+.chip {
+  flex-shrink: 0;
+  padding: 8px 16px;
+  background: var(--bg2);
+  border: 1px solid var(--bg4);
+  border-radius: 20px;
+  color: var(--fg2);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: var(--serif);
+}
+
+.chip.active { background: var(--accent); border-color: var(--accent); color: var(--fg); }
+
+.contact-list { padding: 0 16px; }
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  margin-bottom: 8px;
+  background: var(--bg2);
+  border: 1px solid var(--bg3);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+
+.contact-item::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--accent);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.contact-item:active { background: var(--bg3); }
+.contact-item:active::before { opacity: 1; }
+
+.ci-avatar {
+  width: 48px; height: 48px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 900;
+  flex-shrink: 0;
+}
+
+.ci-body { flex: 1; min-width: 0; }
+
+.ci-name {
+  font-size: 17px; font-weight: 700;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.ci-sub {
+  font-size: 12px; color: var(--fg3);
+  margin-top: 3px;
+  font-family: var(--mono);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.ci-right { text-align: right; flex-shrink: 0; }
+
+.ci-coop { font-size: 11px; color: var(--accent2); font-weight: 500; }
+
+.ci-trust { display: flex; gap: 2px; margin-top: 6px; justify-content: flex-end; }
+.ci-trust i { width: 6px; height: 6px; border-radius: 50%; background: var(--bg4); }
+.ci-trust i.on { background: var(--accent); }
+
+.empty-list { padding: 60px 20px; text-align: center; color: var(--fg3); }
+.empty-list .big { font-size: 48px; opacity: 0.3; margin-bottom: 16px; }
+.empty-list .t { font-size: 18px; font-weight: 700; color: var(--fg2); margin-bottom: 8px; }
+
+/* Avatar colors */
+.av-fire { background: rgba(199,69,69,0.2); color: #c74545; }
+.av-earth { background: rgba(170,150,80,0.18); color: #c9a84c; }
+.av-air { background: rgba(90,138,176,0.18); color: #5a8ab0; }
+.av-water { background: rgba(74,130,176,0.2); color: #4a82b0; }
+.av-wood { background: rgba(90,154,106,0.2); color: #5a9a6a; }
+.av-metal { background: rgba(180,170,155,0.15); color: #b0a898; }
+.av-none { background: var(--bg3); color: var(--fg3); }
+
+/* ============================
+   BOTTOM SHEET
+   ============================ */
+.sheet-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 100;
+}
+
+.sheet-overlay.active { display: block; }
+
+.sheet {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  max-height: 95vh;
+  background: var(--bg2);
+  border-radius: 20px 20px 0 0;
+  z-index: 101;
+  display: flex; flex-direction: column;
+  transform: translateY(100%);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  padding-bottom: var(--safe-b);
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.sheet.open { transform: translateY(0); pointer-events: auto; visibility: visible; }
+
+.sheet-handle {
+  width: 36px; height: 4px;
+  background: var(--bg4);
+  border-radius: 2px;
+  margin: 10px auto 0;
+}
+
+.sheet-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--bg3);
+}
+
+.sheet-title {
+  font-family: var(--display);
+  font-size: 20px; font-weight: 700;
+  display: flex; align-items: center; gap: 10px;
+}
+
+.sheet-title .seal {
+  width: 28px; height: 28px;
+  background: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 900;
+  transform: rotate(-3deg);
+  border-radius: 3px;
+}
+
+.sheet-close {
+  width: 36px; height: 36px;
+  background: var(--bg3);
+  border: none; border-radius: 50%;
+  color: var(--fg2);
+  font-size: 18px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.sheet-body {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 20px;
+}
+
+.sheet-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--bg3);
+  display: flex; gap: 12px;
+}
+
+.sheet-footer .btn { flex: 1; }
+
+/* ============================
+   FORMS
+   ============================ */
+.field { margin-bottom: 16px; }
+
+.field label {
+  display: block;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--fg3);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.field label .req { color: var(--accent); }
+
+.field input, .field select, .field textarea {
+  width: 100%;
+  padding: 14px 16px;
+  background: var(--bg);
+  border: 1px solid var(--bg4);
+  border-radius: 10px;
+  color: var(--fg);
+  font-family: var(--serif);
+  font-size: 16px;
+  outline: none;
+  -webkit-appearance: none;
+  transition: border-color 0.15s;
+}
+
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
+.field textarea { min-height: 80px; resize: vertical; }
+
+.field select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%238a7e70' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+}
+
+.row { display: grid; gap: 12px; }
+.row-2 { grid-template-columns: 1fr 1fr; }
+.row-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+.section-label {
+  font-size: 14px; font-weight: 700;
+  color: var(--accent);
+  margin: 24px 0 14px;
+  display: flex; align-items: center; gap: 10px;
+}
+
+.section-label::before { content: ''; width: 3px; height: 14px; background: var(--accent); border-radius: 1px; }
+
+.method-tabs {
+  display: flex;
+  background: var(--bg);
+  border-radius: 10px;
+  padding: 3px;
+  margin-bottom: 14px;
+}
+
+.method-tab {
+  flex: 1; padding: 10px;
+  background: transparent;
+  border: none; border-radius: 8px;
+  color: var(--fg3);
+  font-family: var(--serif);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.method-tab.active { background: var(--accent); color: var(--fg); }
+
+.trust-row { display: flex; gap: 8px; padding: 8px 0; }
+
+.trust-circle {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: 2px solid var(--bg4);
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px;
+  color: transparent;
+}
+
+.trust-circle.on { border-color: var(--accent); background: var(--accent-glow); color: var(--accent); }
+
+.btn {
+  padding: 16px 24px;
+  border: none;
+  border-radius: 12px;
+  font-family: var(--serif);
+  font-size: 15px; font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+}
+
+.btn:active { transform: scale(0.96); }
+.btn-primary { background: var(--accent); color: var(--fg); }
+.btn-secondary { background: var(--bg3); color: var(--fg2); }
+.btn-danger { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+.btn-sm { padding: 10px 16px; font-size: 13px; border-radius: 8px; }
+
+/* Scan Area */
+.scan-area {
+  background: var(--bg);
+  border: 2px dashed var(--bg4);
+  border-radius: 14px;
+  padding: 28px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 16px;
+}
+
+.scan-area:active { border-color: var(--accent); }
+.scan-area .icon { font-size: 32px; margin-bottom: 6px; }
+.scan-area .text { font-size: 14px; color: var(--fg2); }
+.scan-area .sub { font-size: 12px; color: var(--fg3); margin-top: 4px; font-family: var(--mono); }
+
+.scan-preview { max-width: 100%; max-height: 180px; border-radius: 10px; display: none; margin: 0 auto 10px; }
+.scanning-ind { display: none; padding: 16px; text-align: center; color: var(--accent2); font-size: 14px; }
+.scanning-ind .dots::after { content: ''; animation: dots 1.5s infinite; }
+@keyframes dots { 0%{content:''} 25%{content:'.'} 50%{content:'..'} 75%{content:'...'} }
+
+.scan-result {
+  background: var(--bg);
+  border: 1px solid var(--elem1);
+  border-radius: 10px;
+  padding: 14px;
+  margin-top: 10px;
+  display: none;
+}
+
+.scan-result .sr-title { font-family: var(--mono); font-size: 11px; color: var(--elem1); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+.scan-result .sr-item { font-size: 14px; padding: 3px 0; display: flex; gap: 8px; }
+.scan-result .sr-key { color: var(--fg3); min-width: 55px; flex-shrink: 0; font-family: var(--mono); font-size: 12px; }
+
+/* Voice */
+.voice-btn {
+  display: inline-flex;
+  align-items: center; gap: 6px;
+  padding: 6px 12px;
+  background: var(--bg);
+  border: 1px solid var(--bg4);
+  border-radius: 16px;
+  color: var(--fg2);
+  font-size: 12px;
+  cursor: pointer;
+  font-family: var(--serif);
+  margin-left: 8px;
+}
+
+.voice-btn.recording {
+  background: var(--accent-glow);
+  border-color: var(--accent);
+  color: var(--accent);
+  animation: pulse 1.2s infinite;
+}
+
+@keyframes pulse { 0%,100%{box-shadow:0 0 0 0 var(--accent-glow)} 50%{box-shadow:0 0 0 8px transparent} }
+
+/* Detail */
+.detail-hero {
+  padding: 24px 20px;
+  text-align: center;
+  border-bottom: 1px solid var(--bg3);
+}
+
+.detail-avatar {
+  width: 72px; height: 72px;
+  border-radius: 18px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; font-weight: 900;
+  margin: 0 auto 14px;
+}
+
+.detail-name { font-family: var(--display); font-size: 28px; font-weight: 900; }
+.detail-sub { font-size: 13px; color: var(--fg3); margin-top: 4px; font-family: var(--mono); }
+
+.detail-section { padding: 20px; border-bottom: 1px solid var(--bg3); }
+
+.detail-section-title {
+  font-family: var(--mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--accent);
+  margin-bottom: 14px;
+}
+
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.dg-item { background: var(--bg); padding: 12px 14px; border-radius: 10px; }
+.dg-item .key { font-family: var(--mono); font-size: 10px; color: var(--fg3); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
+.dg-item .val { font-size: 16px; font-weight: 500; }
+
+.coop-card {
+  background: linear-gradient(135deg, var(--bg3) 0%, var(--bg) 100%);
+  border: 1px solid var(--bg4);
+  border-radius: 14px;
+  padding: 18px;
+  margin-top: 12px;
+}
+
+.coop-card .mode { font-size: 17px; font-weight: 700; color: var(--accent2); margin-bottom: 10px; }
+.coop-card .advice { font-size: 14px; line-height: 1.8; color: var(--fg2); }
+.coop-card .advice strong { color: var(--accent); }
+.coop-card .warning { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--bg4); font-size: 13px; color: var(--fg3); }
+
+.detail-actions { display: flex; gap: 12px; padding: 20px; }
+.detail-actions .btn { flex: 1; }
+
+/* Settings */
+.settings-group { padding: 20px; border-bottom: 1px solid var(--bg3); }
+.settings-group-title { font-size: 14px; font-weight: 700; color: var(--accent); margin-bottom: 16px; }
+
+.settings-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--bg3);
+}
+
+.settings-item:last-child { border-bottom: none; }
+.si-label { font-size: 15px; }
+.si-desc { font-size: 12px; color: var(--fg3); margin-top: 2px; }
+
+/* Quick add */
+.quick-add-bar {
+  display: none;
+  position: fixed;
+  bottom: calc(var(--tab-h) + var(--safe-b));
+  left: 0; right: 0;
+  background: var(--bg2);
+  border-top: 1px solid var(--bg3);
+  padding: 12px 16px;
+  z-index: 49;
+  gap: 10px;
+  align-items: center;
+}
+
+.quick-add-bar.active { display: flex; }
+
+.quick-add-bar input {
+  flex: 1;
+  padding: 12px 14px;
+  background: var(--bg);
+  border: 1px solid var(--bg4);
+  border-radius: 10px;
+  color: var(--fg);
+  font-family: var(--serif);
+  font-size: 15px;
+  outline: none;
+}
+
+.quick-add-bar input:focus { border-color: var(--accent); }
+
+.api-key-field { display: flex; gap: 8px; }
+.api-key-field input { flex: 1; padding: 12px; background: var(--bg); border: 1px solid var(--bg4); border-radius: 10px; color: var(--fg); font-family: var(--mono); font-size: 13px; outline: none; }
+.api-status { font-size: 12px; margin-top: 6px; font-family: var(--mono); }
+.api-status.ok { color: var(--elem1); }
+
+.toast {
+  position: fixed;
+  top: calc(var(--safe-t) + 16px);
+  left: 50%; transform: translateX(-50%) translateY(-120%);
+  background: var(--bg3);
+  color: var(--fg);
+  padding: 14px 24px;
+  border-radius: 12px;
+  font-size: 14px;
+  z-index: 200;
+  transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
+  border-left: 3px solid var(--accent);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+  max-width: 90vw;
+}
+
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+.hex-display { display: flex; flex-direction: column; gap: 4px; align-items: center; margin: 14px 0; }
+.hex-line { width: 48px; height: 6px; background: var(--fg); border-radius: 1px; }
+.hex-line.broken { background: transparent; position: relative; }
+.hex-line.broken::before, .hex-line.broken::after { content: ''; position: absolute; top: 0; height: 100%; width: 18px; background: var(--fg); border-radius: 1px; }
+.hex-line.broken::before { left: 0; }
+.hex-line.broken::after { right: 0; }
+
+/* Theme switch highlight in settings */
+.theme-switch {
+  display: flex; gap: 0; border-radius: 12px; overflow: hidden; border: 1px solid var(--bg4);
+}
+.theme-switch-btn {
+  flex: 1; padding: 14px; border: none; cursor: pointer;
+  font-family: var(--serif); font-size: 14px;
+  transition: all 0.2s;
+  background: var(--bg); color: var(--fg3);
+}
+.theme-switch-btn.active { background: var(--accent); color: var(--fg); }
+
+/* Custom dialog */
+.dialog-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 300;
+  align-items: center; justify-content: center;
+}
+
+.dialog-overlay.active { display: flex; }
+
+.dialog-box {
+  background: var(--bg2);
+  border: 1px solid var(--bg4);
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 320px;
+  width: 90%;
+  text-align: center;
+}
+
+.dialog-msg {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--fg);
+  margin-bottom: 20px;
+}
+
+.dialog-btns {
+  display: flex;
+  gap: 10px;
+}
+
+.dialog-btns .btn { flex: 1; padding: 14px; }
+
+@media (min-width: 768px) {
+  .app-content { max-width: 600px; margin: 0 auto; }
+  .tab-bar { max-width: 600px; left: 50%; transform: translateX(-50%); border-radius: 16px 16px 0 0; }
+  .fab { right: calc(50% - 280px); }
+}
+</style>
+</head>
+<body>
+
+<!-- ============================
+     ONBOARDING
+     ============================ -->
+<div class="onboarding" id="onboarding">
+  <div class="ob-bg"></div>
+  <div class="ob-content">
+    <div class="ob-title">人脈手札</div>
+    <div class="ob-sub">Choose Your Way of Seeing People</div>
+    <div class="ob-choices">
+      <div class="ob-choice ob-east" onclick="chooseTheme('east')">
+        <span class="ob-icon">☯</span>
+        <div class="ob-choice-title">東方</div>
+        <div class="ob-choice-desc">以天干地支、五行、卦象解讀人的本質</div>
+        <div class="ob-choice-tags">
+          <span class="ob-tag">八字</span>
+          <span class="ob-tag">數字易經</span>
+          <span class="ob-tag">五行</span>
+        </div>
+      </div>
+      <div class="ob-choice ob-west" onclick="chooseTheme('west')">
+        <span class="ob-icon">✦</span>
+        <div class="ob-choice-title">Western</div>
+        <div class="ob-choice-desc">用星座、四元素、行星能量洞察性格與關係</div>
+        <div class="ob-choice-tags">
+          <span class="ob-tag">Zodiac</span>
+          <span class="ob-tag">Elements</span>
+          <span class="ob-tag">Aspects</span>
+        </div>
+      </div>
+    </div>
+    <div class="ob-footer">隨時可在設定中切換</div>
+  </div>
+</div>
+
+<!-- ============================
+     MAIN APP
+     ============================ -->
+<div class="app" id="app">
+  <div class="app-header">
+    <div class="app-brand">
+      <div class="app-seal" id="headerSeal">識</div>
+      <div class="app-title" id="headerTitle">人脈手札</div>
+    </div>
+    <div class="app-actions">
+      <button class="icon-btn" onclick="openQuickAdd()" title="快速新增">⚡</button>
+      <button class="icon-btn" onclick="switchTab('settings')">⚙</button>
+    </div>
+  </div>
+
+  <div class="app-content">
+    <div class="page active" id="pageContacts">
+      <div class="search-bar">
+        <div class="search-wrap">
+          <input class="search-input" id="searchInput" type="text" placeholder="搜尋姓名、標籤、領域..." oninput="renderList()">
+        </div>
+      </div>
+      <div class="filter-chips" id="filterChips"></div>
+      <div class="contact-list" id="contactList"></div>
+    </div>
+
+    <div class="page" id="pageDetail"></div>
+
+    <div class="page" id="pageSettings">
+      <div class="settings-group">
+        <div class="settings-group-title">識人模式</div>
+        <div class="theme-switch" id="themeSwitch">
+          <button class="theme-switch-btn" data-theme="east" onclick="applyTheme('east')">☯ 東方</button>
+          <button class="theme-switch-btn" data-theme="west" onclick="applyTheme('west')">✦ 西方</button>
+        </div>
+      </div>
+      <div class="settings-group">
+        <div class="settings-group-title" id="selfSetupTitle">我的命理</div>
+        <div id="selfSetupArea"></div>
+      </div>
+      <div class="settings-group">
+        <div class="settings-group-title">名片 OCR（Claude API）</div>
+        <div class="field">
+          <label>API Key</label>
+          <div class="api-key-field">
+            <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-...">
+            <button class="btn btn-sm btn-secondary" onclick="saveApiKey()">保存</button>
+          </div>
+          <div class="api-status" id="apiStatus"></div>
+        </div>
+        <div style="font-size:13px; color:var(--fg3); line-height:1.6; margin-top:8px">
+          Key 只存在你的裝置中。用於名片拍照辨識。
+        </div>
+      </div>
+      <div class="settings-group">
+        <div class="settings-group-title">資料管理</div>
+        <div class="settings-item"><div><div class="si-label">匯出資料</div><div class="si-desc">JSON 備份</div></div><button class="btn btn-sm btn-secondary" onclick="exportData()">匯出</button></div>
+        <div class="settings-item"><div><div class="si-label">匯入資料</div><div class="si-desc">從 JSON 還原</div></div><button class="btn btn-sm btn-secondary" onclick="document.getElementById('importFile').click()">匯入</button><input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)"></div>
+        <div class="settings-item"><div><div class="si-label">清除所有資料</div></div><button class="btn btn-sm btn-danger" onclick="clearAllData()">清除</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="tab-bar">
+  <button class="tab active" data-tab="contacts" onclick="switchTab('contacts')"><span class="tab-icon">☰</span><span>人脈</span></button>
+  <button class="tab" data-tab="settings" onclick="switchTab('settings')"><span class="tab-icon">⚙</span><span>設定</span></button>
+</div>
+
+<button class="fab" id="fab" onclick="openAddSheet()">+</button>
+
+<div class="quick-add-bar" id="quickAddBar">
+  <input type="text" id="qaName" placeholder="姓名">
+  <input type="text" id="qaBirth" placeholder="生日 19900315" style="width:130px;flex:none">
+  <button class="btn btn-sm btn-primary" onclick="quickSave()">存</button>
+  <button class="btn btn-sm btn-secondary" onclick="closeQuickAdd()">×</button>
+</div>
+
+<!-- ADD/EDIT SHEET -->
+<div class="sheet-overlay" id="addSheetOverlay" onclick="closeSheet()"></div>
+<div class="sheet" id="addSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-head">
+    <div class="sheet-title"><span class="seal">記</span><span id="sheetTitle">新增人脈</span></div>
+    <button class="sheet-close" onclick="closeSheet()">×</button>
+  </div>
+  <div class="sheet-body">
+    <div class="scan-area" id="scanArea" onclick="triggerScan()">
+      <img class="scan-preview" id="scanPreview">
+      <div id="scanPrompt"><div class="icon">📸</div><div class="text">拍攝或上傳名片</div><div class="sub">自動辨識姓名、電話、Email</div></div>
+      <input type="file" id="scanFile" accept="image/*" capture="environment" style="display:none" onchange="handleScan(event)">
+    </div>
+    <div class="scanning-ind" id="scanningInd"><span>辨識中</span><span class="dots"></span></div>
+    <div class="scan-result" id="scanResult"><div class="sr-title">✓ 已自動填入</div><div id="scanResultContent"></div></div>
+
+    <div class="section-label">基本資料</div>
+    <div class="row row-2">
+      <div class="field"><label>姓名 <span class="req">*</span></label><input type="text" id="fName"></div>
+      <div class="field"><label>暱稱</label><input type="text" id="fAlias"></div>
+    </div>
+    <div class="row row-2">
+      <div class="field"><label>電話</label><input type="tel" id="fPhone"></div>
+      <div class="field"><label>Email</label><input type="email" id="fEmail"></div>
+    </div>
+    <div class="row row-2">
+      <div class="field"><label>身份</label><select id="fRole"><option value="">未分類</option><option>客戶</option><option>同事</option><option>主管</option><option>下屬</option><option>合作夥伴</option><option>供應商</option><option>導師</option><option>朋友</option><option>同行</option><option>投資人</option></select></div>
+      <div class="field"><label>領域</label><input type="text" id="fField"></div>
+    </div>
+    <div class="field"><label>公司</label><input type="text" id="fCompany"></div>
+    <div class="field"><label>認識方式</label><input type="text" id="fSource"></div>
+
+    <div class="section-label" id="fortuneSectionLabel">命理資料</div>
+    <div class="method-tabs" id="methodTabs"></div>
+    <div id="fortuneInputArea"></div>
+
+    <div class="section-label">主觀觀察</div>
+    <div class="field"><label>信任度</label><div class="trust-row" id="fTrustRow"><div class="trust-circle" data-t="1" onclick="setTrust(1)">1</div><div class="trust-circle" data-t="2" onclick="setTrust(2)">2</div><div class="trust-circle" data-t="3" onclick="setTrust(3)">3</div><div class="trust-circle" data-t="4" onclick="setTrust(4)">4</div><div class="trust-circle" data-t="5" onclick="setTrust(5)">5</div></div></div>
+    <div class="field"><label>互動頻率</label><select id="fFreq"><option value="">未填</option><option>每週</option><option>每月</option><option>每季</option><option>每年</option><option>少於每年</option></select></div>
+    <div class="field"><label>性格特質（逗號分隔）</label><input type="text" id="fTraits" placeholder="理性, 直接, 行動派"></div>
+    <div class="field"><label>筆記 <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()">🎤 語音</button></label><textarea id="fNotes" placeholder="第一印象、合作經驗..."></textarea></div>
+  </div>
+  <div class="sheet-footer">
+    <button class="btn btn-secondary" onclick="closeSheet()">取消</button>
+    <button class="btn btn-primary" onclick="saveEntry()">保存</button>
+  </div>
+</div>
+
+<!-- CUSTOM DIALOG (replaces confirm/prompt) -->
+<div class="dialog-overlay" id="dialogOverlay">
+  <div class="dialog-box" id="dialogBox">
+    <div class="dialog-msg" id="dialogMsg"></div>
+    <div class="dialog-btns" id="dialogBtns"></div>
+  </div>
+</div>
+
+<!-- SELF EDIT SHEET -->
+<div class="sheet-overlay" id="selfSheetOverlay" onclick="closeSelfSheet()"></div>
+<div class="sheet" id="selfSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-head">
+    <div class="sheet-title"><span class="seal">我</span><span id="selfSheetTitle">我的命理</span></div>
+    <button class="sheet-close" onclick="closeSelfSheet()">×</button>
+  </div>
+  <div class="sheet-body" id="selfSheetBody"></div>
+  <div class="sheet-footer">
+    <button class="btn btn-secondary" onclick="closeSelfSheet()">取消</button>
+    <button class="btn btn-primary" onclick="saveSelf()">保存</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// FORTUNE ENGINES — PROFESSIONAL EDITION
+// ============================================================
+
+// ===== EAST: BAZI (八字命理) =====
+const HS='甲乙丙丁戊己庚辛壬癸'.split('');
+const EB='子丑寅卯辰巳午未申酉戌亥'.split('');
+const SE={甲:'木',乙:'木',丙:'火',丁:'火',戊:'土',己:'土',庚:'金',辛:'金',壬:'水',癸:'水'};
+const SYY={甲:'陽',乙:'陰',丙:'陽',丁:'陰',戊:'陽',己:'陰',庚:'陽',辛:'陰',壬:'陽',癸:'陰'};
+const BE={子:'水',丑:'土',寅:'木',卯:'木',辰:'土',巳:'火',午:'火',未:'土',申:'金',酉:'金',戌:'土',亥:'水'};
+const GEN={木:'火',火:'土',土:'金',金:'水',水:'木'};
+const OVR={木:'土',土:'水',水:'火',火:'金',金:'木'};
+
+// 地支藏干
+const HIDDEN_STEMS={
+  子:['癸'],丑:['己','癸','辛'],寅:['甲','丙','戊'],卯:['乙'],
+  辰:['戊','乙','癸'],巳:['丙','庚','戊'],午:['丁','己'],未:['己','丁','乙'],
+  申:['庚','壬','戊'],酉:['辛'],戌:['戊','辛','丁'],亥:['壬','甲']
+};
+
+// 十神 (Ten Gods) calculation
+function tenGod(dayStem, otherStem){
+  const myE=SE[dayStem], otherE=SE[otherStem];
+  const myYY=SYY[dayStem], otherYY=SYY[otherStem];
+  const same=myYY===otherYY;
+  if(myE===otherE) return same?'比肩':'劫財';
+  if(GEN[myE]===otherE) return same?'食神':'傷官';
+  if(GEN[otherE]===myE) return same?'偏印':'正印';
+  if(OVR[myE]===otherE) return same?'偏財':'正財';
+  if(OVR[otherE]===myE) return same?'七殺':'正官';
+  return '';
+}
+
+// 十神含義與人際應用
+const TEN_GOD_INFO={
+  比肩:{icon:'⚔',meaning:'同輩、競爭者、平等夥伴',coop:'平起平坐的合作者，彼此能力相當。互相激勵但也容易搶資源，需要明確分工。',biz:'適合聯合創業、策略同盟，但要有清楚的權責劃分。'},
+  劫財:{icon:'🗡',meaning:'強勢競爭者、搶奪者',coop:'對方主動積極，可能搶你的客戶或資源。合作時需警惕利益衝突。',biz:'短期合作可以，長期要防範利益被稀釋。設好退場機制。'},
+  食神:{icon:'🎨',meaning:'你的才華輸出、表達能力',coop:'對方能啟發你的創造力，讓你更自在地表達想法。適合讓對方做你的靈感來源或創意夥伴。',biz:'適合文創、行銷、產品設計類合作。你主導策略，對方激發靈感。'},
+  傷官:{icon:'💡',meaning:'銳利才華、反叛創新',coop:'對方思維跳躍、挑戰權威。能帶來突破性觀點，但也可能衝撞你的做事方式。',biz:'適合需要破局的專案。管理時需給對方空間，過度約束會反彈。'},
+  偏財:{icon:'💰',meaning:'意外之財、社交人脈',coop:'對方能帶來人脈和商業機會，但關係較淺、利益導向。善用但不要過度依賴。',biz:'適合業務拓展、投資合作。對方能帶來客源但忠誠度有限。'},
+  正財:{icon:'📊',meaning:'穩定收入、踏實回報',coop:'對方可靠、注重承諾，合作關係穩定。回報不會太驚人但持續可靠。',biz:'適合長期合約、固定供應商關係。穩紮穩打的合作對象。'},
+  七殺:{icon:'⚡',meaning:'強大壓力、魄力挑戰',coop:'對方能力強、有壓迫感。跟對方合作像是修煉——痛苦但成長快。',biz:'適合做你的「對手型盟友」。可以一起競標但私下是競爭者，逼出最好表現。'},
+  正官:{icon:'👔',meaning:'規範、上司、管理者',coop:'對方注重規則和體面，能幫你建立制度和紀律。相處時要給予尊重和面子。',biz:'適合做你的顧問、導師、或是體制內的引路人。遵守遊戲規則是合作前提。'},
+  偏印:{icon:'📚',meaning:'偏門知識、獨特思維',coop:'對方有獨到見解但不容易親近。適合請教特定專業問題，但日常相處有距離感。',biz:'適合技術顧問、特殊領域合作。不適合需要頻繁溝通的工作。'},
+  正印:{icon:'🏫',meaning:'正統學識、長輩庇護',coop:'對方像是你的保護者或導師，會無條件支持你。但也可能過度保護、限制你冒險。',biz:'適合做導師、投資人（天使型）。對方看好你的潛力，願意長期培養。'}
+};
+
+// 天干詳細性格（十干論命）
+const STEM_PROFILES={
+  甲:{name:'甲木',nature:'參天大樹',traits:'正直、有擔當、目標明確、不屈不撓',work:'天生的領導者和開拓者。做事有主見，不輕易妥協。適合帶頭衝鋒的角色。',social:'待人直爽但有時太固執。對看不慣的事情會直言不諱。需要學習柔軟。',weakness:'太剛硬則易折。承受壓力時不會求助，容易獨自硬扛。',cooperation:'跟甲木合作要給予尊重和空間，不要試圖控制他。直接溝通最有效。'},
+  乙:{name:'乙木',nature:'藤蔓花草',traits:'柔韌、善察言觀色、適應力強、有美感',work:'善於在夾縫中求生存。不跟你硬碰硬，但能找到繞過障礙的方法。適合協調和美學相關工作。',social:'人際關係細膩，善於維護感情。看似柔弱實則韌性十足。',weakness:'有時太顧慮他人感受，決策不夠果斷。壓力下可能逃避。',cooperation:'跟乙木合作要有耐心，給予情感上的肯定。不要用命令式溝通。'},
+  丙:{name:'丙火',nature:'太陽光芒',traits:'熱情、開朗、有感染力、光明磊落',work:'天生的推銷員和演說家。能點燃團隊士氣，讓沉悶的專案活起來。適合需要影響力的角色。',social:'社交能力強，走到哪都能成為焦點。但熱度來得快去得也快。',weakness:'注意力容易轉移，對細節不耐煩。承諾太多但無法全部兌現。',cooperation:'給丙火舞台和讚美，他會加倍回報。但不要指望他處理繁瑣細節。'},
+  丁:{name:'丁火',nature:'燭光星火',traits:'細膩、專注、有洞察力、溫暖而堅定',work:'善於深度思考和精細分析。不像丙火那樣張揚，但持久力更強。適合研究、策略、藝術類工作。',social:'外表溫和但內心有主見。能洞察人心，是很好的傾聽者。',weakness:'有時過度內耗。表面平靜內心可能已經翻江倒海。',cooperation:'跟丁火合作要給予信任和深度交流的空間。他看重你是否真誠。'},
+  戊:{name:'戊土',nature:'高山大地',traits:'穩重、包容、有信用、承載力強',work:'天生的管理者和平台搭建者。能承載各方壓力，讓團隊有安全感。適合大型專案統籌。',social:'給人可靠踏實的印象。說到做到，但行動節奏偏慢。',weakness:'太固執於既有方式，接受新事物較慢。有時因為太穩而錯過機會。',cooperation:'戊土是最可靠的合作對象。給他時間消化資訊，不要催促。承諾了的事他一定會做到。'},
+  己:{name:'己土',nature:'田園沃土',traits:'親和、細心、善於經營、接地氣',work:'善於把概念落地成可執行的方案。不追求光鮮但注重實效。適合營運管理、客戶關係。',social:'謙和好相處，能跟各種人合作。但有自己的底線，觸碰到會很堅定。',weakness:'有時太在意別人看法。容易過度妥協或糾結小事。',cooperation:'己土需要被需要的感覺。定期表達感謝和肯定，關係會越來越穩。'},
+  庚:{name:'庚金',nature:'刀劍礦石',traits:'果斷、講義氣、有執行力、重視公平',work:'說一不二的執行者。處理問題乾脆俐落，不拖泥帶水。適合需要魄力和紀律的崗位。',social:'朋友不多但個個死忠。對看不順眼的人會直接疏遠。',weakness:'太直接可能傷人。不善於處理情緒複雜的局面。',cooperation:'跟庚金合作要直來直去。他最討厭繞彎子和虛偽。一旦建立信任，是最可靠的戰友。'},
+  辛:{name:'辛金',nature:'珠寶首飾',traits:'精緻、敏銳、有品味、注重細節',work:'對品質有極高要求。善於發現別人忽略的問題，是天生的品管專家。適合高端服務或專業技術。',social:'外表冷淡但內心敏感。社交圈精挑細選，不輕易交心。',weakness:'完美主義可能拖慢進度。對人的要求太高容易失望。',cooperation:'辛金重視品質和專業度。跟他合作要展現你的能力，不要用情感攻勢。'},
+  壬:{name:'壬水',nature:'大海江河',traits:'聰明、大氣、善於佈局、胸懷寬廣',work:'策略大師。能看到全局，善於資源整合和長期佈局。適合投資、策略、跨領域整合。',social:'朋友多、人脈廣。善於在不同圈子間穿梭。但真心話不容易說出口。',weakness:'想法太多可能不聚焦。有時給人不可捉摸的感覺。',cooperation:'壬水喜歡有格局的合作。跟他聊大方向比糾結細節更能打動他。'},
+  癸:{name:'癸水',nature:'雨露溪流',traits:'敏感、善思考、直覺強、善於滲透',work:'潤物細無聲型。不聲不響地影響和改變事情。善於收集資訊和分析趨勢。適合研究、諮詢。',social:'安靜但觀察力驚人。能感受到別人的情緒變化。',weakness:'有時太過被動。需要外力推動才會行動。',cooperation:'癸水需要安全感。建立信任後，他會主動分享很多有價值的洞察。'}
+};
+
+// 身強身弱判斷
+function judgeStrength(sb, profile){
+  const dm=SE[sb.day.s];
+  const dmYY=SYY[sb.day.s];
+  let helpCount=0, drainCount=0;
+  // 遍歷所有柱
+  [sb.year,sb.month,sb.day,sb.hour].forEach(p=>{
+    if(!p)return;
+    // 天干
+    const rel=tenGod(sb.day.s,p.s);
+    if(['比肩','劫財','正印','偏印'].includes(rel))helpCount++;
+    else drainCount++;
+    // 地支藏干
+    const hidden=HIDDEN_STEMS[p.b]||[];
+    hidden.forEach(h=>{
+      const hrel=tenGod(sb.day.s,h);
+      if(['比肩','劫財','正印','偏印'].includes(hrel))helpCount+=0.5;
+      else drainCount+=0.5;
+    });
+  });
+  // 月令力量加權
+  const monthBranch=sb.month.b;
+  const monthE=BE[monthBranch];
+  if(monthE===dm)helpCount+=2;
+  else if(GEN[monthE]===dm)helpCount+=1.5; // 印生
+  else if(GEN[dm]===monthE)drainCount+=1; // 食傷
+  else if(OVR[dm]===monthE)drainCount+=0.5;
+  else if(OVR[monthE]===dm)drainCount+=1.5;
+
+  const ratio=helpCount/(helpCount+drainCount);
+  if(ratio>0.55)return{strength:'身強',desc:'能量充沛，能承擔壓力，適合主動出擊',need:'需要食傷、財、官來消耗多餘的能量',advice:'你的命格能量充足。在合作中適合當主導方，要找能讓你輸出能量的夥伴。'};
+  if(ratio<0.4)return{strength:'身弱',desc:'需要外部支持，適合借力使力',need:'需要印星（支持者）和比劫（同盟）來增強',advice:'你的命格需要靠山。在合作中要找能給你資源和支撐的人，不要硬撐獨角戲。'};
+  return{strength:'中和',desc:'陰陽平衡，適應力強',need:'平衡型，各種關係都能適應',advice:'你的命格平衡。選擇合作對象的彈性較大，可以根據具體需求來配對。'};
+}
+
+function getSB(y,m,d,h){
+  const ys=((y-4)%10+10)%10,yb=((y-4)%12+12)%12;
+  const ms=((ys%5)*2+m+1)%10,mb=(m+1)%12;
+  const base=new Date(1900,0,1),target=new Date(y,m-1,d);
+  const dd=Math.floor((target-base)/864e5);
+  const ds=((dd%10)+10)%10,db=((dd%12)+12)%12;
+  let ts=-1,tb=-1;
+  if(h!=null&&h!==''){const hh=+h;tb=Math.floor((hh+1)/2)%12;ts=((ds%5)*2+tb)%10;}
+  return{year:{s:HS[ys],b:EB[yb]},month:{s:HS[ms],b:EB[mb]},day:{s:HS[ds],b:EB[db]},hour:ts>=0?{s:HS[ts],b:EB[tb]}:null};
+}
+
+function wuxingProfile(sb){
+  const c={木:0,火:0,土:0,金:0,水:0};
+  // 計入天干地支
+  [sb.year,sb.month,sb.day,sb.hour].forEach(p=>{if(p){c[SE[p.s]]++;c[BE[p.b]]++;}});
+  // 計入藏干（半權重）
+  [sb.year,sb.month,sb.day,sb.hour].forEach(p=>{if(p){const h=HIDDEN_STEMS[p.b]||[];h.forEach(s=>c[SE[s]]+=0.3);}});
+  const dm=SE[sb.day.s],dyy=SYY[sb.day.s];
+  const sorted=Object.entries(c).sort((a,b)=>b[1]-a[1]);
+  const stemProfile=STEM_PROFILES[sb.day.s];
+  const strengthInfo=judgeStrength(sb,c);
+
+  // 計算十神分佈（含藏干）
+  const gods={};
+  [sb.year,sb.month,sb.hour].forEach(p=>{
+    if(!p)return;
+    const g=tenGod(sb.day.s,p.s);
+    if(g)gods[g]=(gods[g]||0)+1;
+    // 藏干十神
+    const hidden=HIDDEN_STEMS[p.b]||[];
+    hidden.forEach(h=>{const hg=tenGod(sb.day.s,h);if(hg)gods[hg]=(gods[hg]||0)+0.3;});
+  });
+
+  // 五行百分比
+  const total=Object.values(c).reduce((a,b)=>a+b,0);
+  const wuxingPct={};
+  for(const[k,v] of Object.entries(c))wuxingPct[k]=Math.round(v/total*100);
+
+  return{
+    counts:c,dayMaster:dm,dayMasterStem:sb.day.s,dayYinYang:dyy,
+    strongest:sorted[0][0],weakest:sorted[sorted.length-1][0],
+    missing:Object.entries(c).filter(([,v])=>v===0).map(([k])=>k),
+    stemProfile,strength:strengthInfo,tenGods:gods,wuxingPct,
+    fourPillars:`${sb.year.s}${sb.year.b} ${sb.month.s}${sb.month.b} ${sb.day.s}${sb.day.b}${sb.hour?' '+sb.hour.s+sb.hour.b:''}`
+  };
+}
+
+function elemRel(a,b){
+  if(a===b)return{type:'同類',desc:'同氣相求'};
+  if(GEN[a]===b)return{type:'我生',desc:'你滋養對方'};
+  if(GEN[b]===a)return{type:'生我',desc:'對方滋養你'};
+  if(OVR[a]===b)return{type:'我剋',desc:'你能駕馭對方'};
+  if(OVR[b]===a)return{type:'剋我',desc:'對方制約你'};
+  return{type:'中性',desc:''};
+}
+
+// 東方合作分析（專業版：十神 + 天干合化 + 地支關係 + 身強弱 + 互補 + 場景推薦）
+
+// 天干五合
+const STEM_COMBO={甲己:'土',乙庚:'金',丙辛:'水',丁壬:'木',戊癸:'火'};
+function stemCombo(s1,s2){return STEM_COMBO[s1+s2]||STEM_COMBO[s2+s1]||null;}
+
+// 天干相沖（甲庚、乙辛、丙壬、丁癸）
+function stemClash(s1,s2){const idx1=HS.indexOf(s1),idx2=HS.indexOf(s2);return Math.abs(idx1-idx2)===6;}
+
+// 地支六合
+const BRANCH_COMBO={子丑:'土',寅亥:'木',卯戌:'火',辰酉:'金',巳申:'水',午未:'火'};
+function branchCombo(b1,b2){return BRANCH_COMBO[b1+b2]||BRANCH_COMBO[b2+b1]||null;}
+
+// 地支六沖
+const BRANCH_CLASH=['子午','丑未','寅申','卯酉','辰戌','巳亥'];
+function branchClash(b1,b2){return BRANCH_CLASH.includes(b1+b2)||BRANCH_CLASH.includes(b2+b1);}
+
+// 地支三合局
+const BRANCH_TRINE={申子辰:'水',寅午戌:'火',巳酉丑:'金',亥卯未:'木'};
+
+// 地支六害
+const BRANCH_HARM=['子未','丑午','寅巳','卯辰','申亥','酉戌'];
+function branchHarm(b1,b2){return BRANCH_HARM.includes(b1+b2)||BRANCH_HARM.includes(b2+b1);}
+
+// 合作場景推薦引擎
+function coopScenarios(mainGod, reverseGod, strengthMatch){
+  const scenes=[];
+  const g=mainGod;
+  if(g==='比肩'||g==='劫財'){
+    scenes.push({title:'聯合投標/競標',fit:'★★★★',note:'同級別的對手型盟友，對外戰鬥力加倍'});
+    scenes.push({title:'合夥創業',fit:g==='比肩'?'★★★★':'★★☆☆',note:g==='比肩'?'平等分工，各管一攤':'利益分配要特別小心'});
+    scenes.push({title:'長期僱傭',fit:'★★☆☆',note:'對方不甘於被管，可能自立門戶'});
+  }else if(g==='食神'||g==='傷官'){
+    scenes.push({title:'創意/內容合作',fit:'★★★★★',note:'你的想法+對方的才華=最佳產出'});
+    scenes.push({title:'產品設計',fit:'★★★★',note:g==='食神'?'溫和的創新':'激進的突破'});
+    scenes.push({title:'嚴謹型專案',fit:'★★☆☆',note:'對方可能不按規矩來'});
+  }else if(g==='偏財'||g==='正財'){
+    scenes.push({title:'業務拓展/銷售',fit:'★★★★★',note:'對方=你的財路，能帶來直接收入'});
+    scenes.push({title:'投資合作',fit:g==='偏財'?'★★★★':'★★★☆',note:g==='偏財'?'高風險高回報的機會':'穩定但不會太驚人'});
+    scenes.push({title:'技術研發',fit:'★★☆☆',note:'對方更擅長變現而非創造'});
+  }else if(g==='七殺'||g==='正官'){
+    scenes.push({title:'管理/制度建設',fit:'★★★★★',note:'對方能幫你建立規範和紀律'});
+    scenes.push({title:'危機處理',fit:'★★★★',note:g==='七殺'?'高壓下的最佳搭檔':'按規矩解決問題'});
+    scenes.push({title:'創意自由型工作',fit:'★☆☆☆',note:'對方會讓你覺得被限制'});
+  }else if(g==='偏印'||g==='正印'){
+    scenes.push({title:'學習/培訓',fit:'★★★★★',note:'對方是你最好的導師和靠山'});
+    scenes.push({title:'策略顧問',fit:'★★★★',note:g==='偏印'?'獨到的偏門見解':'正統的智慧傳承'});
+    scenes.push({title:'快節奏執行',fit:'★★☆☆',note:'對方思考多行動慢，可能拖你節奏'});
+  }
+  return scenes;
+}
+
+function eastCoopAnalysis(selfProfile, theirProfile, selfSB, theirSB){
+  const myE=selfProfile.dayMaster, theirE=theirProfile.dayMaster;
+  const rel=elemRel(myE,theirE);
+
+  // 核心十神關係（用對方日干 vs 我日干）
+  const mainGod=theirSB?tenGod(selfSB.day.s,theirSB.day.s):'';
+  const godInfo=TEN_GOD_INFO[mainGod]||{};
+  const reverseGod=theirSB?tenGod(theirSB.day.s,selfSB.day.s):'';
+
+  // 天干合化分析
+  let stemComboResult=null, stemClashResult=false;
+  if(theirSB){
+    const combo=stemCombo(selfSB.day.s,theirSB.day.s);
+    if(combo)stemComboResult={element:combo,pair:selfSB.day.s+theirSB.day.s};
+    stemClashResult=stemClash(selfSB.day.s,theirSB.day.s);
+  }
+
+  // 地支關係分析
+  let branchRelations=[];
+  if(theirSB){
+    const myBranches=[selfSB.year.b,selfSB.month.b,selfSB.day.b];if(selfSB.hour)myBranches.push(selfSB.hour.b);
+    const theirBranches=[theirSB.year.b,theirSB.month.b,theirSB.day.b];if(theirSB.hour)theirBranches.push(theirSB.hour.b);
+    for(const mb of myBranches){
+      for(const tb of theirBranches){
+        const c=branchCombo(mb,tb);
+        if(c)branchRelations.push({type:'六合',pair:`${mb}${tb}`,result:c});
+        if(branchClash(mb,tb))branchRelations.push({type:'六沖',pair:`${mb}${tb}`});
+        if(branchHarm(mb,tb))branchRelations.push({type:'六害',pair:`${mb}${tb}`});
+      }
+    }
+  }
+
+  // 構建合作模式名稱
+  let mode=mainGod?`${mainGod}關係 · ${godInfo.icon||''}`:rel.type;
+  let advice='', warning='', bonus='';
+
+  if(mainGod&&godInfo.coop){
+    advice=godInfo.coop;
+    if(godInfo.biz)advice+='\n\n【商業場景】'+godInfo.biz;
+    // 加入對方視角
+    if(reverseGod){
+      const revInfo=TEN_GOD_INFO[reverseGod];
+      if(revInfo)advice+=`\n\n【對方視角】你在對方眼中是「${reverseGod}」——${revInfo.meaning}。`;
+    }
+  }else{
+    switch(rel.type){
+      case '同類':mode='比肩同類';advice='思維節奏接近，溝通無摩擦。適合共同創作和分工合作。';break;
+      case '我生':mode='我生對方';advice='你自然想幫對方，適合導師或資源提供者的角色。';break;
+      case '生我':mode='對方生我';advice='對方能給你支持和資源，是你的貴人。';break;
+      case '我剋':mode='我剋對方';advice='你能主導這段關係，適合管理或指導。';break;
+      case '剋我':mode='對方剋我';advice='對方給你壓力但也帶來成長。短期合作為佳。';break;
+    }
+  }
+
+  // 天干合化解讀
+  if(stemComboResult){
+    bonus+=`【天干合化】你倆的日干 ${stemComboResult.pair} 有合化的關係——合化為「${stemComboResult.element}」。這代表雙方天生有一種「想要在一起做事」的吸引力，合作時會自然地朝${stemComboResult.element}的方向發展。這是命理中最被看好的合作指標之一。`;
+  }
+  if(stemClashResult){
+    warning=(warning?warning+'\n\n':'')+'【天干相沖】你倆日干相沖，觀念和行事風格會直接對撞。這不是不能合作，但需要強大的共同目標來超越分歧。短期、目標明確的專案較適合。';
+  }
+
+  // 地支關係解讀
+  const combos=branchRelations.filter(r=>r.type==='六合');
+  const clashes=branchRelations.filter(r=>r.type==='六沖');
+  const harms=branchRelations.filter(r=>r.type==='六害');
+  if(combos.length>0){
+    bonus+=(bonus?'\n\n':'')+'【地支六合】'+combos.map(c=>`${c.pair}合${c.result}`).join('、')+'。地支有合代表你們在行動層面容易同步，做事節奏合拍。合得越多，默契越強。';
+  }
+  if(clashes.length>0){
+    warning=(warning?warning+'\n\n':'')+'【地支六沖】'+clashes.map(c=>c.pair).join('、')+'相沖。這代表你們在某些生活層面會互相衝突——不是壞事，但需要意識到並管理這個張力。';
+  }
+  if(harms.length>0){
+    warning=(warning?warning+'\n\n':'')+'【地支六害】'+harms.map(c=>c.pair).join('、')+'相害。暗中的摩擦和不信任可能是最大的隱患，需要格外注意溝通透明度。';
+  }
+
+  // 身強弱互動分析
+  if(selfProfile.strength&&theirProfile.strength){
+    const ms=selfProfile.strength.strength,ts=theirProfile.strength.strength;
+    let strengthNote='';
+    if(ms==='身強'&&ts==='身強')strengthNote='兩人都身強，合作時都想主導。需要明確誰拍板、誰執行，否則容易僵持。建議用「各管一攤」的平行架構。';
+    else if(ms==='身弱'&&ts==='身弱')strengthNote='兩人都身弱，需要外部資源和支持。合作時要確保有第三方資源注入，不宜獨力硬撐大項目。';
+    else if(ms==='身強'&&ts==='身弱')strengthNote='你身強、對方身弱。你自然會主導。這個搭配很常見也可以很高效，但注意不要壓得太重——適度放手讓對方成長，關係才能長久。';
+    else if(ms==='身弱'&&ts==='身強')strengthNote='對方身強你身弱。你可以借力發揮，但要確保不變成單方面的依附。在合作中爭取自己的核心價值，不要只做配合角色。';
+    if(strengthNote)warning=(warning?warning+'\n\n':'')+'【身強弱】'+strengthNote;
+  }
+
+  // 五行互補加分
+  if(selfProfile.missing&&selfProfile.missing.includes(theirE)){
+    bonus+=(bonus?'\n\n':'')+ `【互補】對方的「${theirE}」正是你命盤所缺——這代表他能補你最薄弱的環節。在商業合作中，對方的天賦恰好是你的盲區。`;
+  }
+  if(theirProfile.missing&&theirProfile.missing.includes(myE)){
+    bonus+=(bonus?'\n\n':'')+ `你的「${myE}」也是對方所缺。雙向互補是罕見的，如果能建立信任，會是很強的搭檔。`;
+  }
+
+  // 合作場景推薦
+  const scenarios=mainGod?coopScenarios(mainGod,reverseGod):[];
+
+  return{mode,advice,warning,bonus,relation:rel,mainGod,reverseGod,stemCombo:stemComboResult,branchRelations,scenarios};
+}
+
+// 數字易經
+const TRIGRAMS=[
+  {name:'坤',lines:[0,0,0],element:'土',meaning:'柔順包容、承載萬物',detail:'坤卦代表大地的力量——看似被動，實則承載一切。此人擅長配合與支持，是團隊中的穩定器。合作時不要讓他獨挑大梁，而是讓他做協調和後勤角色。',leadership:'服務型領導，不搶功但功不可沒'},
+  {name:'震',lines:[1,0,0],element:'木',meaning:'行動雷厲、先聲奪人',detail:'震卦代表雷——迅速行動、說做就做。此人的特質是速度和爆發力，但持續力可能不足。合作初期最有衝勁，適合讓他打頭陣。',leadership:'開創型領導，善於啟動但需要人善後'},
+  {name:'坎',lines:[0,1,0],element:'水',meaning:'智慧深沉、善於突圍',detail:'坎卦代表水——看似柔弱實則能穿石。此人善於在困境中找出路，有策略思維。表面平靜但內心波瀾起伏。合作時要理解他的「彎路」其實是深思後的佈局。',leadership:'策略型領導，外柔內剛'},
+  {name:'兌',lines:[1,1,0],element:'金',meaning:'口才和悅、善於交際',detail:'兌卦代表湖澤——表面平靜而下有深潭。此人社交能力極強，能說服各方。是天生的談判者和關係維護者。合作時讓他處理對外溝通和客戶關係。',leadership:'外交型領導，八面玲瓏'},
+  {name:'艮',lines:[0,0,1],element:'土',meaning:'止靜穩重、守住底線',detail:'艮卦代表山——穩固不動、有邊界感。此人知道什麼該做什麼不該做，是團隊的定海神針。合作時不要試圖推他做他認為不對的事。',leadership:'原則型領導，不易妥協'},
+  {name:'離',lines:[1,0,1],element:'火',meaning:'光明外顯、善於展現',detail:'離卦代表火——光明、美麗、但也需要燃料。此人善於包裝和展現，有美學天賦。但「離中虛」——外表亮麗內心可能不安。合作時要提供實質支持。',leadership:'展現型領導，善於品牌和行銷'},
+  {name:'巽',lines:[0,1,1],element:'木',meaning:'滲透影響、無孔不入',detail:'巽卦代表風——無形但無處不在。此人善於潛移默化地影響他人，不會硬來但效果顯著。是很好的幕後推手和顧問角色。',leadership:'影響型領導，潤物無聲'},
+  {name:'乾',lines:[1,1,1],element:'金',meaning:'剛健創始、天行健',detail:'乾卦代表天——最大的格局和最強的能量。此人有大志向、強執行力。但「亢龍有悔」——太強勢會招來反彈。合作時給予足夠尊重，但也要適時提醒他不要過度。',leadership:'權威型領導，需要學會傾聽'}
+];
+
+function getNumTrigram(s){if(!s)return null;const d=String(s).replace(/\D/g,'').split('').map(Number);if(!d.length)return null;return TRIGRAMS[d.reduce((a,b)=>a+b,0)%8];}
+
+
+// ===== WEST: ZODIAC (占星) =====
+const ZODIAC=[
+  {name:'Aries',zh:'牡羊座',symbol:'♈',dateRange:[3,21,4,19],element:'Fire',mode:'Cardinal',ruler:'Mars',
+    traits:'天生的開拓者和領導者。衝勁十足，說做就做。喜歡競爭，遇到挑戰反而更興奮。直來直往，不善於繞彎子。',
+    work:'適合新創、業務開發、任何需要「從0到1」的角色。是最好的先鋒部隊，但不適合做守成的工作。',
+    shadow:'缺乏耐心，容易半途而廢。太過直接可能得罪人而不自知。',
+    coopTip:'跟牡羊合作要節奏快、目標明確。不要跟他開冗長的會議，直接說要什麼。'},
+  {name:'Taurus',zh:'金牛座',symbol:'♉',dateRange:[4,20,5,20],element:'Earth',mode:'Fixed',ruler:'Venus',
+    traits:'穩定可靠的務實主義者。重視品質和實際價值，不喜歡冒險。對錢和資源有天生的敏感度。',
+    work:'適合財務、品質管理、長期專案。是最可靠的執行者，承諾了就一定會做到。',
+    shadow:'太過固執，一旦決定了就不容易改變。面對變化會本能地抗拒。',
+    coopTip:'給金牛足夠的時間和穩定感。不要突然改變計劃，如果必須改，要提前充分溝通。'},
+  {name:'Gemini',zh:'雙子座',symbol:'♊',dateRange:[5,21,6,20],element:'Air',mode:'Mutable',ruler:'Mercury',
+    traits:'資訊量最大的社交高手。好奇心驅動，善於連結不同領域的知識。說話風趣，能迅速跟任何人建立連結。',
+    work:'適合媒體、行銷、公關、教育。能同時處理多個專案，但每個都不一定做到最深。',
+    shadow:'注意力分散，承諾太多。有時候會被覺得「說得多做得少」或「善變」。',
+    coopTip:'讓雙子做前期調研和溝通橋樑，但重要承諾要書面確認。保持互動頻率，不然他很快就忘了你。'},
+  {name:'Cancer',zh:'巨蟹座',symbol:'♋',dateRange:[6,21,7,22],element:'Water',mode:'Cardinal',ruler:'Moon',
+    traits:'情感最豐富的照顧者。直覺敏銳，能讀懂別人沒說出口的需求。非常重視人與人之間的信任和歸屬感。',
+    work:'適合人資、客戶服務、團隊文化建設。是最善於經營「人」的角色。',
+    shadow:'太過敏感，容易因小事受傷。用情緒做決定，有時不夠理性。',
+    coopTip:'跟巨蟹合作要先建立情感信任。批評時要三明治法——先肯定，再建議。傷了他的心，合作就很難繼續。'},
+  {name:'Leo',zh:'獅子座',symbol:'♌',dateRange:[7,23,8,22],element:'Fire',mode:'Fixed',ruler:'Sun',
+    traits:'天生的舞台王者。自信、大方、有號召力。喜歡被肯定和讚美，也確實有被讚美的實力。',
+    work:'適合CEO、品牌代言、業務主管。能帶領團隊衝高績效，但需要掌聲和認同。',
+    shadow:'自尊心強，受不了被忽略或被否定。有時太過自我中心。',
+    coopTip:'真誠地讚美獅子（別拍馬屁，他們分得出來）。給他們舞台和頭銜。批評要私下進行，絕不能在眾人面前讓他丟臉。'},
+  {name:'Virgo',zh:'處女座',symbol:'♍',dateRange:[8,23,9,22],element:'Earth',mode:'Mutable',ruler:'Mercury',
+    traits:'最注重細節的完美主義者。分析力超強，能發現別人看不到的問題。做事有條有理，追求最佳品質。',
+    work:'適合品管、數據分析、編輯、精密技術。是讓專案從90分到99分的關鍵角色。',
+    shadow:'過度追求完美可能拖慢進度。對自己和他人都太嚴格。',
+    coopTip:'給處女座明確的標準和時間線。尊重他的專業意見。不要在他面前敷衍了事，他會看不起你。'},
+  {name:'Libra',zh:'天秤座',symbol:'♎',dateRange:[9,23,10,22],element:'Air',mode:'Cardinal',ruler:'Venus',
+    traits:'最擅長平衡的外交官。公平、優雅、善於看到各方立場。天生討厭衝突，會想辦法讓所有人都滿意。',
+    work:'適合談判、仲裁、設計、公關。是最好的橋樑角色，能讓敵對的雙方坐下來談。',
+    shadow:'太怕得罪人，有時猶豫不決。為了維持和諧可能壓抑真實想法。',
+    coopTip:'跟天秤合作要維持表面的和諧和尊重。有分歧時用理性論述，不要情緒化。讓他做協調者角色最能發揮。'},
+  {name:'Scorpio',zh:'天蠍座',symbol:'♏',dateRange:[10,23,11,21],element:'Water',mode:'Fixed',ruler:'Pluto',
+    traits:'最有深度和洞察力的策略家。意志堅定，非黑即白。一旦信任你會全力投入，背叛則永不原諒。',
+    work:'適合調查研究、風險管理、危機處理、心理諮詢。能處理別人不敢碰的暗面。',
+    shadow:'控制欲強，有時太過猜疑。「要嘛全拿，要嘛不要」的極端態度。',
+    coopTip:'跟天蠍合作最重要的是忠誠和透明。絕對不要背後搞小動作，他會發現而且不會給第二次機會。展現你的深度，膚淺會讓他失去興趣。'},
+  {name:'Sagittarius',zh:'射手座',symbol:'♐',dateRange:[11,22,12,21],element:'Fire',mode:'Mutable',ruler:'Jupiter',
+    traits:'最有遠見的冒險家。樂觀、愛自由、視野開闊。看問題總是先看大格局，不糾結細節。',
+    work:'適合國際業務、教育培訓、策略規劃。是帶領團隊看向遠方的人。',
+    shadow:'太過理想化，忽略現實限制。承諾容易、兌現困難。不喜歡被規則和制度約束。',
+    coopTip:'給射手足夠的自由度和大格局的目標。不要用瑣碎的規定綁住他。他的價值在於方向感和激勵力。'},
+  {name:'Capricorn',zh:'摩羯座',symbol:'♑',dateRange:[12,22,1,19],element:'Earth',mode:'Cardinal',ruler:'Saturn',
+    traits:'最有野心和紀律的攀登者。長期主義者，願意花十年磨一劍。表面冷淡但內心火熱。',
+    work:'適合高階管理、投資、任何需要「延遲滿足」的長期專案。是走得最遠的人。',
+    shadow:'太過嚴肅，不容易放鬆。對「無用」的社交和娛樂沒有耐心。容易工作過度。',
+    coopTip:'跟摩羯合作要展現你的計畫性和長期承諾。他尊重有紀律的人。不要用短期利益誘惑他，用長期願景打動他。'},
+  {name:'Aquarius',zh:'水瓶座',symbol:'♒',dateRange:[1,20,2,18],element:'Air',mode:'Fixed',ruler:'Uranus',
+    traits:'最獨立的創新者。不按常理出牌，重視群體利益勝過個人關係。有強烈的使命感和理想主義。',
+    work:'適合科技、社會創新、研發。是團隊中最能帶來突破性想法的人。',
+    shadow:'有時太過疏離，讓人覺得不近人情。固執於自己的「與眾不同」。',
+    coopTip:'尊重水瓶的獨立性和獨特觀點。不要試圖讓他「像大家一樣」。用理念和願景打動他，而不是利益。'},
+  {name:'Pisces',zh:'雙魚座',symbol:'♓',dateRange:[2,19,3,20],element:'Water',mode:'Mutable',ruler:'Neptune',
+    traits:'最有同理心的直覺者。能感受到空間裡每個人的情緒。創造力和想像力驚人，但有時分不清想像和現實。',
+    work:'適合藝術創作、心理諮詢、公益事業。是讓團隊有靈魂和溫度的人。',
+    shadow:'界限模糊，容易吸收他人負面情緒。有時太過逃避現實。',
+    coopTip:'給雙魚一個安全的創作空間，不要用KPI壓他。他的價值在於直覺和創意，用數據逼他反而會失靈。'}
+];
+
+function getZodiac(month,day){
+  for(const z of ZODIAC){
+    const[sm,sd,em,ed]=z.dateRange;
+    if(sm<=em){if((month===sm&&day>=sd)||(month===em&&day<=ed)||(month>sm&&month<em))return z;}
+    else{if((month===sm&&day>=sd)||(month===em&&day<=ed)||month>sm||month<em)return z;}
+  }
+  return ZODIAC[9];
+}
+
+// 星座相位系統（比只看元素更精確）
+// 0=合 1=半六合 2=六分 3=刑 4=三合 5=對沖 6=梅花 etc.
+const ZODIAC_ASPECTS=(()=>{
+  const signs=ZODIAC.map(z=>z.name);
+  const aspects={};
+  for(let i=0;i<12;i++){
+    for(let j=i;j<12;j++){
+      const diff=Math.abs(j-i);
+      const key=signs[i]+'-'+signs[j];
+      const key2=signs[j]+'-'+signs[i];
+      let asp;
+      if(diff===0)asp={type:'合相',harmony:5,desc:'同星座，深刻理解也放大盲點'};
+      else if(diff===1||diff===11)asp={type:'半六合',harmony:3,desc:'相鄰星座，互相學習但價值觀不同'};
+      else if(diff===2||diff===10)asp={type:'六分相',harmony:4,desc:'友善協調，合作順暢且互相欣賞'};
+      else if(diff===3||diff===9)asp={type:'刑相',harmony:1,desc:'90度張力，彼此激發但容易摩擦'};
+      else if(diff===4||diff===8)asp={type:'三合',harmony:5,desc:'同元素120度，天生的盟友和知音'};
+      else if(diff===5||diff===7)asp={type:'梅花相',harmony:2,desc:'150度不協調，需要調整才能合作'};
+      else if(diff===6)asp={type:'對沖',harmony:2,desc:'180度對立，互相吸引也互相挑戰'};
+      aspects[key]=asp;
+      aspects[key2]=asp;
+    }
+  }
+  return aspects;
+})();
+
+// 守護星關係
+const RULER_COMPAT={
+  'Sun-Moon':{desc:'日月配合，公私分明的好搭檔。一人負責外在形象，一人負責內在團結。'},
+  'Mars-Venus':{desc:'行動力配美感。一人衝鋒陷陣，一人維護關係。互相吸引但也需要妥協。'},
+  'Mercury-Jupiter':{desc:'細節配格局。一人負責精確執行，一人負責大方向。互補型組合。'},
+  'Saturn-Jupiter':{desc:'紀律配擴張。一人踩剎車，一人踩油門。張力很大但能平衡發展。'},
+  'Saturn-Mars':{desc:'耐力配爆發力。長期戰略配短期衝刺。需要互相尊重節奏差異。'},
+  'Venus-Mercury':{desc:'美學配邏輯。品味配分析。在創意產業中是黃金組合。'},
+  'Uranus-Saturn':{desc:'創新配傳統。顛覆配穩定。衝突點很大但能產生革命性成果。'},
+  'Neptune-Mercury':{desc:'直覺配理性。夢想配數據。需要找到讓兩種思維共存的方法。'},
+  'Pluto-Moon':{desc:'深度配情感。一人挖掘真相，一人維繫情感。強烈但不輕鬆的組合。'}
+};
+
+function getRulerCompat(r1,r2){
+  if(r1===r2)return{desc:`同為${r1}守護，行事風格和驅動力一致。默契好但缺乏互補。`};
+  const key1=r1+'-'+r2,key2=r2+'-'+r1;
+  return RULER_COMPAT[key1]||RULER_COMPAT[key2]||null;
+}
+
+// 元素互動（保留但增強）
+const ELEM_COMPAT={
+  'Fire-Fire':{type:'同元素',mode:'熱情同盟',adv:'彼此都是行動派，合作節奏快、很有衝勁。適合一起衝刺短期專案或需要能量的推廣活動。',warn:'兩人都要主導，容易起衝突。需要有一方學會退讓，或找到不同的主場。'},
+  'Fire-Earth':{type:'互補',mode:'穩定推進者',adv:'你的衝勁加上對方的務實，能把想法落地。適合「策略+執行」搭配，是創業團隊的經典組合。',warn:'節奏差異大。你可能覺得對方太慢太保守，對方覺得你太急太冒險。定期校準期望值。'},
+  'Fire-Air':{type:'相生',mode:'靈感夥伴',adv:'風助火勢！對方的點子能讓你更有方向。適合腦力激盪和創意合作，彼此能激發出最好的想法。',warn:'可能只有火花沒有落地。兩個人都興奮地聊完後，需要找土象的人來執行。'},
+  'Fire-Water':{type:'挑戰',mode:'張力成長',adv:'對方的情感敏銳度能彌補你的直率。在需要同理心的場景（談判、客戶關係），對方是你的隱形幫手。',warn:'水會滅火。當對方太情緒化、你太粗線條時，很容易互相傷害。保持覺察和同理心。'},
+  'Earth-Earth':{type:'同元素',mode:'穩固根基',adv:'雙方都務實可靠，承諾了就會做到。適合長期合作、重要合約、共同投資。是最讓人放心的組合。',warn:'可能太保守，錯過風口。需要外部刺激來保持創新。定期引入新觀點。'},
+  'Earth-Air':{type:'挑戰',mode:'思維碰撞',adv:'對方的發散思維能幫你看到新可能，你的務實能幫對方落地。如果能互相尊重，是很好的創新組合。',warn:'溝通風格差異大。你重結果，對方重過程和想法。要學會欣賞對方的邏輯方式。'},
+  'Earth-Water':{type:'相生',mode:'滋養成長',adv:'水潤土沃。對方的直覺和你的務實結合很好，能做出有溫度又實際的成果。在B2C領域特別有效。',warn:'水太多會讓土變泥。當對方情緒過重時要適度抽離，保持清明的判斷。'},
+  'Air-Air':{type:'同元素',mode:'腦力同盟',adv:'溝通無障礙，想法源源不絕。適合做顧問、策劃、研究類合作。是最會「聊」的組合。',warn:'都活在腦袋裡，缺乏行動力和情感連結。講完一大堆卻沒人動手的風險很高。'},
+  'Air-Water':{type:'挑戰',mode:'理感交織',adv:'對方教你感受，你教對方思考。互補性強，能做出兼顧邏輯和人性的決策。在產品設計領域很有價值。',warn:'你覺得對方不理性，對方覺得你太冷。需要雙方都跨出舒適圈來理解對方。'},
+  'Water-Water':{type:'同元素',mode:'深度共鳴',adv:'彼此直覺理解對方，不需多言就能默契合作。適合需要高度信任的工作，如心理諮詢、創意內容。',warn:'可能過度共情，迷失在情緒裡。需要有人能拉回理性，或設定明確的工作框架。'}
+};
+
+function getElemCompat(e1,e2){
+  const key1=e1+'-'+e2, key2=e2+'-'+e1;
+  return ELEM_COMPAT[key1]||ELEM_COMPAT[key2]||{type:'中性',mode:'自然互動',adv:'無明顯衝突或加分。',warn:''};
+}
+
+function zodiacCoop(mySign,theirSign){
+  if(!mySign||!theirSign)return null;
+  const compat=getElemCompat(mySign.element,theirSign.element);
+
+  // 星座相位
+  const aspectKey=mySign.name+'-'+theirSign.name;
+  const aspect=ZODIAC_ASPECTS[aspectKey]||{type:'',harmony:3,desc:''};
+
+  // 守護星
+  const rulerCompat=getRulerCompat(mySign.ruler,theirSign.ruler);
+
+  // Mode compatibility
+  let modeNote='';
+  if(mySign.mode===theirSign.mode){
+    if(mySign.mode==='Cardinal')modeNote='兩人都是發起者，都想帶頭。優點是行動力強，但需要協調誰主導哪個領域。';
+    else if(mySign.mode==='Fixed')modeNote='兩人都很堅持己見。一旦方向一致威力巨大，但對立時會僵持不下。';
+    else modeNote='兩人都很靈活。合作彈性大但可能方向飄移，需要設定明確目標。';
+  }else{
+    const modes=[mySign.mode,theirSign.mode].sort().join('+');
+    if(modes==='Cardinal+Fixed')modeNote='一人發起、一人堅守。搭配得好會是「創新+穩定」的最佳組合。';
+    else if(modes==='Cardinal+Mutable')modeNote='一人帶方向、一人靈活配合。合作效率高，但要確保靈活的一方不會沒主見。';
+    else if(modes==='Fixed+Mutable')modeNote='一人堅定、一人變通。固定的一方是錨，變通的一方是帆。';
+  }
+
+  // 綜合合作模式
+  let mode=`${aspect.type} · ${compat.mode}`;
+  let advice=compat.adv;
+  let warning=compat.warn;
+  let bonus='';
+
+  // 加入相位層面的細節
+  if(aspect.type==='三合')bonus='三合相位是最和諧的關係之一——你們天生默契，不需要刻意磨合就能找到合作的節奏。';
+  else if(aspect.type==='六分相')bonus='六分相代表友善的互補。你們很容易找到合作的切入點，彼此欣賞對方的能力。';
+  else if(aspect.type==='對沖')bonus='對沖是既對立又互相吸引的關係。你們看問題的角度完全相反，但正因如此，合在一起能看到完整的圖像。如果能超越衝突，是最有力量的搭檔。';
+  else if(aspect.type==='刑相')bonus='刑相帶來張力和壓力，但也是最能推動成長的關係。每次摩擦都是進化的機會。';
+  else if(mySign.name===theirSign.name)bonus='同星座的人像照鏡子。你們深刻理解彼此的動力和恐懼。但也會放大同樣的盲點——需要有意識地引入不同觀點。';
+
+  if(rulerCompat)bonus+=(bonus?'\n':'')+'【守護星】'+rulerCompat.desc;
+
+  return{mode,advice,warning,bonus,modeNote,relation:{type:compat.type,desc:compat.type},theirSign,mySign,aspect,harmony:aspect.harmony};
+}
+
+
+// ============================================================
+// UNIFIED COOPERATION ENGINE
+// ============================================================
+function calcCoop(selfP, theirFortune){
+  if(!selfP||!theirFortune)return null;
+  if(APP.theme==='east'){
+    if(selfP.fortune?.profile&&theirFortune.profile){
+      // 完整八字分析（有對方四柱）
+      return eastCoopAnalysis(selfP.fortune.profile, theirFortune.profile, selfP.fortune.stemBranch, theirFortune.stemBranch);
+    }
+    // Fallback: 只有五行
+    const myE=selfP.fortune?.profile?.dayMaster;
+    if(!myE)return null;
+    let theirE=theirFortune.profile?.dayMaster||theirFortune.trigram?.element;
+    if(!theirE)return null;
+    const rel=elemRel(myE,theirE);
+    let mode='',adv='',warn='';
+    switch(rel.type){
+      case '同類':mode='同志夥伴';adv='同屬性，思維節奏接近。適合共同創作。';warn='缺乏互補。';break;
+      case '我生':mode='你是給予方';adv='適合導師或資源提供者角色。';warn='注意能量消耗。';break;
+      case '生我':mode='對方是貴人';adv='對方能提供資源和支持。';warn='不要過度依賴。';break;
+      case '我剋':mode='你主導';adv='適合主導-執行的搭配。';warn='不要過度施壓。';break;
+      case '剋我':mode='對方制約';adv='有壓力但帶來成長。';warn='短期合作為佳。';break;
+    }
+    let bonus='';
+    if(selfP.fortune?.profile?.missing?.includes(theirE))bonus=`對方的「${theirE}」是你命盤所缺，有互補價值。`;
+    return{mode,advice:adv,warning:warn,bonus,relation:rel};
+  } else {
+    const mySign=selfP.fortune?.zodiac;
+    const theirSign=theirFortune.zodiac;
+    if(!mySign||!theirSign)return null;
+    return zodiacCoop(mySign,theirSign);
+  }
+}
+
+// ============================================================
+// THEME-AWARE FORTUNE RECOMPUTATION
+// 切換東/西時，依據已儲存的出生資料自動重算 fortune
+// ============================================================
+function recomputeSelfFortune(){
+  if(!APP.self)return false;
+  if(APP.theme==='east'){
+    if(APP.self.year && APP.self.month && APP.self.day){
+      const sb=getSB(APP.self.year, APP.self.month, APP.self.day, APP.self.hour ?? null);
+      APP.self.fortune={stemBranch:sb, profile:wuxingProfile(sb)};
+      return true;
+    }
+    // 缺出生年 → 無法算八字
+    APP.self.fortune=null;
+    return false;
+  }else{
+    if(APP.self.month && APP.self.day){
+      APP.self.fortune={zodiac:getZodiac(APP.self.month, APP.self.day)};
+      return true;
+    }
+    APP.self.fortune=null;
+    return false;
+  }
+}
+
+function recomputeContactFortune(c){
+  // 回傳 true 代表成功算出對應主題的 fortune
+  if(APP.theme==='east'){
+    const fortunes=[];
+    // 八字（需要 y/m/d）
+    if(c.birthYear && c.birthMonth && c.birthDay){
+      const sb=getSB(c.birthYear, c.birthMonth, c.birthDay, c.birthHour ?? null);
+      const profile=wuxingProfile(sb);
+      fortunes.push({method:'bazi', stemBranch:sb, profile, cooperation:calcCoop(APP.self,{profile, stemBranch:sb})});
+    }
+    // 數字易經（只要有號碼）
+    if(c.number){
+      const tri=getNumTrigram(c.number);
+      if(tri){
+        fortunes.push({method:'yijing', trigram:tri, cooperation:calcCoop(APP.self,{trigram:tri})});
+      }
+    }
+    c.fortunes=fortunes;
+    c.fortune=fortunes[0]||null;
+    return fortunes.length>0;
+  }else{
+    if(c.birthMonth && c.birthDay){
+      const zodiac=getZodiac(c.birthMonth, c.birthDay);
+      const f={method:'zodiac', zodiac, cooperation:calcCoop(APP.self,{zodiac})};
+      c.fortune=f; c.fortunes=[f];
+      return true;
+    }
+    c.fortune=null; c.fortunes=[];
+    return false;
+  }
+}
+
+async function recomputeAllForTheme(){
+  recomputeSelfFortune();
+  let ok=0, miss=0;
+  for(const c of APP.contacts){
+    if(recomputeContactFortune(c)){ok++;}else{miss++;}
+    try{ await dbPut('contacts', c); }catch(e){ console.error('persist contact failed', e); }
+  }
+  if(APP.self) try{ await dbPut('meta',{key:'self', data:APP.self}); }catch(e){ console.error('persist self failed', e); }
+  return {ok, miss};
+}
+
+// ============================================================
+// IndexedDB
+// ============================================================
+const DB_NAME='renmai_v3';let db=null;
+function openDB(){return new Promise((res,rej)=>{const r=indexedDB.open(DB_NAME,1);r.onupgradeneeded=e=>{const d=e.target.result;if(!d.objectStoreNames.contains('contacts'))d.createObjectStore('contacts',{keyPath:'id'});if(!d.objectStoreNames.contains('meta'))d.createObjectStore('meta',{keyPath:'key'});};r.onsuccess=e=>{db=e.target.result;res(db);};r.onerror=e=>rej(e);});}
+function dbPut(s,d){return new Promise((r,j)=>{const t=db.transaction(s,'readwrite');t.objectStore(s).put(d);t.oncomplete=()=>r();t.onerror=e=>j(e);});}
+function dbGet(s,k){return new Promise((r,j)=>{const t=db.transaction(s,'readonly');const q=t.objectStore(s).get(k);q.onsuccess=()=>r(q.result||null);q.onerror=e=>j(e);});}
+function dbGetAll(s){return new Promise((r,j)=>{const t=db.transaction(s,'readonly');const q=t.objectStore(s).getAll();q.onsuccess=()=>r(q.result||[]);q.onerror=e=>j(e);});}
+function dbDel(s,k){return new Promise((r,j)=>{const t=db.transaction(s,'readwrite');t.objectStore(s).delete(k);t.oncomplete=()=>r();t.onerror=e=>j(e);});}
+function dbClear(s){return new Promise((r,j)=>{const t=db.transaction(s,'readwrite');t.objectStore(s).clear();t.oncomplete=()=>r();t.onerror=e=>j(e);});}
+
+// ============================================================
+// APP STATE
+// ============================================================
+const APP={theme:'east',contacts:[],self:null,editingId:null,filter:'',trust:0,method:'bazi',apiKey:'',recording:false,recognition:null,initialized:false};
+const $=id=>document.getElementById(id);
+const esc=s=>s?String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])):'';
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+
+// ============================================================
+// THEME
+// ============================================================
+function chooseTheme(theme){
+  APP.theme=theme;
+  dbPut('meta',{key:'theme',data:theme});
+  applyTheme(theme);
+  $('onboarding').classList.add('hiding');
+  setTimeout(()=>{$('onboarding').style.display='none';$('app').classList.add('visible');},600);
+}
+
+function applyTheme(theme){
+  const prev=APP.theme;
+  APP.theme=theme;
+  document.documentElement.setAttribute('data-theme',theme);
+  dbPut('meta',{key:'theme',data:theme});
+  // Update UI text
+  $('headerSeal').textContent=theme==='east'?'識':'✦';
+  $('headerTitle').textContent=theme==='east'?'人脈手札':'Connections';
+  $('selfSetupTitle').textContent=theme==='east'?'我的命理':'My Astro Profile';
+  document.querySelectorAll('.theme-switch-btn').forEach(b=>b.classList.toggle('active',b.dataset.theme===theme));
+  document.querySelector('meta[name="theme-color"]').content=theme==='east'?'#1a1310':'#0c0a14';
+  renderFilterChips();
+  renderFortuneInputs();
+
+  // 依新主題自動重算每位人脈與自己的命理分析
+  // （DB 還沒初始化時跳過，由 init() 流程處理）
+  if(typeof db!=='undefined' && db && Array.isArray(APP.contacts)){
+    recomputeAllForTheme().then(({ok,miss})=>{
+      renderList();
+      renderSelfSetup();
+      if(APP.initialized && prev && prev!==theme){
+        if(miss>0) toast(`已切換為${theme==='east'?'東方':'西方'}：${ok} 筆已轉換，${miss} 筆資料不足`);
+        else if(ok>0) toast(`已切換為${theme==='east'?'東方':'西方'}：${ok} 筆已自動轉換`);
+      }
+    }).catch(e=>{console.error('recompute failed',e); renderList(); renderSelfSetup();});
+  }else{
+    renderList();
+    renderSelfSetup();
+  }
+}
+
+function renderFilterChips(){
+  const el=$('filterChips');
+  if(APP.theme==='east'){
+    el.innerHTML=`<button class="chip active" data-f="" onclick="setFilter(this)">全部</button>
+      <button class="chip" data-f="木" onclick="setFilter(this)">木</button>
+      <button class="chip" data-f="火" onclick="setFilter(this)">火</button>
+      <button class="chip" data-f="土" onclick="setFilter(this)">土</button>
+      <button class="chip" data-f="金" onclick="setFilter(this)">金</button>
+      <button class="chip" data-f="水" onclick="setFilter(this)">水</button>
+      <button class="chip" data-f="相生" onclick="setFilter(this)">相生</button>
+      <button class="chip" data-f="相剋" onclick="setFilter(this)">相剋</button>`;
+  }else{
+    el.innerHTML=`<button class="chip active" data-f="" onclick="setFilter(this)">All</button>
+      <button class="chip" data-f="Fire" onclick="setFilter(this)">🔥 Fire</button>
+      <button class="chip" data-f="Earth" onclick="setFilter(this)">🌍 Earth</button>
+      <button class="chip" data-f="Air" onclick="setFilter(this)">💨 Air</button>
+      <button class="chip" data-f="Water" onclick="setFilter(this)">💧 Water</button>
+      <button class="chip" data-f="相生" onclick="setFilter(this)">Compatible</button>
+      <button class="chip" data-f="挑戰" onclick="setFilter(this)">Challenging</button>`;
+  }
+}
+
+function renderFortuneInputs(){
+  const tabs=$('methodTabs');
+  const area=$('fortuneInputArea');
+  const label=$('fortuneSectionLabel');
+  if(APP.theme==='east'){
+    label.textContent='命理資料';
+    tabs.innerHTML=`<button class="method-tab active" data-m="bazi" onclick="switchMethod('bazi')">八字</button><button class="method-tab" data-m="yijing" onclick="switchMethod('yijing')">數字易經</button>`;
+    APP.method='bazi';
+    area.innerHTML=`<div style="font-size:11px;color:var(--fg3);margin-bottom:10px;line-height:1.5">兩種命理可以同時填寫，會分別顯示兩種分析。</div><div id="fBaziArea"><div class="row row-3"><div class="field"><label>出生年</label><input type="number" id="fYear" placeholder="1990"></div><div class="field"><label>月</label><input type="number" id="fMonth" placeholder="1-12" min="1" max="12"></div><div class="field"><label>日</label><input type="number" id="fDay" placeholder="1-31" min="1" max="31"></div></div><div class="row row-2"><div class="field"><label>時辰</label><input type="number" id="fHour" placeholder="0-23" min="0" max="23"></div><div class="field"><label>性別</label><select id="fGender"><option value="">未填</option><option>男</option><option>女</option></select></div></div></div><div id="fYijingArea" style="display:none"><div class="field"><label>手機後四碼或生日數字</label><input type="text" id="fNumber" placeholder="6824" maxlength="8"></div></div>`;
+  }else{
+    label.textContent='Astro Data';
+    tabs.innerHTML='';
+    APP.method='zodiac';
+    area.innerHTML=`<div class="row row-2"><div class="field"><label>Birth Month</label><input type="number" id="fMonth" placeholder="1-12" min="1" max="12"></div><div class="field"><label>Birth Day</label><input type="number" id="fDay" placeholder="1-31" min="1" max="31"></div></div><div class="field"><label>Birth Year (optional)</label><input type="number" id="fYear" placeholder="1990"></div>`;
+  }
+}
+
+function switchMethod(m){
+  APP.method=m;
+  document.querySelectorAll('.method-tab').forEach(t=>t.classList.toggle('active',t.dataset.m===m));
+  const bazi=document.getElementById('fBaziArea');
+  const yijing=document.getElementById('fYijingArea');
+  if(bazi)bazi.style.display=m==='bazi'?'block':'none';
+  if(yijing)yijing.style.display=m==='yijing'?'block':'none';
+}
+
+// ============================================================
+// RENDER LIST
+// ============================================================
+function getContactElement(c){
+  if(APP.theme==='east')return c.fortune?.profile?.dayMaster||c.fortune?.trigram?.element||'';
+  return c.fortune?.zodiac?.element||'';
+}
+
+function getAvatarClass(c){
+  const e=getContactElement(c);
+  if(!e)return 'av-none';
+  if(APP.theme==='east'){return{木:'av-wood',火:'av-fire',土:'av-earth',金:'av-metal',水:'av-water'}[e]||'av-none';}
+  return{Fire:'av-fire',Earth:'av-earth',Air:'av-air',Water:'av-water'}[e]||'av-none';
+}
+
+function getAvatarText(c){
+  if(APP.theme==='east')return c.fortune?.profile?.dayMaster||c.fortune?.trigram?.element||c.name.charAt(0);
+  return c.fortune?.zodiac?.symbol||c.name.charAt(0);
+}
+
+function renderList(){
+  const q=$('searchInput').value.toLowerCase();
+  let list=APP.contacts.filter(c=>{
+    if(q){const hay=[c.name,c.alias,c.field,c.role,c.company,(c.traits||[]).join(','),c.notes].join(' ').toLowerCase();if(!hay.includes(q))return false;}
+    if(APP.filter){
+      const elem=getContactElement(c);
+      if(['木','火','土','金','水','Fire','Earth','Air','Water'].includes(APP.filter)){if(elem!==APP.filter)return false;}
+      if(APP.filter==='相生'){const t=c.fortune?.cooperation?.relation?.type;if(!t||!['我生','生我','相生'].includes(t))return false;}
+      if(APP.filter==='相剋'){const t=c.fortune?.cooperation?.relation?.type;if(!t||!['我剋','剋我','挑戰'].includes(t))return false;}
+      if(APP.filter==='挑戰'){const t=c.fortune?.cooperation?.relation?.type;if(t!=='挑戰')return false;}
+    }
+    return true;
+  });
+
+  const el=$('contactList');
+  if(!list.length){el.innerHTML=`<div class="empty-list"><div class="big">${APP.theme==='east'?'☯':'✦'}</div><div class="t">${APP.contacts.length?'沒有符合條件的人脈':'尚未記錄任何人脈'}</div></div>`;return;}
+
+  el.innerHTML=list.map(c=>{
+    const avClass=getAvatarClass(c);
+    const avText=esc(getAvatarText(c));
+    const sub=[c.role,c.field,c.company].filter(Boolean).join(' · ');
+    const coopMode=c.fortune?.cooperation?.mode||'';
+    const coopIcon=c.fortune?.cooperation?.mainGod?TEN_GOD_INFO[c.fortune.cooperation.mainGod]?.icon:'';
+    const harmony=c.fortune?.cooperation?.harmony;
+    const harmonyStr=harmony!=null?'★'.repeat(Math.min(harmony,5)):'';
+    const trust=c.trust||0;
+    const dots=[1,2,3,4,5].map(i=>`<i class="${i<=trust?'on':''}"></i>`).join('');
+    return `<div class="contact-item" onclick="showDetail('${c.id}')"><div class="ci-avatar ${avClass}">${avText}</div><div class="ci-body"><div class="ci-name">${esc(c.name)}${c.alias?' · '+esc(c.alias):''}</div>${sub?`<div class="ci-sub">${esc(sub)}</div>`:''}</div><div class="ci-right">${coopMode?`<div class="ci-coop">${coopIcon?coopIcon+' ':''}${esc(coopMode.split(' ·')[0])}</div>`:''}<div class="ci-trust">${harmonyStr||dots}</div></div></div>`;
+  }).join('');
+}
+
+function setFilter(el){document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');APP.filter=el.dataset.f;renderList();}
+function setTrust(n){APP.trust=APP.trust===n?0:n;document.querySelectorAll('#fTrustRow .trust-circle').forEach((c,i)=>c.classList.toggle('on',i<APP.trust));}
+
+// ============================================================
+// DETAIL
+// ============================================================
+function showDetail(id){
+  const c=APP.contacts.find(x=>x.id===id);if(!c)return;
+  APP.editingId=id;
+  const avClass=getAvatarClass(c);
+  const avText=esc(getAvatarText(c));
+  let html=`<div class="detail-hero"><div class="detail-avatar ${avClass}">${avText}</div><div class="detail-name">${esc(c.name)}</div><div class="detail-sub">${[c.role,c.field,c.company].filter(Boolean).join(' · ')||'—'}</div></div>`;
+
+  if(c.phone||c.email){
+    html+=`<div class="detail-section"><div class="detail-section-title">${APP.theme==='east'?'聯絡方式':'CONTACT'}</div><div class="detail-grid">`;
+    if(c.phone)html+=`<div class="dg-item"><div class="key">TEL</div><div class="val"><a href="tel:${esc(c.phone)}" style="color:var(--fg);text-decoration:none">${esc(c.phone)}</a></div></div>`;
+    if(c.email)html+=`<div class="dg-item"><div class="key">EMAIL</div><div class="val" style="font-size:12px;word-break:break-all"><a href="mailto:${esc(c.email)}" style="color:var(--fg);text-decoration:none">${esc(c.email)}</a></div></div>`;
+    html+=`</div></div>`;
+  }
+
+  // Fortune section(s) — 多種命理時逐一展示
+  const _fortunes=(c.fortunes&&c.fortunes.length)?c.fortunes:(c.fortune?[c.fortune]:[]);
+  const _multi=_fortunes.length>1;
+  const _methodLabel=(m)=>m==='bazi'?'八字':m==='yijing'?'數字易經':m==='zodiac'?(APP.theme==='east'?'星座':'Zodiac'):'';
+  for(const f of _fortunes){
+    const _suffix=_multi?` · ${_methodLabel(f.method)}`:'';
+    html+=`<div class="detail-section"><div class="detail-section-title">${APP.theme==='east'?'命理畫像':'ASTRO PROFILE'}${_suffix}</div>`;
+    if(APP.theme==='east'){
+      if(f.method==='bazi'&&f.profile){
+        const p=f.profile,sb=f.stemBranch;
+        // 四柱顯示
+        html+=`<div style="background:var(--bg);padding:14px;border-radius:10px;margin-bottom:12px;font-family:var(--mono);font-size:13px;text-align:center;letter-spacing:0.15em;color:var(--accent2)">${p.fourPillars||''}</div>`;
+        html+=`<div class="detail-grid">
+          <div class="dg-item"><div class="key">日主</div><div class="val">${sb.day.s}${sb.day.b} · ${p.dayMaster}${p.dayYinYang}</div></div>
+          <div class="dg-item"><div class="key">${p.strength?.strength||''}</div><div class="val" style="font-size:13px">${p.strength?.desc||''}</div></div>
+          <div class="dg-item"><div class="key">最強</div><div class="val">${p.strongest}</div></div>
+          <div class="dg-item"><div class="key">缺</div><div class="val">${p.missing.length?p.missing.join('、'):p.weakest+'(弱)'}</div></div>
+        </div>`;
+        // 五行能量條
+        if(p.wuxingPct){
+          const wxColors={木:'#4CAF50',火:'#f44336',土:'#FF9800',金:'#FFD700',水:'#2196F3'};
+          html+=`<div style="background:var(--bg);padding:14px;border-radius:10px;margin-top:12px">
+            <div style="font-family:var(--mono);font-size:11px;color:var(--fg3);margin-bottom:10px">五行分佈</div>`;
+          for(const[wx,pct] of Object.entries(p.wuxingPct)){
+            html+=`<div style="display:flex;align-items:center;margin-bottom:6px">
+              <span style="width:24px;font-size:13px;font-weight:600">${wx}</span>
+              <div style="flex:1;height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;margin:0 8px">
+                <div style="width:${pct}%;height:100%;background:${wxColors[wx]};border-radius:4px;transition:width 0.5s"></div>
+              </div>
+              <span style="width:32px;font-size:11px;color:var(--fg3);text-align:right">${pct}%</span>
+            </div>`;
+          }
+          html+=`</div>`;
+        }
+        // 天干性格（十干論命）
+        if(p.stemProfile){
+          const sp=p.stemProfile;
+          html+=`<div class="coop-card" style="margin-top:12px;border-color:var(--bg4)">
+            <div class="mode">${sp.name} · ${sp.nature}</div>
+            <div class="advice" style="white-space:pre-line"><strong>性格：</strong>${sp.traits}\n\n<strong>工作風格：</strong>${sp.work}\n\n<strong>社交面：</strong>${sp.social}\n\n<strong>盲區：</strong>${sp.weakness}\n\n<strong>怎麼跟此人合作：</strong>${sp.cooperation}</div>
+          </div>`;
+        }
+        // 身強弱建議
+        if(p.strength){
+          html+=`<div style="background:var(--bg);padding:14px;border-radius:10px;margin-top:12px;font-size:13px;line-height:1.7;color:var(--fg2)">
+            <span style="color:var(--accent);font-weight:700">${p.strength.strength}</span> — ${p.strength.advice}
+          </div>`;
+        }
+        // 十神分佈
+        if(p.tenGods&&Object.keys(p.tenGods).length){
+          html+=`<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px">`;
+          for(const[god,count] of Object.entries(p.tenGods)){
+            const info=TEN_GOD_INFO[god];
+            html+=`<span class="chip" style="font-size:11px;padding:5px 10px" title="${info?.meaning||''}">${info?.icon||''} ${god}${count>=1?'×'+Math.round(count):''}</span>`;
+          }
+          html+=`</div>`;
+        }
+      }else if(f.method==='yijing'&&f.trigram){
+        const t=f.trigram;
+        html+=`<div class="detail-grid"><div class="dg-item"><div class="key">本卦</div><div class="val">${t.name}卦 · ${t.element}</div></div><div class="dg-item"><div class="key">數字</div><div class="val">${esc(c.number)}</div></div></div>`;
+        html+=`<div class="hex-display">${[...t.lines].reverse().map(l=>`<div class="hex-line ${l===0?'broken':''}"></div>`).join('')}</div>`;
+        html+=`<div class="coop-card" style="border-color:var(--bg4)">
+          <div class="mode">${t.name}卦 · ${t.meaning}</div>
+          <div class="advice" style="white-space:pre-line">${t.detail}\n\n<strong>領導風格：</strong>${t.leadership}</div>
+        </div>`;
+      }
+    }else{
+      // West — 更豐富的星座展示
+      if(f.zodiac){
+        const z=f.zodiac;
+        html+=`<div class="detail-grid">
+          <div class="dg-item"><div class="key">SIGN</div><div class="val">${z.symbol} ${z.zh}</div></div>
+          <div class="dg-item"><div class="key">ELEMENT</div><div class="val">${z.element}</div></div>
+          <div class="dg-item"><div class="key">MODE</div><div class="val">${z.mode}</div></div>
+          <div class="dg-item"><div class="key">RULER</div><div class="val">${z.ruler}</div></div>
+        </div>`;
+        html+=`<div class="coop-card" style="margin-top:12px;border-color:var(--bg4)">
+          <div class="mode">${z.symbol} ${z.zh} — ${z.name}</div>
+          <div class="advice" style="white-space:pre-line"><strong>性格：</strong>${z.traits}\n\n<strong>工作風格：</strong>${z.work}\n\n<strong>陰暗面：</strong>${z.shadow}\n\n<strong>合作秘訣：</strong>${z.coopTip}</div>
+        </div>`;
+      }
+    }
+    html+=`</div>`;
+
+    if(f.cooperation){
+      const co=f.cooperation;
+      html+=`<div class="detail-section"><div class="detail-section-title">${APP.theme==='east'?'合作分析':'COMPATIBILITY'}${_suffix}</div>`;
+      // 相位/和諧度指標（西方）
+      if(co.aspect&&co.harmony!=null){
+        const bars='★'.repeat(co.harmony)+'☆'.repeat(5-co.harmony);
+        html+=`<div style="background:var(--bg);padding:12px 14px;border-radius:10px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">
+          <span style="font-family:var(--mono);font-size:11px;color:var(--fg3)">HARMONY</span>
+          <span style="font-size:16px;letter-spacing:3px;color:var(--accent2)">${bars}</span>
+        </div>`;
+      }
+      // 十神關係（東方）
+      if(co.mainGod){
+        const gInfo=TEN_GOD_INFO[co.mainGod];
+        html+=`<div style="background:var(--bg);padding:12px 14px;border-radius:10px;margin-bottom:12px">
+          <div style="font-family:var(--mono);font-size:11px;color:var(--fg3)">十神關係</div>
+          <div style="font-size:16px;font-weight:700;margin-top:4px">${gInfo?.icon||''} ${co.mainGod} — ${gInfo?.meaning||''}</div>
+          ${co.reverseGod?`<div style="font-size:12px;color:var(--fg3);margin-top:4px">你在對方眼中：${co.reverseGod}</div>`:''}
+        </div>`;
+      }
+      // 天干合化/地支關係指標
+      if(co.stemCombo||co.branchRelations?.length){
+        html+=`<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">`;
+        if(co.stemCombo)html+=`<span class="chip" style="font-size:11px;padding:5px 10px;background:var(--accent);color:var(--bg)">合化${co.stemCombo.element} ✦</span>`;
+        if(co.branchRelations){
+          co.branchRelations.forEach(r=>{
+            const colors={'六合':'var(--accent2)','六沖':'#e74c3c','六害':'#e67e22'};
+            html+=`<span class="chip" style="font-size:11px;padding:5px 10px;border-color:${colors[r.type]||'var(--bg4)'};color:${colors[r.type]||'var(--fg3)'}">${r.pair} ${r.type}${r.result?'→'+r.result:''}</span>`;
+          });
+        }
+        html+=`</div>`;
+      }
+      html+=`<div class="coop-card"><div class="mode">${co.mode}</div>
+        <div class="advice" style="white-space:pre-line">${co.advice}${co.bonus?'\n\n'+co.bonus:''}${co.modeNote?'\n\n'+co.modeNote:''}</div>
+        ${co.warning?`<div class="warning" style="white-space:pre-line">⚠ ${co.warning}</div>`:''}
+      </div>`;
+      // 合作場景推薦
+      if(co.scenarios&&co.scenarios.length){
+        html+=`<div style="margin-top:16px"><div style="font-family:var(--mono);font-size:11px;color:var(--fg3);margin-bottom:10px">合作場景適配</div>`;
+        co.scenarios.forEach(s=>{
+          html+=`<div style="display:flex;justify-content:space-between;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--bg3)">
+            <div style="flex:1"><div style="font-size:14px;font-weight:600;color:var(--fg)">${s.title}</div><div style="font-size:12px;color:var(--fg3);margin-top:2px">${s.note}</div></div>
+            <div style="font-size:13px;letter-spacing:1px;color:var(--accent2);white-space:nowrap;margin-left:12px">${s.fit}</div>
+          </div>`;
+        });
+        html+=`</div>`;
+      }
+      html+=`</div>`;
+    }
+  }
+
+  // Observations
+  if(c.trust||(c.traits&&c.traits.length)){
+    html+=`<div class="detail-section"><div class="detail-section-title">${APP.theme==='east'?'觀察':'NOTES'}</div>`;
+    if(c.trust){const dots=[1,2,3,4,5].map(i=>`<i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${i<=c.trust?'var(--accent)':'var(--bg4)'};margin-right:3px"></i>`).join('');html+=`<div style="margin-bottom:12px"><span style="font-family:var(--mono);font-size:11px;color:var(--fg3)">TRUST </span>${dots}</div>`;}
+    if(c.traits&&c.traits.length)html+=`<div style="display:flex;flex-wrap:wrap;gap:6px">${c.traits.map(t=>`<span class="chip" style="font-size:12px;padding:6px 12px">${esc(t)}</span>`).join('')}</div>`;
+    html+=`</div>`;
+  }
+
+  if(c.notes)html+=`<div class="detail-section"><div class="detail-section-title">MEMO</div><div style="font-size:14px;line-height:1.8;color:var(--fg2);white-space:pre-wrap">${esc(c.notes)}</div></div>`;
+  if(c.source)html+=`<div class="detail-section"><div style="font-size:13px;color:var(--fg3)">${APP.theme==='east'?'認識方式':'Source'}：${esc(c.source)}</div></div>`;
+
+  html+=`<div class="detail-actions"><button class="btn btn-danger" onclick="deleteEntry('${c.id}')">移除</button><button class="btn btn-secondary" onclick="switchTab('contacts')">返回</button><button class="btn btn-primary" onclick="editEntry('${c.id}')">編輯</button></div>`;
+
+  $('pageDetail').innerHTML=html;
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  $('pageDetail').classList.add('active');
+}
+
+// ============================================================
+// ADD/EDIT
+// ============================================================
+function openAddSheet(){
+  APP.editingId=null;
+  $('sheetTitle').textContent=APP.theme==='east'?'新增人脈':'New Contact';
+  clearForm();openSheet();
+}
+
+function editEntry(id){
+  const c=APP.contacts.find(x=>x.id===id);if(!c)return;
+  APP.editingId=id;
+  $('sheetTitle').textContent=APP.theme==='east'?'編輯':'Edit';
+  if($('fName'))$('fName').value=c.name||'';
+  if($('fAlias'))$('fAlias').value=c.alias||'';
+  if($('fPhone'))$('fPhone').value=c.phone||'';
+  if($('fEmail'))$('fEmail').value=c.email||'';
+  if($('fRole'))$('fRole').value=c.role||'';
+  if($('fField'))$('fField').value=c.field||'';
+  if($('fCompany'))$('fCompany').value=c.company||'';
+  if($('fSource'))$('fSource').value=c.source||'';
+  if($('fYear'))$('fYear').value=c.birthYear||'';
+  if($('fMonth'))$('fMonth').value=c.birthMonth||'';
+  if($('fDay'))$('fDay').value=c.birthDay||'';
+  if($('fHour'))$('fHour').value=c.birthHour??'';
+  if($('fGender'))$('fGender').value=c.gender||'';
+  if($('fNumber'))$('fNumber').value=c.number||'';
+  $('fFreq').value=c.frequency||'';
+  $('fTraits').value=(c.traits||[]).join(', ');
+  $('fNotes').value=c.notes||'';
+  if(APP.theme==='east'&&c.fortune?.method)switchMethod(c.fortune.method);
+  APP.trust=c.trust||0;
+  document.querySelectorAll('#fTrustRow .trust-circle').forEach((el,i)=>el.classList.toggle('on',i<APP.trust));
+  openSheet();
+}
+
+function clearForm(){
+  ['fName','fAlias','fPhone','fEmail','fField','fCompany','fSource','fTraits','fNotes'].forEach(id=>{if($(id))$(id).value='';});
+  ['fYear','fMonth','fDay','fHour','fNumber'].forEach(id=>{if($(id))$(id).value='';});
+  if($('fRole'))$('fRole').value='';
+  if($('fGender'))$('fGender').value='';
+  $('fFreq').value='';
+  APP.trust=0;
+  document.querySelectorAll('#fTrustRow .trust-circle').forEach(c=>c.classList.remove('on'));
+  $('scanPreview').style.display='none';
+  $('scanPrompt').style.display='block';
+  $('scanResult').style.display='none';
+  $('scanningInd').style.display='none';
+}
+
+function openSheet(){$('addSheetOverlay').classList.add('active');requestAnimationFrame(()=>$('addSheet').classList.add('open'));}
+function closeSheet(){$('addSheet').classList.remove('open');setTimeout(()=>$('addSheetOverlay').classList.remove('active'),350);}
+
+async function saveEntry(){
+  try{
+  const name=$('fName')?.value?.trim();
+  if(!name){toast('請輸入姓名');return;}
+  const c={
+    id:APP.editingId||('c_'+Date.now()+'_'+Math.random().toString(36).slice(2,8)),
+    name,alias:$('fAlias')?.value?.trim()||'',phone:$('fPhone')?.value?.trim()||'',email:$('fEmail')?.value?.trim()||'',
+    role:$('fRole')?.value||'',field:$('fField')?.value?.trim()||'',company:$('fCompany')?.value?.trim()||'',
+    source:$('fSource')?.value?.trim()||'',gender:$('fGender')?.value||'',frequency:$('fFreq')?.value||'',
+    traits:($('fTraits')?.value||'').split(/[,，]/).map(s=>s.trim()).filter(Boolean),
+    notes:($('fNotes')?.value||'').trim(),trust:APP.trust,
+    createdAt:APP.editingId?(APP.contacts.find(x=>x.id===APP.editingId)?.createdAt||Date.now()):Date.now(),
+    updatedAt:Date.now()
+  };
+
+  // Fortune — 東方主題下八字與數字易經獨立儲存，各自有完整命理與合作分析
+  const y=parseInt($('fYear')?.value),m=parseInt($('fMonth')?.value),d=parseInt($('fDay')?.value);
+  if(APP.theme==='east'){
+    const fortunes=[];
+    // 八字（需要 y/m/d）
+    if(y&&m&&d){
+      const h=$('fHour')?.value;
+      c.birthYear=y; c.birthMonth=m; c.birthDay=d;
+      c.birthHour=h===''||h==null?null:parseInt(h);
+      const sb=getSB(y,m,d,c.birthHour);
+      const profile=wuxingProfile(sb);
+      fortunes.push({method:'bazi', stemBranch:sb, profile, cooperation:calcCoop(APP.self,{profile,stemBranch:sb})});
+    }
+    // 數字易經（只要有號碼）
+    const num=$('fNumber')?.value?.trim();
+    if(num){
+      const tri=getNumTrigram(num);
+      if(tri){
+        c.number=num;
+        fortunes.push({method:'yijing', trigram:tri, cooperation:calcCoop(APP.self,{trigram:tri})});
+      }
+    }
+    c.fortunes=fortunes;
+    c.fortune=fortunes[0]||null; // 主要 fortune（用於清單頭像/篩選）
+  }else{
+    if(m&&d){
+      c.birthMonth=m; c.birthDay=d; if(y)c.birthYear=y;
+      const zodiac=getZodiac(m,d);
+      const f={method:'zodiac', zodiac, cooperation:calcCoop(APP.self,{zodiac})};
+      c.fortune=f; c.fortunes=[f];
+    }
+  }
+
+  await dbPut('contacts',c);
+  const idx=APP.contacts.findIndex(x=>x.id===c.id);
+  if(idx>=0)APP.contacts[idx]=c;else APP.contacts.push(c);
+  closeSheet();renderList();toast(APP.editingId?'已更新':'已新增');
+  }catch(e){toast('保存錯誤：'+e.message);console.error(e);}
+}
+
+async function deleteEntry(id){
+  const ok=await customConfirm('確定要移除這筆人脈？');
+  if(!ok)return;
+  await dbDel('contacts',id);
+  APP.contacts=APP.contacts.filter(c=>c.id!==id);
+  switchTab('contacts');toast('已移除');
+}
+
+// Quick add
+function openQuickAdd(){$('quickAddBar').classList.add('active');$('qaName').focus();$('fab').style.display='none';}
+function closeQuickAdd(){$('quickAddBar').classList.remove('active');$('qaName').value='';$('qaBirth').value='';$('fab').style.display='flex';}
+
+async function quickSave(){
+  try{
+  const name=$('qaName').value.trim();if(!name){toast('請輸入姓名');return;}
+  const birth=$('qaBirth').value.trim();
+  const c={id:'c_'+Date.now()+'_'+Math.random().toString(36).slice(2,8),name,alias:'',phone:'',email:'',role:'',field:'',company:'',source:'',gender:'',frequency:'',traits:[],notes:'',trust:0,createdAt:Date.now(),updatedAt:Date.now()};
+  if(birth){
+    let y,m,d;
+    if(birth.length===8){y=+birth.slice(0,4);m=+birth.slice(4,6);d=+birth.slice(6,8);}
+    else if(birth.length===4){m=+birth.slice(0,2);d=+birth.slice(2,4);}
+    if(y&&m&&d){c.birthYear=y;c.birthMonth=m;c.birthDay=d;}
+    else if(m&&d){c.birthMonth=m;c.birthDay=d;}
+    if(m&&d){
+      if(APP.theme==='east'&&y){
+        const sb=getSB(y,m,d,null);const profile=wuxingProfile(sb);
+        const f={method:'bazi',stemBranch:sb,profile,cooperation:calcCoop(APP.self,{profile,stemBranch:sb})};
+        c.fortune=f; c.fortunes=[f];
+      }else{
+        const zodiac=getZodiac(m,d);
+        const f={method:'zodiac',zodiac,cooperation:calcCoop(APP.self,{zodiac})};
+        c.fortune=f; c.fortunes=[f];
+      }
+    }
+  }
+  await dbPut('contacts',c);APP.contacts.push(c);
+  $('qaName').value='';$('qaBirth').value='';
+  renderList();toast('快速新增：'+name);
+  }catch(e){toast('錯誤：'+e.message);console.error(e);}
+}
+
+// ============================================================
+// CARD OCR
+// ============================================================
+function triggerScan(){if(!APP.apiKey){toast('請先在設定填入 API Key');return;}$('scanFile').click();}
+
+async function handleScan(e){
+  const file=e.target.files[0];if(!file)return;
+  $('scanPreview').src=URL.createObjectURL(file);$('scanPreview').style.display='block';
+  $('scanPrompt').style.display='none';$('scanningInd').style.display='block';$('scanResult').style.display='none';
+  const b64=await new Promise(r=>{const rd=new FileReader();rd.onload=()=>r(rd.result.split(',')[1]);rd.readAsDataURL(file);});
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':APP.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:file.type||'image/jpeg',data:b64}},{type:'text',text:'這是一張名片。辨識資訊並回傳 JSON：{"name":"","phone":"","email":"","company":"","title":""}。只回傳 JSON。'}]}]})
+    });
+    const data=await resp.json();$('scanningInd').style.display='none';
+    if(data.error){toast('API 錯誤');return;}
+    const text=data.content.map(c=>c.text||'').join('');
+    const parsed=JSON.parse(text.replace(/```json|```/g,'').trim());
+    if(parsed.name&&$('fName'))$('fName').value=parsed.name;
+    if(parsed.phone&&$('fPhone'))$('fPhone').value=parsed.phone;
+    if(parsed.email&&$('fEmail'))$('fEmail').value=parsed.email;
+    if(parsed.company&&$('fCompany'))$('fCompany').value=parsed.company;
+    if(parsed.title&&$('fField'))$('fField').value=parsed.title;
+    $('scanResult').style.display='block';
+    const labels={name:'姓名',phone:'電話',email:'Email',company:'公司',title:'職稱'};
+    $('scanResultContent').innerHTML=Object.entries(parsed).filter(([,v])=>v).map(([k,v])=>`<div class="sr-item"><span class="sr-key">${labels[k]||k}</span><span>${esc(v)}</span></div>`).join('');
+  }catch(err){$('scanningInd').style.display='none';toast('辨識失敗');}
+  e.target.value='';
+}
+
+// ============================================================
+// VOICE
+// ============================================================
+function toggleVoice(){
+  if(!('webkitSpeechRecognition' in window)&&!('SpeechRecognition' in window)){toast('不支援語音輸入');return;}
+  const btn=$('voiceBtn');
+  if(APP.recording){APP.recognition.stop();APP.recording=false;btn.classList.remove('recording');btn.innerHTML='🎤 語音';return;}
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  APP.recognition=new SR();APP.recognition.lang='zh-TW';APP.recognition.continuous=true;APP.recognition.interimResults=true;
+  APP.recognition.onresult=e=>{let f='';for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)f+=e.results[i][0].transcript;}if(f){const ta=$('fNotes');ta.value+=(ta.value?'\n':'')+f;}};
+  APP.recognition.onerror=()=>{APP.recording=false;btn.classList.remove('recording');btn.innerHTML='🎤 語音';};
+  APP.recognition.onend=()=>{if(APP.recording)APP.recognition.start();else{btn.classList.remove('recording');btn.innerHTML='🎤 語音';}};
+  APP.recognition.start();APP.recording=true;btn.classList.add('recording');btn.innerHTML='⏹ 停止';
+}
+
+// ============================================================
+// SELF PROFILE
+// ============================================================
+function renderSelfSetup(){
+  const area=$('selfSetupArea');
+  if(APP.self?.fortune){
+    if(APP.theme==='east'&&APP.self.fortune.profile){
+      const p=APP.self.fortune.profile,sb=APP.self.fortune.stemBranch;
+      area.innerHTML=`<div style="background:var(--bg);padding:16px;border-radius:12px;margin-bottom:16px"><div style="font-family:var(--mono);font-size:11px;color:var(--fg3);margin-bottom:6px">MY DAY MASTER</div><div style="font-size:22px;font-weight:700">${sb.day.s}${sb.day.b} · ${p.dayMaster}${p.dayYinYang}</div><div style="font-size:13px;color:var(--fg2);margin-top:4px">最強：${p.strongest}${p.missing.length?' · 缺：'+p.missing.join('、'):''}</div></div><button class="btn btn-secondary" style="width:100%" onclick="editSelf()">重新設定</button>`;
+    }else if(APP.theme==='west'&&APP.self.fortune.zodiac){
+      const z=APP.self.fortune.zodiac;
+      area.innerHTML=`<div style="background:var(--bg);padding:16px;border-radius:12px;margin-bottom:16px"><div style="font-family:var(--mono);font-size:11px;color:var(--fg3);margin-bottom:6px">MY SIGN</div><div style="font-size:22px;font-weight:700">${z.symbol} ${z.zh} · ${z.element}</div><div style="font-size:13px;color:var(--fg2);margin-top:4px">${z.mode} · Ruled by ${z.ruler}</div></div><button class="btn btn-secondary" style="width:100%" onclick="editSelf()">重新設定</button>`;
+    }else{
+      area.innerHTML=`<button class="btn btn-primary" style="width:100%" onclick="editSelf()">設定我的資料</button>`;
+    }
+  }else{
+    area.innerHTML=`<div style="text-align:center;padding:20px 0;color:var(--fg3)"><div style="font-size:32px;margin-bottom:8px">${APP.theme==='east'?'☯':'✦'}</div><div>設定後才能看到合作分析</div></div><button class="btn btn-primary" style="width:100%" onclick="editSelf()">設定</button>`;
+  }
+}
+
+function editSelf(){
+  const body=$('selfSheetBody');
+  $('selfSheetTitle').textContent=APP.theme==='east'?'我的命理':'My Astro Profile';
+  if(APP.theme==='east'){
+    body.innerHTML=`
+      <div class="row row-3">
+        <div class="field"><label>出生年 <span class="req">*</span></label><input type="number" id="selfYear" placeholder="1990" value="${APP.self?.year||''}"></div>
+        <div class="field"><label>月 <span class="req">*</span></label><input type="number" id="selfMonth" placeholder="1-12" min="1" max="12" value="${APP.self?.month||''}"></div>
+        <div class="field"><label>日 <span class="req">*</span></label><input type="number" id="selfDay" placeholder="1-31" min="1" max="31" value="${APP.self?.day||''}"></div>
+      </div>
+      <div class="field"><label>時辰（0-23，不確定可不填）</label><input type="number" id="selfHour" placeholder="0-23" min="0" max="23" value="${APP.self?.hour??''}"></div>`;
+  }else{
+    body.innerHTML=`
+      <div class="row row-2">
+        <div class="field"><label>Birth Month <span class="req">*</span></label><input type="number" id="selfMonth" placeholder="1-12" min="1" max="12" value="${APP.self?.month||''}"></div>
+        <div class="field"><label>Birth Day <span class="req">*</span></label><input type="number" id="selfDay" placeholder="1-31" min="1" max="31" value="${APP.self?.day||''}"></div>
+      </div>`;
+  }
+  openSelfSheet();
+}
+
+function openSelfSheet(){
+  $('selfSheetOverlay').classList.add('active');
+  requestAnimationFrame(()=>$('selfSheet').classList.add('open'));
+}
+
+function closeSelfSheet(){
+  $('selfSheet').classList.remove('open');
+  setTimeout(()=>$('selfSheetOverlay').classList.remove('active'),350);
+}
+
+function saveSelf(){
+  try{
+  const m=parseInt($('selfMonth')?.value);
+  const d=parseInt($('selfDay')?.value);
+  if(!m||!d){toast('請填寫月和日');return;}
+
+  if(APP.theme==='east'){
+    const y=parseInt($('selfYear')?.value);
+    if(!y){toast('請填寫出生年');return;}
+    const hVal=$('selfHour')?.value;
+    const hour=hVal===''||hVal==null?null:parseInt(hVal);
+    const sb=getSB(y,m,d,hour);
+    const profile=wuxingProfile(sb);
+    APP.self={...(APP.self||{}), year:y, month:m, day:d, hour, fortune:{stemBranch:sb, profile}};
+  }else{
+    const zodiac=getZodiac(m,d);
+    // 保留已有 year/hour，方便切回東方時直接重算八字
+    APP.self={...(APP.self||{}), month:m, day:d, fortune:{zodiac}};
+  }
+  dbPut('meta',{key:'self',data:APP.self});
+  APP.contacts.forEach(c=>{if(c.fortune){c.fortune.cooperation=calcCoop(APP.self,c.fortune);dbPut('contacts',c);}});
+  closeSelfSheet();
+  renderSelfSetup();renderList();toast('已保存，合作分析已更新');
+  }catch(e){toast('保存錯誤：'+e.message);console.error(e);}
+}
+
+// Custom confirm dialog (replaces window.confirm)
+function customConfirm(msg){
+  return new Promise(resolve=>{
+    $('dialogMsg').textContent=msg;
+    $('dialogBtns').innerHTML=`<button class="btn btn-secondary" id="dlgNo">取消</button><button class="btn btn-primary" id="dlgYes">確定</button>`;
+    $('dialogOverlay').classList.add('active');
+    $('dlgNo').onclick=()=>{$('dialogOverlay').classList.remove('active');resolve(false);};
+    $('dlgYes').onclick=()=>{$('dialogOverlay').classList.remove('active');resolve(true);};
+  });
+}
+
+// ============================================================
+// SETTINGS / DATA
+// ============================================================
+function saveApiKey(){APP.apiKey=$('apiKeyInput').value.trim();if(APP.apiKey){dbPut('meta',{key:'apiKey',data:APP.apiKey});$('apiStatus').className='api-status ok';$('apiStatus').textContent='✓ 已保存';toast('已保存');}else{$('apiStatus').textContent='請輸入 Key';}}
+
+function exportData(){
+  const blob=new Blob([JSON.stringify({version:3,theme:APP.theme,selfProfile:APP.self,contacts:APP.contacts,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='renmai_'+new Date().toISOString().slice(0,10)+'.json';a.click();toast('匯出成功');
+}
+
+async function importData(e){
+  const file=e.target.files[0];if(!file)return;
+  try{
+    const data=JSON.parse(await file.text());
+    if(!data.contacts){toast('無效的備份檔');return;}
+    const ok=await customConfirm(`將匯入 ${data.contacts.length} 筆人脈，是否繼續？`);
+    if(!ok)return;
+    if(data.selfProfile){APP.self=data.selfProfile;await dbPut('meta',{key:'self',data:APP.self});}
+    if(data.theme){APP.theme=data.theme;applyTheme(data.theme);}
+    for(const c of data.contacts){await dbPut('contacts',c);const i=APP.contacts.findIndex(x=>x.id===c.id);if(i>=0)APP.contacts[i]=c;else APP.contacts.push(c);}
+    renderList();renderSelfSetup();toast(`已匯入 ${data.contacts.length} 筆`);
+  }catch(err){toast('匯入失敗');}
+  e.target.value='';
+}
+
+async function clearAllData(){
+  const ok=await customConfirm('確定要清除所有資料？此操作無法復原。');
+  if(!ok)return;
+  await dbClear('contacts');await dbClear('meta');
+  APP.contacts=[];APP.self=null;APP.apiKey='';
+  renderList();renderSelfSetup();toast('已清除');
+}
+
+function switchTab(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===name));
+  if(name==='contacts'){$('pageContacts').classList.add('active');renderList();}
+  else if(name==='settings'){$('pageSettings').classList.add('active');renderSelfSetup();}
+}
+
+// ============================================================
+// INIT
+// ============================================================
+(async function(){
+  await openDB();
+  APP.contacts=await dbGetAll('contacts');
+  const selfData=await dbGet('meta','self');if(selfData)APP.self=selfData.data;
+  const keyData=await dbGet('meta','apiKey');if(keyData){APP.apiKey=keyData.data;$('apiKeyInput').value=APP.apiKey;$('apiStatus').className='api-status ok';$('apiStatus').textContent='✓ 已設定';}
+  const themeData=await dbGet('meta','theme');
+  if(themeData){
+    APP.theme=themeData.data;
+    $('onboarding').style.display='none';
+    $('app').classList.add('visible');
+    applyTheme(APP.theme);
+  }else{
+    // Show onboarding
+    $('onboarding').style.display='flex';
+  }
+  APP.initialized=true;
+})();
+</script>
+</body>
+</html>

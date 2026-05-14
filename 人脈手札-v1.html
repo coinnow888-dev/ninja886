@@ -1,0 +1,1908 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>人脈手札 · 命理識人</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1614;
+    --ink-soft: #2d2825;
+    --paper: #f5f1e8;
+    --paper-warm: #ebe4d3;
+    --paper-deep: #ddd3bb;
+    --cinnabar: #a83232;
+    --cinnabar-deep: #7a1f1f;
+    --gold: #b08d3f;
+    --jade: #4a6b52;
+    --water: #2c4a6b;
+    --shadow: rgba(26, 22, 20, 0.08);
+    --shadow-deep: rgba(26, 22, 20, 0.18);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Serif TC', serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(168, 50, 50, 0.04) 0%, transparent 40%),
+      radial-gradient(circle at 80% 80%, rgba(176, 141, 63, 0.05) 0%, transparent 40%),
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' /%3E%3CfeColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.08 0 0 0 0 0.06 0 0 0 0.04 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 40px 32px 80px;
+  }
+
+  /* HEADER */
+  header {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: end;
+    gap: 32px;
+    padding-bottom: 24px;
+    border-bottom: 2px solid var(--ink);
+    position: relative;
+    margin-bottom: 48px;
+  }
+
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--ink);
+  }
+
+  .brand {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+  }
+
+  .brand-seal {
+    width: 56px;
+    height: 56px;
+    background: var(--cinnabar);
+    color: var(--paper);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    font-weight: 700;
+    transform: rotate(-3deg);
+    box-shadow: 2px 2px 0 var(--ink);
+    font-family: 'Noto Serif TC', serif;
+  }
+
+  .brand-text h1 {
+    font-size: 42px;
+    font-weight: 900;
+    letter-spacing: 0.05em;
+    line-height: 1;
+  }
+
+  .brand-text .sub {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 14px;
+    color: var(--ink-soft);
+    margin-top: 6px;
+    letter-spacing: 0.1em;
+  }
+
+  .header-meta {
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    writing-mode: vertical-rl;
+    padding: 0 8px;
+  }
+
+  .stats {
+    display: flex;
+    gap: 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+
+  .stat {
+    text-align: right;
+  }
+
+  .stat-num {
+    display: block;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--ink);
+    font-family: 'Cormorant Garamond', serif;
+    line-height: 1;
+  }
+
+  .stat-label {
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-top: 6px;
+  }
+
+  /* TOOLBAR */
+  .toolbar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .search-box {
+    flex: 1;
+    min-width: 240px;
+    position: relative;
+  }
+
+  .search-box input {
+    width: 100%;
+    padding: 14px 16px 14px 44px;
+    background: var(--paper-warm);
+    border: 1px solid var(--ink);
+    font-family: 'Noto Serif TC', serif;
+    font-size: 15px;
+    color: var(--ink);
+    outline: none;
+    transition: all 0.2s;
+  }
+
+  .search-box input:focus {
+    background: var(--paper);
+    box-shadow: 3px 3px 0 var(--ink);
+    transform: translate(-1px, -1px);
+  }
+
+  .search-box::before {
+    content: '⌕';
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 18px;
+    color: var(--ink-soft);
+  }
+
+  .filter-select {
+    padding: 14px 36px 14px 16px;
+    background: var(--paper-warm);
+    border: 1px solid var(--ink);
+    font-family: 'Noto Serif TC', serif;
+    font-size: 14px;
+    color: var(--ink);
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%231a1614' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+  }
+
+  .btn {
+    padding: 14px 24px;
+    border: 1px solid var(--ink);
+    background: var(--ink);
+    color: var(--paper);
+    font-family: 'Noto Serif TC', serif;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+  }
+
+  .btn:hover {
+    background: var(--cinnabar);
+    border-color: var(--cinnabar);
+    transform: translate(-2px, -2px);
+    box-shadow: 3px 3px 0 var(--ink);
+  }
+
+  .btn-secondary {
+    background: var(--paper);
+    color: var(--ink);
+  }
+
+  .btn-secondary:hover {
+    background: var(--paper-warm);
+    color: var(--ink);
+  }
+
+  .btn-cinnabar {
+    background: var(--cinnabar);
+    border-color: var(--cinnabar);
+  }
+
+  /* GRID */
+  .contact-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+  }
+
+  .empty-state {
+    grid-column: 1 / -1;
+    padding: 80px 20px;
+    text-align: center;
+    color: var(--ink-soft);
+  }
+
+  .empty-state .symbol {
+    font-size: 64px;
+    color: var(--cinnabar);
+    opacity: 0.3;
+    margin-bottom: 16px;
+  }
+
+  .empty-state .title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .empty-state .desc {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 16px;
+  }
+
+  /* CONTACT CARD */
+  .card {
+    background: var(--paper);
+    border: 1px solid var(--ink);
+    padding: 24px;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: var(--cinnabar);
+  }
+
+  .card:hover {
+    transform: translate(-3px, -3px);
+    box-shadow: 6px 6px 0 var(--ink);
+  }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px dashed var(--ink-soft);
+  }
+
+  .card-name {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    line-height: 1.2;
+  }
+
+  .card-meta {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-top: 4px;
+  }
+
+  .card-element {
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 700;
+    background: var(--paper-warm);
+    flex-shrink: 0;
+  }
+
+  .elem-木 { background: #d4e4d0; color: var(--jade); }
+  .elem-火 { background: #f0d4d4; color: var(--cinnabar); }
+  .elem-土 { background: #e8dec4; color: var(--gold); }
+  .elem-金 { background: #e0e0d8; color: var(--ink); }
+  .elem-水 { background: #d0dce4; color: var(--water); }
+
+  .card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+
+  .tag {
+    padding: 3px 10px;
+    background: var(--paper-warm);
+    border: 1px solid var(--ink-soft);
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.05em;
+  }
+
+  .tag.role {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+
+  .card-cooperation {
+    background: var(--paper-warm);
+    padding: 12px 14px;
+    margin: 16px 0;
+    border-left: 3px solid var(--cinnabar);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .card-cooperation .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--ink-soft);
+    margin-bottom: 4px;
+    display: block;
+  }
+
+  .card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .trust-bar {
+    display: inline-flex;
+    gap: 2px;
+  }
+
+  .trust-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--paper-deep);
+    border: 1px solid var(--ink-soft);
+  }
+
+  .trust-dot.filled {
+    background: var(--cinnabar);
+    border-color: var(--cinnabar);
+  }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(26, 22, 20, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 100;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 20px;
+    overflow-y: auto;
+  }
+
+  .modal-overlay.active {
+    display: flex;
+  }
+
+  .modal {
+    background: var(--paper);
+    width: 100%;
+    max-width: 760px;
+    border: 1px solid var(--ink);
+    box-shadow: 8px 8px 0 var(--ink);
+    position: relative;
+    animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @keyframes modalIn {
+    from { opacity: 0; transform: translate(8px, 8px); }
+    to { opacity: 1; transform: translate(0, 0); }
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 32px;
+    border-bottom: 2px solid var(--ink);
+    background: var(--paper-warm);
+  }
+
+  .modal-title {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .modal-title .seal {
+    width: 32px;
+    height: 32px;
+    background: var(--cinnabar);
+    color: var(--paper);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 700;
+    transform: rotate(-3deg);
+  }
+
+  .modal-close {
+    background: transparent;
+    border: 1px solid var(--ink);
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--ink);
+    transition: all 0.15s;
+  }
+
+  .modal-close:hover {
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  .modal-body {
+    padding: 32px;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+
+  /* FORM */
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .form-row.full { grid-template-columns: 1fr; }
+  .form-row.three { grid-template-columns: 1fr 1fr 1fr; }
+
+  .form-field {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .form-field label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
+  }
+
+  .form-field label .required {
+    color: var(--cinnabar);
+  }
+
+  .form-field input,
+  .form-field select,
+  .form-field textarea {
+    padding: 10px 12px;
+    background: var(--paper);
+    border: 1px solid var(--ink-soft);
+    font-family: 'Noto Serif TC', serif;
+    font-size: 14px;
+    color: var(--ink);
+    outline: none;
+    transition: all 0.15s;
+  }
+
+  .form-field input:focus,
+  .form-field select:focus,
+  .form-field textarea:focus {
+    border-color: var(--cinnabar);
+    background: var(--paper-warm);
+  }
+
+  .form-field textarea {
+    resize: vertical;
+    min-height: 80px;
+    font-family: 'Noto Serif TC', serif;
+  }
+
+  .form-section {
+    margin-bottom: 24px;
+    padding-bottom: 24px;
+    border-bottom: 1px dashed var(--ink-soft);
+  }
+
+  .form-section:last-child {
+    border-bottom: none;
+  }
+
+  .form-section-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: var(--cinnabar);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .form-section-title::before {
+    content: '';
+    width: 4px;
+    height: 16px;
+    background: var(--cinnabar);
+  }
+
+  .method-toggle {
+    display: flex;
+    gap: 0;
+    margin-bottom: 16px;
+    border: 1px solid var(--ink);
+  }
+
+  .method-btn {
+    flex: 1;
+    padding: 12px;
+    background: var(--paper);
+    border: none;
+    border-right: 1px solid var(--ink);
+    cursor: pointer;
+    font-family: 'Noto Serif TC', serif;
+    font-size: 14px;
+    transition: all 0.15s;
+  }
+
+  .method-btn:last-child { border-right: none; }
+
+  .method-btn.active {
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  .trust-selector {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    padding: 6px 0;
+  }
+
+  .trust-selector .trust-dot {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .trust-selector .trust-dot:hover {
+    transform: scale(1.2);
+  }
+
+  .modal-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 32px;
+    border-top: 2px solid var(--ink);
+    background: var(--paper-warm);
+  }
+
+  .modal-footer .actions {
+    display: flex;
+    gap: 12px;
+  }
+
+  /* DETAIL VIEW */
+  .detail-section {
+    margin-bottom: 24px;
+  }
+
+  .detail-section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--cinnabar);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--ink);
+  }
+
+  .detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+  }
+
+  .detail-item {
+    background: var(--paper-warm);
+    padding: 12px 14px;
+    border-left: 2px solid var(--ink);
+  }
+
+  .detail-item .key {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--ink-soft);
+    margin-bottom: 4px;
+  }
+
+  .detail-item .val {
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  .analysis-box {
+    background: linear-gradient(135deg, var(--paper-warm) 0%, var(--paper-deep) 100%);
+    padding: 20px 24px;
+    border: 1px solid var(--ink);
+    position: relative;
+    margin: 16px 0;
+  }
+
+  .analysis-box::before {
+    content: '“';
+    position: absolute;
+    top: -12px;
+    left: 16px;
+    font-size: 48px;
+    color: var(--cinnabar);
+    font-family: 'Cormorant Garamond', serif;
+    background: var(--paper);
+    padding: 0 8px;
+    line-height: 1;
+  }
+
+  .analysis-content {
+    font-size: 15px;
+    line-height: 1.8;
+    color: var(--ink-soft);
+  }
+
+  .analysis-content strong {
+    color: var(--cinnabar);
+    font-weight: 700;
+  }
+
+  .hexagram-display {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 12px 0;
+    align-items: center;
+  }
+
+  .hex-line {
+    width: 60px;
+    height: 8px;
+    background: var(--ink);
+    position: relative;
+  }
+
+  .hex-line.broken {
+    background: transparent;
+  }
+
+  .hex-line.broken::before,
+  .hex-line.broken::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    height: 100%;
+    width: 25px;
+    background: var(--ink);
+  }
+
+  .hex-line.broken::before { left: 0; }
+  .hex-line.broken::after { right: 0; }
+
+  .wuxing-relation {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 0;
+    font-size: 12px;
+    font-weight: 700;
+    margin-left: 8px;
+  }
+
+  .relation-生 { background: #d4e4d0; color: var(--jade); }
+  .relation-剋 { background: #f0d4d4; color: var(--cinnabar); }
+  .relation-同 { background: #e8dec4; color: var(--gold); }
+  .relation-比 { background: #d0dce4; color: var(--water); }
+
+  .my-bazi-display {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .my-bazi-display .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    opacity: 0.7;
+  }
+
+  .my-bazi-display .info {
+    font-size: 14px;
+    margin-top: 4px;
+  }
+
+  .my-bazi-display .info strong {
+    color: var(--gold);
+  }
+
+  .delete-btn {
+    background: transparent;
+    color: var(--cinnabar);
+    border: 1px solid var(--cinnabar);
+    padding: 12px 20px;
+    cursor: pointer;
+    font-family: 'Noto Serif TC', serif;
+    font-size: 13px;
+    transition: all 0.15s;
+  }
+
+  .delete-btn:hover {
+    background: var(--cinnabar);
+    color: var(--paper);
+  }
+
+  @media (max-width: 720px) {
+    .container { padding: 24px 16px 60px; }
+    header { grid-template-columns: 1fr; gap: 16px; }
+    .header-meta { display: none; }
+    .stats { justify-content: flex-start; }
+    .brand-text h1 { font-size: 32px; }
+    .form-row, .form-row.three { grid-template-columns: 1fr; }
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%) translateY(120%);
+    background: var(--ink);
+    color: var(--paper);
+    padding: 14px 24px;
+    font-size: 14px;
+    z-index: 200;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    border-left: 3px solid var(--cinnabar);
+  }
+
+  .toast.show {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* My profile setup */
+  .setup-banner {
+    background: var(--cinnabar);
+    color: var(--paper);
+    padding: 16px 24px;
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .setup-banner:hover {
+    background: var(--cinnabar-deep);
+  }
+
+  .setup-banner .text {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .setup-banner .icon {
+    font-size: 20px;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <header>
+    <div class="brand">
+      <div class="brand-seal">識</div>
+      <div class="brand-text">
+        <h1>人脈手札</h1>
+        <div class="sub">Connoisseur of Connections · est. 觀人術</div>
+      </div>
+    </div>
+    <div class="header-meta">命 · 理 · 識 · 人</div>
+    <div class="stats">
+      <div class="stat">
+        <span class="stat-num" id="statTotal">0</span>
+        <span class="stat-label">總人脈</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num" id="statClose">0</span>
+        <span class="stat-label">核心圈</span>
+      </div>
+    </div>
+  </header>
+
+  <div id="setupBanner" class="setup-banner" style="display:none">
+    <div class="text">
+      <span class="icon">⚐</span>
+      <span>先設定你自己的命理資料，才能分析與他人的契合度</span>
+    </div>
+    <span>→</span>
+  </div>
+
+  <div id="myBaziDisplay" class="my-bazi-display" style="display:none">
+    <div>
+      <div class="label">我的命理</div>
+      <div class="info" id="myBaziInfo"></div>
+    </div>
+    <button class="btn btn-secondary" onclick="openSelfModal()">編輯</button>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="搜尋姓名、標籤、領域..." oninput="renderContacts()">
+    </div>
+    <select class="filter-select" id="filterElement" onchange="renderContacts()">
+      <option value="">全部五行</option>
+      <option value="木">木</option>
+      <option value="火">火</option>
+      <option value="土">土</option>
+      <option value="金">金</option>
+      <option value="水">水</option>
+    </select>
+    <select class="filter-select" id="filterRelation" onchange="renderContacts()">
+      <option value="">全部關係</option>
+      <option value="相生">相生</option>
+      <option value="相剋">相剋</option>
+      <option value="同類">同類</option>
+    </select>
+    <button class="btn btn-cinnabar" onclick="openAddModal()">+ 新增人脈</button>
+  </div>
+
+  <div class="contact-grid" id="contactGrid"></div>
+
+</div>
+
+<!-- ADD/EDIT CONTACT MODAL -->
+<div class="modal-overlay" id="contactModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">
+        <span class="seal">記</span>
+        <span id="modalTitle">新增人脈</span>
+      </div>
+      <button class="modal-close" onclick="closeModal('contactModal')">×</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="form-section">
+        <div class="form-section-title">基本資料</div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>姓名 <span class="required">*</span></label>
+            <input type="text" id="cName" placeholder="如：王明德">
+          </div>
+          <div class="form-field">
+            <label>稱呼 / 暱稱</label>
+            <input type="text" id="cAlias" placeholder="如：老王">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>身份 / 角色</label>
+            <select id="cRole">
+              <option value="">未分類</option>
+              <option value="客戶">客戶</option>
+              <option value="同事">同事</option>
+              <option value="主管">主管</option>
+              <option value="下屬">下屬</option>
+              <option value="合作夥伴">合作夥伴</option>
+              <option value="供應商">供應商</option>
+              <option value="導師">導師</option>
+              <option value="朋友">朋友</option>
+              <option value="同行">同行</option>
+              <option value="投資人">投資人</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>專業領域</label>
+            <input type="text" id="cField" placeholder="如：行銷、工程、設計">
+          </div>
+        </div>
+        <div class="form-row full">
+          <div class="form-field">
+            <label>認識方式 / 來源</label>
+            <input type="text" id="cSource" placeholder="如：在某場活動認識，由某人介紹">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">命理資料</div>
+        <div class="method-toggle">
+          <button type="button" class="method-btn active" data-method="bazi" onclick="switchMethod('bazi')">八字</button>
+          <button type="button" class="method-btn" data-method="yijing" onclick="switchMethod('yijing')">數字易經</button>
+        </div>
+
+        <div id="baziInputs">
+          <div class="form-row three">
+            <div class="form-field">
+              <label>出生年</label>
+              <input type="number" id="cYear" placeholder="1990" min="1900" max="2100">
+            </div>
+            <div class="form-field">
+              <label>月</label>
+              <input type="number" id="cMonth" placeholder="1-12" min="1" max="12">
+            </div>
+            <div class="form-field">
+              <label>日</label>
+              <input type="number" id="cDay" placeholder="1-31" min="1" max="31">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>時辰 (時)</label>
+              <input type="number" id="cHour" placeholder="0-23 (可選)" min="0" max="23">
+            </div>
+            <div class="form-field">
+              <label>性別</label>
+              <select id="cGender">
+                <option value="">未填</option>
+                <option value="男">男</option>
+                <option value="女">女</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div id="yijingInputs" style="display:none">
+          <div class="form-row full">
+            <div class="form-field">
+              <label>手機號碼後四碼 或 生日數字組合</label>
+              <input type="text" id="cNumber" placeholder="例如 6824 或 19900315" maxlength="8">
+            </div>
+          </div>
+          <div style="font-family:'Cormorant Garamond',serif; font-style:italic; font-size:13px; color:var(--ink-soft); padding: 8px 0">
+            數字易經用 1-9 的數字組合對應八卦能量場
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">主觀觀察</div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>信任度</label>
+            <div class="trust-selector" id="trustSelector">
+              <span class="trust-dot" data-trust="1"></span>
+              <span class="trust-dot" data-trust="2"></span>
+              <span class="trust-dot" data-trust="3"></span>
+              <span class="trust-dot" data-trust="4"></span>
+              <span class="trust-dot" data-trust="5"></span>
+            </div>
+          </div>
+          <div class="form-field">
+            <label>互動頻率</label>
+            <select id="cFrequency">
+              <option value="">未填</option>
+              <option value="每週">每週</option>
+              <option value="每月">每月</option>
+              <option value="每季">每季</option>
+              <option value="每年">每年</option>
+              <option value="少於每年">少於每年</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row full">
+          <div class="form-field">
+            <label>性格特質 (以逗號分隔)</label>
+            <input type="text" id="cTraits" placeholder="如：理性, 直接, 行動派">
+          </div>
+        </div>
+        <div class="form-row full">
+          <div class="form-field">
+            <label>筆記 / 備註</label>
+            <textarea id="cNotes" placeholder="第一印象、合作經驗、特別事項..."></textarea>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="delete-btn" id="deleteBtn" style="display:none" onclick="deleteContact()">移除此人</button>
+      <div class="actions" style="margin-left:auto">
+        <button class="btn btn-secondary" onclick="closeModal('contactModal')">取消</button>
+        <button class="btn" onclick="saveContact()">保存記錄</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">
+        <span class="seal" id="detailSeal">人</span>
+        <span id="detailName"></span>
+      </div>
+      <button class="modal-close" onclick="closeModal('detailModal')">×</button>
+    </div>
+    <div class="modal-body" id="detailBody"></div>
+    <div class="modal-footer">
+      <button class="delete-btn" onclick="deleteFromDetail()">移除此人</button>
+      <div class="actions" style="margin-left:auto">
+        <button class="btn btn-secondary" onclick="closeModal('detailModal')">關閉</button>
+        <button class="btn" onclick="editFromDetail()">編輯</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SELF SETUP MODAL -->
+<div class="modal-overlay" id="selfModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">
+        <span class="seal">我</span>
+        <span>我的命理資料</span>
+      </div>
+      <button class="modal-close" onclick="closeModal('selfModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="background:var(--paper-warm); padding:16px; margin-bottom:20px; border-left:3px solid var(--cinnabar); font-size:14px; line-height:1.7">
+        設定你自己的命理資料後，系統會自動分析每位人脈與你的「五行關係」、「合作契合度」與「相處建議」。
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label>你的姓名</label>
+          <input type="text" id="myName">
+        </div>
+        <div class="form-field">
+          <label>性別</label>
+          <select id="myGender">
+            <option value="">未填</option>
+            <option value="男">男</option>
+            <option value="女">女</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row three">
+        <div class="form-field">
+          <label>出生年 <span class="required">*</span></label>
+          <input type="number" id="myYear" min="1900" max="2100">
+        </div>
+        <div class="form-field">
+          <label>月 <span class="required">*</span></label>
+          <input type="number" id="myMonth" min="1" max="12">
+        </div>
+        <div class="form-field">
+          <label>日 <span class="required">*</span></label>
+          <input type="number" id="myDay" min="1" max="31">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label>時辰</label>
+          <input type="number" id="myHour" min="0" max="23" placeholder="0-23 (可選)">
+        </div>
+        <div class="form-field">
+          <label>手機號後四碼 (數字易經用)</label>
+          <input type="text" id="myNumber" maxlength="4">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="actions" style="margin-left:auto">
+        <button class="btn btn-secondary" onclick="closeModal('selfModal')">取消</button>
+        <button class="btn" onclick="saveSelf()">保存</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// 命理引擎 · Fortune Engine
+// ============================================================
+
+const HEAVENLY_STEMS = ['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
+const EARTHLY_BRANCHES = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+const STEM_ELEMENTS = {甲:'木',乙:'木',丙:'火',丁:'火',戊:'土',己:'土',庚:'金',辛:'金',壬:'水',癸:'水'};
+const STEM_YIN_YANG = {甲:'陽',乙:'陰',丙:'陽',丁:'陰',戊:'陽',己:'陰',庚:'陽',辛:'陰',壬:'陽',癸:'陰'};
+const BRANCH_ELEMENTS = {子:'水',丑:'土',寅:'木',卯:'木',辰:'土',巳:'火',午:'火',未:'土',申:'金',酉:'金',戌:'土',亥:'水'};
+
+// 五行生剋
+const GENERATES = {木:'火',火:'土',土:'金',金:'水',水:'木'};
+const OVERCOMES = {木:'土',土:'水',水:'火',火:'金',金:'木'};
+
+// 計算干支 (簡化版,以1900年為基準)
+function getStemBranch(year, month, day, hour) {
+  // 年柱
+  const yearStemIdx = (year - 4) % 10;
+  const yearBranchIdx = (year - 4) % 12;
+
+  // 月柱 (簡化:以節氣近似為農曆月)
+  const monthStemIdx = ((yearStemIdx % 5) * 2 + month + 1) % 10;
+  const monthBranchIdx = (month + 1) % 12;
+
+  // 日柱 - 用一個簡化的日干算法
+  // 1900-01-01 為甲戌日 (近似)
+  const baseDate = new Date(1900, 0, 1);
+  const targetDate = new Date(year, month - 1, day);
+  const dayDiff = Math.floor((targetDate - baseDate) / (1000 * 60 * 60 * 24));
+  const dayStemIdx = (dayDiff + 10) % 10;
+  const dayBranchIdx = (dayDiff + 0) % 12;
+
+  // 時柱
+  let timeStemIdx = -1, timeBranchIdx = -1;
+  if (hour !== null && hour !== undefined && hour !== '') {
+    const hourNum = parseInt(hour);
+    timeBranchIdx = Math.floor((hourNum + 1) / 2) % 12;
+    timeStemIdx = ((dayStemIdx % 5) * 2 + timeBranchIdx) % 10;
+  }
+
+  return {
+    year: { stem: HEAVENLY_STEMS[yearStemIdx], branch: EARTHLY_BRANCHES[yearBranchIdx] },
+    month: { stem: HEAVENLY_STEMS[monthStemIdx], branch: EARTHLY_BRANCHES[monthBranchIdx] },
+    day: { stem: HEAVENLY_STEMS[dayStemIdx], branch: EARTHLY_BRANCHES[dayBranchIdx] },
+    hour: timeStemIdx >= 0 ? { stem: HEAVENLY_STEMS[timeStemIdx], branch: EARTHLY_BRANCHES[timeBranchIdx] } : null
+  };
+}
+
+// 統計五行能量
+function getWuxingProfile(sb) {
+  const counts = { 木: 0, 火: 0, 土: 0, 金: 0, 水: 0 };
+  const addStem = (s) => { if (s) counts[STEM_ELEMENTS[s]]++; };
+  const addBranch = (b) => { if (b) counts[BRANCH_ELEMENTS[b]]++; };
+
+  addStem(sb.year.stem); addBranch(sb.year.branch);
+  addStem(sb.month.stem); addBranch(sb.month.branch);
+  addStem(sb.day.stem); addBranch(sb.day.branch);
+  if (sb.hour) { addStem(sb.hour.stem); addBranch(sb.hour.branch); }
+
+  // 主要五行 (日主)
+  const dayMaster = STEM_ELEMENTS[sb.day.stem];
+  const dayYinYang = STEM_YIN_YANG[sb.day.stem];
+
+  // 找出最強和最弱
+  const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  const strongest = sorted[0][0];
+  const weakest = sorted[sorted.length - 1][0];
+
+  return {
+    counts,
+    dayMaster,
+    dayMasterStem: sb.day.stem,
+    dayYinYang,
+    strongest,
+    weakest,
+    missing: Object.entries(counts).filter(([k, v]) => v === 0).map(([k]) => k)
+  };
+}
+
+// 兩個五行間的關係
+function elementRelation(myElem, theirElem) {
+  if (myElem === theirElem) return { type: '同類', desc: '同氣相求' };
+  if (GENERATES[myElem] === theirElem) return { type: '我生', desc: '你滋養對方' };
+  if (GENERATES[theirElem] === myElem) return { type: '生我', desc: '對方滋養你' };
+  if (OVERCOMES[myElem] === theirElem) return { type: '我剋', desc: '你能駕馭對方' };
+  if (OVERCOMES[theirElem] === myElem) return { type: '剋我', desc: '對方制約你' };
+  return { type: '中性', desc: '無明顯關係' };
+}
+
+// 日主五行性格描述
+const ELEMENT_TRAITS = {
+  木: { traits: '有理想、正直、積極、有規劃力', style: '喜歡成長與突破，討厭被限制' },
+  火: { traits: '熱情、有感染力、善於表達、直率', style: '能點燃氛圍，但情緒起伏明顯' },
+  土: { traits: '穩重、可靠、有耐心、重信用', style: '行動緩但紮實，重視關係與承諾' },
+  金: { traits: '果斷、有原則、注重效率、邏輯強', style: '講求標準與品質，較難妥協' },
+  水: { traits: '聰明、靈活、善溝通、適應力強', style: '能變通與整合，但有時不易掌握真意' }
+};
+
+// 合作關係建議引擎
+function suggestCooperation(myProfile, theirProfile) {
+  if (!myProfile || !theirProfile) return null;
+
+  const rel = elementRelation(myProfile.dayMaster, theirProfile.dayMaster);
+  const myMissing = myProfile.missing;
+  const theirElem = theirProfile.dayMaster;
+
+  let mode = '', advice = '', warning = '';
+
+  // 主要建議邏輯
+  switch (rel.type) {
+    case '同類':
+      mode = '同志夥伴 · 並肩型';
+      advice = `兩人皆為${myProfile.dayMaster}屬性，思維與節奏接近，溝通幾乎沒有摩擦。適合一起做需要「共識」與「默契」的事，例如共同創作、雙人小規模合作。`;
+      warning = '相似度高也意味著缺乏互補，遇到瓶頸時容易卡住，需要引入第三方視角。';
+      break;
+    case '我生':
+      mode = '提攜培育 · 你是給予方';
+      advice = `對方屬「${theirElem}」，正是你${myProfile.dayMaster}所滋生的元素。你會自然想幫助對方，對方也會從你身上汲取養分。適合做「導師-學徒」、「資深-新進」、「品牌方-合作創作者」型關係。`;
+      warning = '長期單向付出會耗損你的能量，要確認對方能在其他面向回饋你。';
+      break;
+    case '生我':
+      mode = '貴人提攜 · 對方是給予方';
+      advice = `對方屬「${theirElem}」是你的「正印/偏印」之源。對方能給你資源、知識、靠山。適合做「導師」、「投資人」、「平台方」、「介紹人」。多向他學習與請益。`;
+      warning = '不要把對方視為理所當然，需要持續維護關係，並在自己強項上回報。';
+      break;
+    case '我剋':
+      mode = '主導駕馭 · 適合管理';
+      advice = `對方屬「${theirElem}」是你能管控的元素。你能讓對方按你的方向走。適合「你主導、對方執行」的關係，例如下屬、外包、執行者。`;
+      warning = '不要過度施壓，避免讓對方覺得被壓抑；給予自主空間反而更能釋放對方能量。';
+      break;
+    case '剋我':
+      mode = '受制衡關係 · 謹慎合作';
+      advice = `對方屬「${theirElem}」是制約你的力量。在這段關係裡你可能會感到壓力或被挑戰。如果對方是上司、客戶、評審，這種關係其實能逼出你的成長。`;
+      warning = '不適合成為長期合夥人或同等地位的合作對象，否則容易內耗。短期專案或階段性合作為佳。';
+      break;
+  }
+
+  // 互補加分:對方擁有你缺的五行
+  let bonus = '';
+  if (myMissing.includes(theirElem)) {
+    bonus = `\n\n【互補加分】對方的「${theirElem}」正是你命盤所缺，能補你不足。這類人在你身邊往往帶來意想不到的機會。`;
+  }
+
+  return { mode, advice, warning, bonus, relation: rel };
+}
+
+// 數字易經 (簡化版:用數字計算卦象)
+const TRIGRAMS = [
+  { name: '坤', num: 0, lines: [0,0,0], element: '土', meaning: '柔順、包容、母性、承載' },
+  { name: '震', num: 1, lines: [1,0,0], element: '木', meaning: '行動、雷霆、突破、長子' },
+  { name: '坎', num: 2, lines: [0,1,0], element: '水', meaning: '智慧、險阻、深思、流動' },
+  { name: '兌', num: 3, lines: [1,1,0], element: '金', meaning: '喜悅、口才、和悅、少女' },
+  { name: '艮', num: 4, lines: [0,0,1], element: '土', meaning: '止靜、穩重、邊界、少男' },
+  { name: '離', num: 5, lines: [1,0,1], element: '火', meaning: '光明、智慧、外顯、中女' },
+  { name: '巽', num: 6, lines: [0,1,1], element: '木', meaning: '進退、柔順、長女、影響力' },
+  { name: '乾', num: 7, lines: [1,1,1], element: '金', meaning: '剛健、領導、創始、父權' }
+];
+
+function getNumberTrigram(numStr) {
+  if (!numStr) return null;
+  const digits = String(numStr).replace(/\D/g, '').split('').map(Number);
+  if (digits.length === 0) return null;
+  const sum = digits.reduce((a, b) => a + b, 0);
+  const trigramNum = sum % 8;
+  return TRIGRAMS[trigramNum];
+}
+
+// ============================================================
+// STORAGE LAYER
+// ============================================================
+
+async function loadContacts() {
+  try {
+    const result = await window.storage.list('contact:');
+    if (!result || !result.keys) return [];
+    const contacts = [];
+    for (const key of result.keys) {
+      try {
+        const r = await window.storage.get(key);
+        if (r && r.value) {
+          contacts.push(JSON.parse(r.value));
+        }
+      } catch (e) {}
+    }
+    return contacts;
+  } catch (e) {
+    console.warn('Storage load failed, using local', e);
+    return JSON.parse(localStorage.getItem('contacts_fallback') || '[]');
+  }
+}
+
+async function saveContactData(contact) {
+  try {
+    await window.storage.set('contact:' + contact.id, JSON.stringify(contact));
+  } catch (e) {
+    // fallback
+    const all = JSON.parse(localStorage.getItem('contacts_fallback') || '[]');
+    const idx = all.findIndex(c => c.id === contact.id);
+    if (idx >= 0) all[idx] = contact; else all.push(contact);
+    localStorage.setItem('contacts_fallback', JSON.stringify(all));
+  }
+}
+
+async function deleteContactData(id) {
+  try {
+    await window.storage.delete('contact:' + id);
+  } catch (e) {
+    const all = JSON.parse(localStorage.getItem('contacts_fallback') || '[]');
+    localStorage.setItem('contacts_fallback', JSON.stringify(all.filter(c => c.id !== id)));
+  }
+}
+
+async function loadSelf() {
+  try {
+    const r = await window.storage.get('self_profile');
+    if (r && r.value) return JSON.parse(r.value);
+  } catch (e) {
+    const local = localStorage.getItem('self_profile_fallback');
+    if (local) return JSON.parse(local);
+  }
+  return null;
+}
+
+async function saveSelfData(data) {
+  try {
+    await window.storage.set('self_profile', JSON.stringify(data));
+  } catch (e) {
+    localStorage.setItem('self_profile_fallback', JSON.stringify(data));
+  }
+}
+
+// ============================================================
+// APP STATE
+// ============================================================
+
+let contacts = [];
+let selfProfile = null;
+let currentEditId = null;
+let currentMethod = 'bazi';
+let currentTrust = 0;
+
+// ============================================================
+// UI RENDERING
+// ============================================================
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function renderContacts() {
+  const grid = document.getElementById('contactGrid');
+  const searchVal = document.getElementById('searchInput').value.toLowerCase();
+  const elemFilter = document.getElementById('filterElement').value;
+  const relFilter = document.getElementById('filterRelation').value;
+
+  let filtered = contacts.filter(c => {
+    if (searchVal) {
+      const hay = [c.name, c.alias, c.field, c.role, (c.traits || []).join(','), c.notes].join(' ').toLowerCase();
+      if (!hay.includes(searchVal)) return false;
+    }
+    if (elemFilter) {
+      const elem = c.fortune && c.fortune.profile ? c.fortune.profile.dayMaster : (c.fortune && c.fortune.trigram ? c.fortune.trigram.element : null);
+      if (elem !== elemFilter) return false;
+    }
+    if (relFilter && selfProfile && c.fortune && c.fortune.cooperation) {
+      const t = c.fortune.cooperation.relation.type;
+      if (relFilter === '相生' && !['我生', '生我'].includes(t)) return false;
+      if (relFilter === '相剋' && !['我剋', '剋我'].includes(t)) return false;
+      if (relFilter === '同類' && t !== '同類') return false;
+    }
+    return true;
+  });
+
+  // 更新統計
+  document.getElementById('statTotal').textContent = contacts.length;
+  document.getElementById('statClose').textContent = contacts.filter(c => (c.trust || 0) >= 4).length;
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `
+      <div class="empty-state">
+        <div class="symbol">☯</div>
+        <div class="title">${contacts.length === 0 ? '尚未記錄任何人脈' : '沒有符合條件的人脈'}</div>
+        <div class="desc">${contacts.length === 0 ? 'Begin your collection of connections' : 'Try adjusting your filters'}</div>
+      </div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(c => renderCard(c)).join('');
+}
+
+function renderCard(c) {
+  const elem = c.fortune?.profile?.dayMaster || c.fortune?.trigram?.element || '';
+  const elemDisplay = elem ? `<div class="card-element elem-${elem}">${elem}</div>` : '';
+  const tags = [];
+  if (c.role) tags.push(`<span class="tag role">${escapeHtml(c.role)}</span>`);
+  if (c.field) tags.push(`<span class="tag">${escapeHtml(c.field)}</span>`);
+  if (c.frequency) tags.push(`<span class="tag">${escapeHtml(c.frequency)}</span>`);
+  (c.traits || []).slice(0, 3).forEach(t => {
+    if (t.trim()) tags.push(`<span class="tag">${escapeHtml(t.trim())}</span>`);
+  });
+
+  const coop = c.fortune?.cooperation;
+  const coopHtml = coop ? `
+    <div class="card-cooperation">
+      <span class="label">合作建議</span>
+      <strong>${coop.mode}</strong>
+    </div>` : '';
+
+  const trustDots = [1,2,3,4,5].map(i => 
+    `<span class="trust-dot ${i <= (c.trust || 0) ? 'filled' : ''}"></span>`
+  ).join('');
+
+  return `
+    <div class="card" onclick="showDetail('${c.id}')">
+      <div class="card-header">
+        <div>
+          <div class="card-name">${escapeHtml(c.name)}</div>
+          ${c.alias ? `<div class="card-meta">${escapeHtml(c.alias)}</div>` : ''}
+        </div>
+        ${elemDisplay}
+      </div>
+      <div class="card-tags">${tags.join('')}</div>
+      ${coopHtml}
+      <div class="card-footer">
+        <div class="trust-bar">${trustDots}</div>
+        <span>${c.createdAt ? new Date(c.createdAt).toLocaleDateString('zh-TW') : ''}</span>
+      </div>
+    </div>`;
+}
+
+function escapeHtml(s) {
+  if (!s) return '';
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// ============================================================
+// DETAIL VIEW
+// ============================================================
+
+function showDetail(id) {
+  const c = contacts.find(x => x.id === id);
+  if (!c) return;
+  currentEditId = id;
+
+  document.getElementById('detailName').textContent = c.name + (c.alias ? ' · ' + c.alias : '');
+  
+  const elem = c.fortune?.profile?.dayMaster || c.fortune?.trigram?.element || '人';
+  document.getElementById('detailSeal').textContent = elem;
+  
+  const body = document.getElementById('detailBody');
+  
+  let html = '';
+  
+  // 基本資料
+  html += `<div class="detail-section">
+    <div class="detail-section-title">基本資料</div>
+    <div class="detail-grid">
+      ${c.role ? `<div class="detail-item"><div class="key">身份</div><div class="val">${escapeHtml(c.role)}</div></div>` : ''}
+      ${c.field ? `<div class="detail-item"><div class="key">領域</div><div class="val">${escapeHtml(c.field)}</div></div>` : ''}
+      ${c.frequency ? `<div class="detail-item"><div class="key">互動頻率</div><div class="val">${escapeHtml(c.frequency)}</div></div>` : ''}
+      ${c.gender ? `<div class="detail-item"><div class="key">性別</div><div class="val">${escapeHtml(c.gender)}</div></div>` : ''}
+    </div>
+    ${c.source ? `<div style="margin-top:12px; font-size:14px; color:var(--ink-soft)"><em>認識：${escapeHtml(c.source)}</em></div>` : ''}
+  </div>`;
+
+  // 命理分析
+  if (c.fortune) {
+    html += `<div class="detail-section">
+      <div class="detail-section-title">命理畫像</div>`;
+    
+    if (c.fortune.method === 'bazi' && c.fortune.profile) {
+      const p = c.fortune.profile;
+      const sb = c.fortune.stemBranch;
+      html += `<div class="detail-grid">
+        <div class="detail-item"><div class="key">出生</div><div class="val">${c.birthYear}年${c.birthMonth}月${c.birthDay}日${c.birthHour !== '' && c.birthHour != null ? ' '+c.birthHour+'時' : ''}</div></div>
+        <div class="detail-item"><div class="key">日主</div><div class="val">${sb.day.stem}${sb.day.branch} · ${p.dayMaster}${p.dayYinYang}</div></div>
+        <div class="detail-item"><div class="key">最強五行</div><div class="val">${p.strongest}</div></div>
+        <div class="detail-item"><div class="key">最弱/缺</div><div class="val">${p.missing.length > 0 ? p.missing.join('、') : p.weakest}</div></div>
+      </div>`;
+
+      const trait = ELEMENT_TRAITS[p.dayMaster];
+      html += `<div class="analysis-box"><div class="analysis-content">
+        日主為「<strong>${p.dayMaster}${p.dayYinYang}</strong>」之人 — ${trait.traits}。
+        <br><br>${trait.style}。
+      </div></div>`;
+    } else if (c.fortune.method === 'yijing' && c.fortune.trigram) {
+      const t = c.fortune.trigram;
+      html += `<div class="detail-grid">
+        <div class="detail-item"><div class="key">數字</div><div class="val">${escapeHtml(c.number)}</div></div>
+        <div class="detail-item"><div class="key">本卦</div><div class="val">${t.name}卦</div></div>
+        <div class="detail-item"><div class="key">五行屬性</div><div class="val">${t.element}</div></div>
+      </div>`;
+      
+      // 顯示卦象
+      html += `<div class="hexagram-display">`;
+      [...t.lines].reverse().forEach(line => {
+        html += `<div class="hex-line ${line === 0 ? 'broken' : ''}"></div>`;
+      });
+      html += `</div>`;
+      
+      html += `<div class="analysis-box"><div class="analysis-content">
+        <strong>${t.name}卦</strong> — ${t.meaning}。屬「${t.element}」性格。
+      </div></div>`;
+    }
+    html += `</div>`;
+
+    // 合作建議
+    if (c.fortune.cooperation) {
+      const co = c.fortune.cooperation;
+      const relColor = co.relation.type === '同類' ? '同' : (co.relation.type.includes('生') ? '生' : '剋');
+      html += `<div class="detail-section">
+        <div class="detail-section-title">合作分析 · 與你的關係</div>
+        <div class="detail-grid">
+          <div class="detail-item"><div class="key">五行關係</div><div class="val">${co.relation.type}<span class="wuxing-relation relation-${relColor}">${co.relation.desc}</span></div></div>
+          <div class="detail-item"><div class="key">建議合作模式</div><div class="val">${co.mode}</div></div>
+        </div>
+        <div class="analysis-box"><div class="analysis-content">
+          ${co.advice}
+          <br><br><strong>注意</strong>：${co.warning}
+          ${co.bonus ? '<br><br>' + co.bonus.replace(/\n/g, '<br>') : ''}
+        </div></div>
+      </div>`;
+    } else {
+      html += `<div style="background:var(--paper-warm); padding:14px; font-size:13px; color:var(--ink-soft); border-left:3px solid var(--ink)">
+        設定你自己的命理資料後即可看到合作分析建議
+      </div>`;
+    }
+  }
+
+  // 主觀標籤
+  if ((c.traits && c.traits.length > 0) || c.trust) {
+    html += `<div class="detail-section">
+      <div class="detail-section-title">主觀觀察</div>`;
+    if (c.trust) {
+      const dots = [1,2,3,4,5].map(i => `<span class="trust-dot ${i <= c.trust ? 'filled' : ''}" style="width:14px;height:14px"></span>`).join('');
+      html += `<div style="margin-bottom:12px"><span style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.15em; color:var(--ink-soft)">信任度</span> <div class="trust-bar" style="margin-left:8px; display:inline-flex; gap:3px">${dots}</div></div>`;
+    }
+    if (c.traits && c.traits.length > 0) {
+      html += `<div class="card-tags">${c.traits.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>`;
+    }
+    html += `</div>`;
+  }
+
+  // 筆記
+  if (c.notes) {
+    html += `<div class="detail-section">
+      <div class="detail-section-title">筆記</div>
+      <div style="background:var(--paper-warm); padding:16px; font-size:14px; line-height:1.8; white-space:pre-wrap; border-left:2px solid var(--ink)">${escapeHtml(c.notes)}</div>
+    </div>`;
+  }
+
+  body.innerHTML = html;
+  openModal('detailModal');
+}
+
+// ============================================================
+// FORM / EDIT
+// ============================================================
+
+function openAddModal() {
+  currentEditId = null;
+  document.getElementById('modalTitle').textContent = '新增人脈';
+  document.getElementById('deleteBtn').style.display = 'none';
+  clearForm();
+  openModal('contactModal');
+}
+
+function editFromDetail() {
+  closeModal('detailModal');
+  const c = contacts.find(x => x.id === currentEditId);
+  if (!c) return;
+  
+  document.getElementById('modalTitle').textContent = '編輯：' + c.name;
+  document.getElementById('deleteBtn').style.display = 'block';
+  
+  document.getElementById('cName').value = c.name || '';
+  document.getElementById('cAlias').value = c.alias || '';
+  document.getElementById('cRole').value = c.role || '';
+  document.getElementById('cField').value = c.field || '';
+  document.getElementById('cSource').value = c.source || '';
+  document.getElementById('cYear').value = c.birthYear || '';
+  document.getElementById('cMonth').value = c.birthMonth || '';
+  document.getElementById('cDay').value = c.birthDay || '';
+  document.getElementById('cHour').value = c.birthHour ?? '';
+  document.getElementById('cGender').value = c.gender || '';
+  document.getElementById('cNumber').value = c.number || '';
+  document.getElementById('cFrequency').value = c.frequency || '';
+  document.getElementById('cTraits').value = (c.traits || []).join(', ');
+  document.getElementById('cNotes').value = c.notes || '';
+  
+  switchMethod(c.fortune?.method || 'bazi');
+  
+  currentTrust = c.trust || 0;
+  updateTrustUI();
+  
+  openModal('contactModal');
+}
+
+function deleteFromDetail() {
+  if (!currentEditId) return;
+  if (!confirm('確定要移除這位人脈嗎？')) return;
+  deleteContactData(currentEditId).then(() => {
+    contacts = contacts.filter(c => c.id !== currentEditId);
+    closeModal('detailModal');
+    renderContacts();
+    showToast('已移除');
+  });
+}
+
+function deleteContact() {
+  if (!currentEditId) return;
+  if (!confirm('確定要移除這位人脈嗎？')) return;
+  deleteContactData(currentEditId).then(() => {
+    contacts = contacts.filter(c => c.id !== currentEditId);
+    closeModal('contactModal');
+    renderContacts();
+    showToast('已移除');
+  });
+}
+
+function clearForm() {
+  ['cName','cAlias','cField','cSource','cYear','cMonth','cDay','cHour','cNumber','cTraits','cNotes'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('cRole').value = '';
+  document.getElementById('cGender').value = '';
+  document.getElementById('cFrequency').value = '';
+  currentTrust = 0;
+  updateTrustUI();
+  switchMethod('bazi');
+}
+
+function switchMethod(method) {
+  currentMethod = method;
+  document.querySelectorAll('.method-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.method === method);
+  });
+  document.getElementById('baziInputs').style.display = method === 'bazi' ? 'block' : 'none';
+  document.getElementById('yijingInputs').style.display = method === 'yijing' ? 'block' : 'none';
+}
+
+function updateTrustUI() {
+  document.querySelectorAll('#trustSelector .trust-dot').forEach((d, i) => {
+    d.classList.toggle('filled', i < currentTrust);
+  });
+}
+
+document.querySelectorAll('#trustSelector .trust-dot').forEach((dot, i) => {
+  dot.addEventListener('click', () => {
+    currentTrust = currentTrust === i + 1 ? 0 : i + 1;
+    updateTrustUI();
+  });
+});
+
+async function saveContact() {
+  const name = document.getElementById('cName').value.trim();
+  if (!name) {
+    showToast('請輸入姓名');
+    return;
+  }
+
+  const contact = {
+    id: currentEditId || ('c_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8)),
+    name,
+    alias: document.getElementById('cAlias').value.trim(),
+    role: document.getElementById('cRole').value,
+    field: document.getElementById('cField').value.trim(),
+    source: document.getElementById('cSource').value.trim(),
+    gender: document.getElementById('cGender').value,
+    frequency: document.getElementById('cFrequency').value,
+    traits: document.getElementById('cTraits').value.split(/[,，]/).map(s => s.trim()).filter(Boolean),
+    notes: document.getElementById('cNotes').value.trim(),
+    trust: currentTrust,
+    createdAt: currentEditId ? (contacts.find(c => c.id === currentEditId)?.createdAt || Date.now()) : Date.now(),
+    updatedAt: Date.now()
+  };
+
+  // 命理計算
+  if (currentMethod === 'bazi') {
+    const y = parseInt(document.getElementById('cYear').value);
+    const m = parseInt(document.getElementById('cMonth').value);
+    const d = parseInt(document.getElementById('cDay').value);
+    const h = document.getElementById('cHour').value;
+    
+    if (y && m && d) {
+      contact.birthYear = y;
+      contact.birthMonth = m;
+      contact.birthDay = d;
+      contact.birthHour = h === '' ? null : parseInt(h);
+      
+      const sb = getStemBranch(y, m, d, contact.birthHour);
+      const profile = getWuxingProfile(sb);
+      
+      contact.fortune = {
+        method: 'bazi',
+        stemBranch: sb,
+        profile,
+        cooperation: selfProfile ? suggestCooperation(selfProfile.fortune.profile, profile) : null
+      };
+    }
+  } else {
+    const num = document.getElementById('cNumber').value.trim();
+    if (num) {
+      contact.number = num;
+      const trigram = getNumberTrigram(num);
+      if (trigram) {
+        contact.fortune = {
+          method: 'yijing',
+          trigram,
+          cooperation: selfProfile && selfProfile.fortune ? suggestCooperation(
+            selfProfile.fortune.profile || { dayMaster: selfProfile.fortune.trigram?.element },
+            { dayMaster: trigram.element }
+          ) : null
+        };
+      }
+    }
+  }
+
+  await saveContactData(contact);
+  
+  const idx = contacts.findIndex(c => c.id === contact.id);
+  if (idx >= 0) contacts[idx] = contact;
+  else contacts.push(contact);
+  
+  closeModal('contactModal');
+  renderContacts();
+  showToast(currentEditId ? '已更新' : '已新增');
+}
+
+// ============================================================
+// SELF PROFILE
+// ============================================================
+
+function openSelfModal() {
+  if (selfProfile) {
+    document.getElementById('myName').value = selfProfile.name || '';
+    document.getElementById('myGender').value = selfProfile.gender || '';
+    document.getElementById('myYear').value = selfProfile.year || '';
+    document.getElementById('myMonth').value = selfProfile.month || '';
+    document.getElementById('myDay').value = selfProfile.day || '';
+    document.getElementById('myHour').value = selfProfile.hour ?? '';
+    document.getElementById('myNumber').value = selfProfile.number || '';
+  }
+  openModal('selfModal');
+}
+
+async function saveSelf() {
+  const y = parseInt(document.getElementById('myYear').value);
+  const m = parseInt(document.getElementById('myMonth').value);
+  const d = parseInt(document.getElementById('myDay').value);
+  
+  if (!y || !m || !d) {
+    showToast('請填入完整出生年月日');
+    return;
+  }
+  
+  const hourRaw = document.getElementById('myHour').value;
+  const hour = hourRaw === '' ? null : parseInt(hourRaw);
+  
+  const sb = getStemBranch(y, m, d, hour);
+  const profile = getWuxingProfile(sb);
+  
+  selfProfile = {
+    name: document.getElementById('myName').value.trim(),
+    gender: document.getElementById('myGender').value,
+    year: y, month: m, day: d, hour,
+    number: document.getElementById('myNumber').value.trim(),
+    fortune: { stemBranch: sb, profile }
+  };
+  
+  await saveSelfData(selfProfile);
+  
+  // 重新計算所有合作建議
+  contacts.forEach(c => {
+    if (c.fortune) {
+      if (c.fortune.method === 'bazi' && c.fortune.profile) {
+        c.fortune.cooperation = suggestCooperation(selfProfile.fortune.profile, c.fortune.profile);
+      } else if (c.fortune.method === 'yijing' && c.fortune.trigram) {
+        c.fortune.cooperation = suggestCooperation(
+          selfProfile.fortune.profile,
+          { dayMaster: c.fortune.trigram.element }
+        );
+      }
+      saveContactData(c);
+    }
+  });
+  
+  closeModal('selfModal');
+  updateSelfDisplay();
+  renderContacts();
+  showToast('已保存你的命理資料');
+}
+
+function updateSelfDisplay() {
+  if (selfProfile && selfProfile.fortune) {
+    document.getElementById('setupBanner').style.display = 'none';
+    document.getElementById('myBaziDisplay').style.display = 'flex';
+    const p = selfProfile.fortune.profile;
+    const sb = selfProfile.fortune.stemBranch;
+    const trait = ELEMENT_TRAITS[p.dayMaster];
+    document.getElementById('myBaziInfo').innerHTML = 
+      `${selfProfile.name || '你'} · 日主 <strong>${sb.day.stem}${sb.day.branch}</strong>（${p.dayMaster}${p.dayYinYang}）· 最強：${p.strongest}` +
+      (p.missing.length > 0 ? ` · 缺：${p.missing.join('、')}` : '');
+  } else {
+    document.getElementById('setupBanner').style.display = 'flex';
+    document.getElementById('myBaziDisplay').style.display = 'none';
+  }
+}
+
+document.getElementById('setupBanner').addEventListener('click', openSelfModal);
+
+// ============================================================
+// MODAL HELPERS
+// ============================================================
+
+function openModal(id) {
+  document.getElementById(id).classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', (e) => {
+    if (e.target === o) closeModal(o.id);
+  });
+});
+
+// ============================================================
+// INIT
+// ============================================================
+
+(async function init() {
+  selfProfile = await loadSelf();
+  contacts = await loadContacts();
+  updateSelfDisplay();
+  renderContacts();
+})();
+
+</script>
+
+</body>
+</html>

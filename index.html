@@ -5,8 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#121018">
+<meta name="apple-mobile-web-app-title" content="人脈手札">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#c43b3b">
+<meta name="description" content="結合東西方命理的個人人脈管理工具 — 八字、星座、合作分析，資料留在本機">
 <title>人脈手札</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="/icon.svg">
+<link rel="apple-touch-icon" href="/icon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;700;900&family=DM+Mono:wght@400;500&family=Cinzel:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
@@ -1197,6 +1203,14 @@ body {
         <div class="settings-item"><div><div class="si-label">匯出資料</div><div class="si-desc">JSON 備份</div></div><button class="btn btn-sm btn-secondary" onclick="exportData()">匯出</button></div>
         <div class="settings-item"><div><div class="si-label">匯入資料</div><div class="si-desc">從 JSON 還原</div></div><button class="btn btn-sm btn-secondary" onclick="document.getElementById('importFile').click()">匯入</button><input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)"></div>
         <div class="settings-item"><div><div class="si-label">清除所有資料</div></div><button class="btn btn-sm btn-danger" onclick="clearAllData()">清除</button></div>
+      </div>
+      <div class="settings-group">
+        <div class="settings-group-title">回饋</div>
+        <div class="settings-item"><div><div class="si-label">📩 回報問題 / 給建議</div><div class="si-desc">直接寫信給開發者</div></div><button class="btn btn-sm btn-secondary" onclick="openFeedback()">回報</button></div>
+        <div class="settings-item"><div><div class="si-label">未來打算收費，您的意見？</div><div class="si-desc">純收意見，這個按鈕不收錢</div></div><button class="btn btn-sm btn-secondary" onclick="recordPricingInterest()">告訴我想法</button></div>
+        <div style="font-size:12px;color:var(--fg3);margin-top:8px;line-height:1.6">
+          版本：v3 · <a href="https://github.com/coinnow888-dev/ninja886" target="_blank" style="color:var(--accent)">GitHub</a>
+        </div>
       </div>
     </div>
   </div>
@@ -2572,6 +2586,28 @@ async function clearAllData(){
 }
 
 // ============================================================
+// FEEDBACK / PRICING INTEREST
+// ============================================================
+function openFeedback(){
+  const subject=encodeURIComponent('[人脈手札] 回報 / 建議');
+  const body=encodeURIComponent(`\n\n---\n版本：v3\n瀏覽器：${navigator.userAgent}\n人脈數：${APP.contacts.length}\n主題：${APP.theme}`);
+  location.href=`mailto:coinnow888@gmail.com?subject=${subject}&body=${body}`;
+}
+
+// 純收集點擊意願，不真的收費。每點一次就記到 IndexedDB 的 meta 並 toast。
+async function recordPricingInterest(){
+  const prev=await dbGet('meta','pricingInterest');
+  const count=(prev?.data?.count||0)+1;
+  const lastAt=Date.now();
+  await dbPut('meta',{key:'pricingInterest',data:{count,lastAt}});
+  if(count===1){
+    toast('已記錄您的意願 · 感謝');
+  }else{
+    toast(`已記錄第 ${count} 次點擊 · 感謝`);
+  }
+}
+
+// ============================================================
 // DEEP READ — Multi-agent AI insights (3 agents collaborate)
 // ============================================================
 const DEEP_MODEL='claude-sonnet-4-5';
@@ -2799,6 +2835,13 @@ function switchTab(name){
 // ============================================================
 // INIT
 // ============================================================
+// Register PWA service worker (silently; failure is non-fatal)
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('/sw.js').catch(err=>console.warn('SW reg failed',err));
+  });
+}
+
 (async function(){
   await openDB();
   APP.contacts=await dbGetAll('contacts');

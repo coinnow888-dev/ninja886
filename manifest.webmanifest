@@ -1,0 +1,21 @@
+{
+  "name": "人脈手札",
+  "short_name": "人脈手札",
+  "description": "結合東西方命理的個人人脈管理工具",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0807",
+  "theme_color": "#c43b3b",
+  "lang": "zh-Hant",
+  "categories": ["productivity", "lifestyle"],
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any maskable"
+    }
+  ]
+}

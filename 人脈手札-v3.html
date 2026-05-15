@@ -1295,7 +1295,7 @@ body {
       </div>
       <div class="settings-group">
         <div class="settings-group-title">回饋</div>
-        <div class="settings-item"><div><div class="si-label">📩 回報問題 / 給建議</div><div class="si-desc">直接寫信給開發者</div></div><button class="btn btn-sm btn-secondary" onclick="openFeedback()">回報</button></div>
+        <div class="settings-item"><div><div class="si-label">📝 給我回饋（3 分鐘）</div><div class="si-desc">幫我做得更好用 · 結構化問卷比寫信快</div></div><button class="btn btn-sm btn-secondary" onclick="openFeedback()">填寫</button></div>
         <div class="settings-item"><div><div class="si-label">未來打算收費，您贊成的話點 Yes</div><div class="si-desc">點愈多次代表愈多人想付</div></div><button class="btn btn-sm btn-secondary" onclick="recordPricingInterest()">Yes</button></div>
         <div style="font-size:12px;color:var(--fg3);margin-top:8px;line-height:1.6">
           版本：v3 · <a href="https://github.com/coinnow888-dev/ninja886" target="_blank" style="color:var(--accent)">GitHub</a>
@@ -2951,9 +2951,8 @@ async function clearAllData(){
 // FEEDBACK / PRICING INTEREST
 // ============================================================
 function openFeedback(){
-  const subject=encodeURIComponent('[人脈手札] 回報 / 建議');
-  const body=encodeURIComponent(`\n\n---\n版本：v3\n瀏覽器：${navigator.userAgent}\n人脈數：${APP.contacts.length}\n主題：${APP.theme}`);
-  location.href=`mailto:coinnow888@gmail.com?subject=${subject}&body=${body}`;
+  // Google Form 結構化問卷（比 mailto 易填、自動進試算表）
+  window.open('https://forms.gle/S36XXyemdeBcapW56','_blank','noopener,noreferrer');
 }
 
 // 純收集點擊意願，不真的收費。每點一次就記到 IndexedDB 的 meta 並 toast。

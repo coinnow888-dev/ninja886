@@ -1940,7 +1940,7 @@ function recomputeSelfFortune(){
   if(APP.theme==='east'){
     if(APP.self.year && APP.self.month && APP.self.day){
       const sb=getSB(APP.self.year, APP.self.month, APP.self.day, APP.self.hour ?? null);
-      APP.self.fortune={stemBranch:sb, profile:wuxingProfile(sb)};
+      APP.self.fortune={method:'bazi', stemBranch:sb, profile:wuxingProfile(sb)};
       return true;
     }
     // 缺出生年 → 無法算八字
@@ -1948,7 +1948,7 @@ function recomputeSelfFortune(){
     return false;
   }else{
     if(APP.self.month && APP.self.day){
-      APP.self.fortune={zodiac:getZodiac(APP.self.month, APP.self.day)};
+      APP.self.fortune={method:'zodiac', zodiac:getZodiac(APP.self.month, APP.self.day)};
       return true;
     }
     APP.self.fortune=null;
@@ -3096,7 +3096,10 @@ async function callDeepAgent(systemPrompt,userPrompt){
 }
 
 async function agentFortuneAnalyst(c){
-  const sys='你是命理分析師。根據人物的八字或星座資料，洞察其人格本質、能量模式、優勢與盲區。語氣中性、實用導向，避免迷信用詞（不要寫「貴人運」、「事業運勢」這類）。用 framework 角度解讀，不講玄學。一律用繁體中文回應。';
+  const _frameworkHint=APP.theme==='east'
+    ?'你**必須**使用東方命理框架（八字、十神、五行、天干地支、數字易經卦象）來分析。不要混用西方占星概念。'
+    :'你**必須**使用西方占星框架（黃道12宮、四元素水火土風、三模式本位/固定/變動、守護星、星座特質）來分析。**不要使用八字、五行、天干地支等東方概念**。';
+  const sys=`你是命理分析師。根據人物的命理資料，洞察其人格本質、能量模式、優勢與盲區。${_frameworkHint}語氣中性、實用導向，避免迷信用詞（不要寫「貴人運」、「事業運勢」這類）。用 framework 角度解讀，不講玄學。一律用繁體中文回應。`;
   const user=`對方資料：
 身份：${c.role||'—'}
 領域：${c.field||'—'}
@@ -3113,7 +3116,10 @@ ${_fortuneSummary(c)}
 }
 
 async function agentCooperationStrategist(c,fa){
-  const sys='你是合作策略師。根據對方人格畫像、使用者自己的命理、對方角色與領域，提出 3 個具體的合作切入點。每個切入點評估契合度與摩擦點（0-100）。實用導向，避免空話。一律用繁體中文回應。';
+  const _frameworkHint=APP.theme==='east'
+    ?'你**必須**用東方框架（五行生剋、十神關係、合作模式）解釋契合與摩擦。不要用元素相位等西方概念。'
+    :'你**必須**用西方占星框架（元素相容、模式互動、星座搭配）解釋契合與摩擦。**不要用五行、十神、八字等東方概念**。';
+  const sys=`你是合作策略師。根據對方人格畫像、使用者自己的命理、對方角色與領域，提出 3 個具體的合作切入點。每個切入點評估契合度與摩擦點（0-100）。${_frameworkHint}實用導向，避免空話。一律用繁體中文回應。`;
   const selfFortune=APP.self?.fortune?_fortuneSummary({fortune:APP.self.fortune}):'（使用者尚未設定自己的命理）';
   const user=`對方人格畫像（命理分析師輸出）：
 ${JSON.stringify(fa,null,2)}
@@ -3137,7 +3143,8 @@ ${JSON.stringify(fa,null,2)}
 }
 
 async function agentConversationAdvisor(c,fa,co){
-  const sys='你是對話顧問。根據前面分析，給使用者下次見對方時的具體建議：可問的問題、要避開的話題、後續可 follow-up 的點。實用、可帶走、口語化。一律用繁體中文回應。';
+  const _frameworkHint=APP.theme==='east'?'前面兩棒已用東方命理 framework 分析，你保持一致。':'前面兩棒已用西方占星 framework 分析，你保持一致。';
+  const sys=`你是對話顧問。根據前面分析，給使用者下次見對方時的具體建議：可問的問題、要避開的話題、後續可 follow-up 的點。${_frameworkHint}實用、可帶走、口語化。一律用繁體中文回應。`;
   const user=`對方畫像：
 ${JSON.stringify(fa,null,2)}
 

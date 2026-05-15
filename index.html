@@ -3167,6 +3167,12 @@ ${_fortuneSummary(c)}
 }
 
 // 依身份給 AI 場景提示 — 讓合作切入點 / 對話建議避免泛泛敘述
+// 🔒 PAYWALL CANDIDATE（5/15 決議）：此 helper 產出的場景化提示
+//   是 Premium 版的差異化亮點。未來付費版 launch 時，可在這裡加
+//   `if (APP.isPremium) return ...` 的旗標切換 — 免費版回傳 ''
+//   讓 AI 生 generic「相處之道」，Premium 回傳完整場景 hint 生
+//   「過年聚餐分工」這類具體 angle。
+//   對應商業評估.md Premium tier 第 3 條。
 function _roleScenarioHint(role){
   const map={
     '家人':'家庭重大決策（買房、生子、教養）、過年聚會與輩分相處、健康照顧、財務分擔、價值觀衝突',

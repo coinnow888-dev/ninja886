@@ -1183,6 +1183,10 @@ body {
   .ob-content { max-width: 720px; }
   .ob-choices { gap: 24px; }
   .ob-choice { padding: 40px 28px; }
+
+  /* Detail-actions: 桌機按鈕不撐滿，右對齊、限制寬度 */
+  .detail-actions { justify-content: flex-end; }
+  .detail-actions .btn { flex: 0 0 auto; min-width: 120px; max-width: 160px; padding: 10px 18px; font-size: 14px; }
 }
 </style>
 </head>
@@ -2348,7 +2352,9 @@ function showDetail(id){
 
   // ===== 深入識人 CTA + 結果（從底部移到 hero 正下方） =====
   const _deepLabel=APP.theme==='east'?(c.deepProfile?'重新分析':'深入識人 · AI'):(c.deepProfile?'Re-analyze':'Deep Read · AI');
-  html+=`<div class="deep-cta-block"><button class="btn btn-deep btn-deep-hero" id="deepDiveBtn" onclick="deepDive('${c.id}')">✦ ${_deepLabel}</button><div id="deepProfileArea">${renderDeepProfile(c)}</div></div>`;
+  const _free=!APP.apiKey?getDeepFreeUsedToday():null;
+  const _freeHint=(_free!==null && _free>=1) ? `<div style="font-size:11px;color:var(--fg3);text-align:center;margin-top:6px;font-family:var(--mono);letter-spacing:0.05em">今日免費額度 ${_free}/${DEEP_FREE_DAILY_LIMIT} 已用</div>` : '';
+  html+=`<div class="deep-cta-block"><button class="btn btn-deep btn-deep-hero" id="deepDiveBtn" onclick="deepDive('${c.id}')">✦ ${_deepLabel}</button>${_freeHint}<div id="deepProfileArea">${renderDeepProfile(c)}</div></div>`;
 
   // Fortune section(s) — 多種命理時逐一展示
   // 新順序：合作分析（coopBuf）放在前，命理畫像（profileBuf）放在後
@@ -3149,10 +3155,39 @@ ${JSON.stringify(co,null,2)}
   return await callDeepAgent(sys,user);
 }
 
+// ===== 免費版每日計數（本地 localStorage，key 每天自動失效） =====
+const DEEP_FREE_DAILY_LIMIT=3;
+function _deepFreeKey(){const d=new Date();const y=d.getFullYear();const m=String(d.getMonth()+1).padStart(2,'0');const dd=String(d.getDate()).padStart(2,'0');return `_deepFree:${y}-${m}-${dd}`;}
+function getDeepFreeUsedToday(){
+  try{const v=localStorage.getItem(_deepFreeKey());return v?parseInt(v,10)||0:0;}catch{return 0;}
+}
+function bumpDeepFreeUsed(){
+  try{const k=_deepFreeKey();const n=getDeepFreeUsedToday()+1;localStorage.setItem(k,String(n));return n;}catch{return 0;}
+}
+// 兩按鈕對話框（用於免費版用完提示）：按右邊 -> resolve(true) 去設定；按左邊 -> resolve(false)
+function confirmDeepLimit(msg,leftLabel,rightLabel){
+  return new Promise(resolve=>{
+    $('dialogMsg').textContent=msg;
+    $('dialogBtns').innerHTML=`<button class="btn btn-secondary" id="dlgNo">${leftLabel}</button><button class="btn btn-primary" id="dlgYes">${rightLabel}</button>`;
+    $('dialogOverlay').classList.add('active');
+    $('dlgNo').onclick=()=>{$('dialogOverlay').classList.remove('active');resolve(false);};
+    $('dlgYes').onclick=()=>{$('dialogOverlay').classList.remove('active');resolve(true);};
+  });
+}
+
 async function deepDive(contactId){
   const c=APP.contacts.find(x=>x.id===contactId);
   if(!c){toast('找不到該人脈');return;}
   if(!c.fortune){toast('需先填寫出生資訊');return;}
+  // 預擋：免費版（沒填 API Key）且今日已用完 → 立刻彈訊息，不發 request
+  if(!APP.apiKey && getDeepFreeUsedToday()>=DEEP_FREE_DAILY_LIMIT){
+    const go=await confirmDeepLimit(
+      `今天免費版已用完 ${DEEP_FREE_DAILY_LIMIT} 次（每日 IP 上限）。\n明天 0:00 重置，或到設定填您的 Claude API Key 解除上限。`,
+      '我知道了','去設定填 Key'
+    );
+    if(go)switchTab('settings');
+    return;
+  }
   const area=$('deepProfileArea');
   const btn=$('deepDiveBtn');
   if(btn)btn.disabled=true;
@@ -3175,10 +3210,17 @@ async function deepDive(contactId){
     await dbPut('contacts',c);
     if(area)area.innerHTML=renderDeepProfile(c);
     if(btn){btn.disabled=false;btn.innerHTML=`✦ ${APP.theme==='east'?'重新分析':'Re-analyze'}`;}
+    // 成功 1 整輪（3 phase 都完）才計數，且僅在使用免費版時
+    if(!APP.apiKey)bumpDeepFreeUsed();
+    // 重繪 detail 讓「今日免費額度」hint 更新
+    if(APP.editingId===c.id)showDetail(c.id);
     toast(APP.theme==='east'?'深入識人完成':'Deep read complete');
   }catch(err){
     console.error('deepDive failed',err);
-    const msg=err.message||'未知錯誤';
+    const rawMsg=err.message||'未知錯誤';
+    // server 429 / rate_limit 用更白話文案；其他錯誤照舊
+    const isRate=/rate.?limit|429|too many requests/i.test(rawMsg);
+    const msg=isRate?'今天免費版已用完。明天再試，或到設定填 API Key 解除上限。':rawMsg;
     if(area)area.innerHTML=`<div class="dp-error">${esc(msg)}</div>`+(c.deepProfile?renderDeepProfile(c):'');
     if(btn)btn.disabled=false;
     // Show meaningful short messages (like rate-limit) directly, fallback for long stack traces

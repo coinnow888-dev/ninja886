@@ -1,6 +1,6 @@
 // 人脈手札 Service Worker
 // Cache-first for app shell, network-first for /api/*
-const CACHE = 'renmai-v8';
+const CACHE = 'renmai-v9';
 const SHELL = ['/', '/index.html', '/manifest.webmanifest', '/icon.svg'];
 
 self.addEventListener('install', (e) => {

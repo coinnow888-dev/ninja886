@@ -1374,7 +1374,7 @@ body {
     <div class="section-label">基本資料</div>
     <div class="field"><label>姓名 <span class="req">*</span></label><input type="text" id="fName"></div>
     <div class="row row-2">
-      <div class="field"><label>身份</label><select id="fRole"><option value="">未分類</option><option>客戶</option><option>同事</option><option>主管</option><option>下屬</option><option>合作夥伴</option><option>供應商</option><option>導師</option><option>朋友</option><option>同行</option><option>投資人</option></select></div>
+      <div class="field"><label>身份</label><select id="fRole"><option value="">未分類</option><option>家人</option><option>朋友</option><option>同事</option><option>主管</option><option>下屬</option><option>客戶</option><option>合作夥伴</option><option>供應商</option><option>導師</option><option>同行</option><option>投資人</option></select></div>
       <div class="field"><label>領域</label><input type="text" id="fField"></div>
     </div>
 
@@ -1401,6 +1401,7 @@ body {
           <div class="field"><label>上次見面</label><input type="date" id="fLastSeen"></div>
         </div>
         <div class="field"><label>性格特質（逗號分隔）</label><input type="text" id="fTraits" placeholder="理性, 直接, 行動派"></div>
+        <div class="field"><label>興趣（逗號分隔）</label><input type="text" id="fInterests" placeholder="閱讀, 跑步, 烘焙"></div>
         <div class="field"><label>筆記 <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()">🎤 語音</button></label><textarea id="fNotes" placeholder="第一印象、合作經驗..."></textarea></div>
       </div>
     </details>
@@ -2617,6 +2618,7 @@ function editEntry(id){
   $('fFreq').value=c.frequency||'';
   if($('fLastSeen'))$('fLastSeen').value=c.lastSeenAt?new Date(c.lastSeenAt).toISOString().slice(0,10):'';
   $('fTraits').value=(c.traits||[]).join(', ');
+  if($('fInterests'))$('fInterests').value=(c.interests||[]).join(', ');
   $('fNotes').value=c.notes||'';
   if(APP.theme==='east'&&c.fortune?.method)switchMethod(c.fortune.method);
   APP.trust=c.trust||0;
@@ -2624,14 +2626,14 @@ function editEntry(id){
   renderScanArea();
   // 編輯模式：若「更多」區內有任何資料，自動展開（避免使用者以為資料消失）
   if($('moreFields')){
-    const hasMore=!!(c.alias||c.phone||c.email||c.company||c.source||c.frequency||c.lastSeenAt||(c.traits&&c.traits.length)||c.notes||c.trust);
+    const hasMore=!!(c.alias||c.phone||c.email||c.company||c.source||c.frequency||c.lastSeenAt||(c.traits&&c.traits.length)||(c.interests&&c.interests.length)||c.notes||c.trust);
     $('moreFields').open=hasMore;
   }
   openSheet();
 }
 
 function clearForm(){
-  ['fName','fAlias','fPhone','fEmail','fField','fCompany','fSource','fTraits','fNotes'].forEach(id=>{if($(id))$(id).value='';});
+  ['fName','fAlias','fPhone','fEmail','fField','fCompany','fSource','fTraits','fInterests','fNotes'].forEach(id=>{if($(id))$(id).value='';});
   ['fYear','fMonth','fDay','fHour','fNumber'].forEach(id=>{if($(id))$(id).value='';});
   if($('fRole'))$('fRole').value='';
   if($('fGender'))$('fGender').value='';
@@ -2659,6 +2661,7 @@ async function saveEntry(){
     role:$('fRole')?.value||'',field:$('fField')?.value?.trim()||'',company:$('fCompany')?.value?.trim()||'',
     source:$('fSource')?.value?.trim()||'',gender:$('fGender')?.value||'',frequency:$('fFreq')?.value||'',
     traits:($('fTraits')?.value||'').split(/[,，]/).map(s=>s.trim()).filter(Boolean),
+    interests:($('fInterests')?.value||'').split(/[,，]/).map(s=>s.trim()).filter(Boolean),
     notes:($('fNotes')?.value||'').trim(),trust:APP.trust,
     lastSeenAt:_lsRaw?new Date(_lsRaw).getTime():null,
     createdAt:APP.editingId?(APP.contacts.find(x=>x.id===APP.editingId)?.createdAt||Date.now()):Date.now(),
@@ -3161,25 +3164,46 @@ ${_fortuneSummary(c)}
   return await callDeepAgent(sys,user);
 }
 
+// 依身份給 AI 場景提示 — 讓合作切入點 / 對話建議避免泛泛敘述
+function _roleScenarioHint(role){
+  const map={
+    '家人':'家庭重大決策（買房、生子、教養）、過年聚會與輩分相處、健康照顧、財務分擔、價值觀衝突',
+    '朋友':'人生選擇諮詢、借錢還錢、生病探病、結婚生子分享、定期聚會、長期 vs 短期關係',
+    '同事':'跨部門 OKR 對接、會議發言時機、爭取資源、午餐關係、KPI 比較、共同向上管理',
+    '主管':'績效面談、被指派任務、爭取升遷加薪、提離職、跨主管協調',
+    '下屬':'給負面回饋、分派工作、留人、職涯規劃對話、糾正錯誤、激勵',
+    '客戶':'首次提案、續約談判、抱怨處理、推薦其他客戶、價格殺價、需求變更',
+    '合作夥伴':'簽約條款、分潤分工、出包究責、續約 vs 換家、共同 KPI 校準',
+    '供應商':'殺價談判、品質要求、付款條件、緊急加單、退換貨爭議',
+    '導師':'求建議、表達感謝、定期回饋、被推薦、傳承知識',
+    '同行':'競爭情報交換、合作 vs 競爭、跳槽 / 挖角、業界八卦、共同對抗大廠',
+    '投資人':'募資、季度報告、出場規劃、增資、董事會議、壞消息溝通'
+  };
+  return role && map[role] ? `（${role}關係常見場景：${map[role]}）` : '';
+}
+
 async function agentCooperationStrategist(c,fa){
   const _frameworkHint=APP.theme==='east'
     ?'你**必須**用東方框架（五行生剋、十神關係、合作模式）解釋契合與摩擦。不要用元素相位等西方概念。'
     :'你**必須**用西方占星框架（元素相容、模式互動、星座搭配）解釋契合與摩擦。**不要用五行、十神、八字等東方概念**。';
-  const sys=`你是合作策略師。根據對方人格畫像、使用者自己的命理、對方角色與領域，提出 3 個具體的合作切入點。每個切入點評估契合度與摩擦點（0-100）。${_frameworkHint}實用導向，避免空話。一律用繁體中文回應。`;
+  const sys=`你是合作策略師。根據對方人格畫像、使用者自己的命理、對方角色與領域，提出 3 個具體的合作切入點。每個切入點**必須對應「對方身份」常見的具體場景**（不要寫「在工作場合中...」這種泛泛敘述），讓使用者讀完知道「下一次遇到 X 情境，該怎麼處理」。每個切入點評估契合度與摩擦點（0-100）。${_frameworkHint}實用導向，避免空話。一律用繁體中文回應。`;
   const selfFortune=APP.self?.fortune?_fortuneSummary({fortune:APP.self.fortune}):'（使用者尚未設定自己的命理）';
+  const _scenarioHint=_roleScenarioHint(c.role);
+  const _interests=(c.interests&&c.interests.length)?c.interests.join('、'):'';
   const user=`對方人格畫像（命理分析師輸出）：
 ${JSON.stringify(fa,null,2)}
 
-對方角色：${c.role||'—'}
+對方角色：${c.role||'—'}${_scenarioHint}
 對方領域：${c.field||'—'}
 對方公司：${c.company||'—'}
+對方興趣：${_interests||'—'}
 
 使用者自己：${selfFortune}
 
-請以 JSON 格式回傳，不要任何 JSON 之外的文字。Schema：
+請以 JSON 格式回傳，不要任何 JSON 之外的文字。3 個切入點要對應上述「角色場景」中不同的具體情境（例如家人 → 一個關於買房決策、一個關於價值觀衝突、一個關於健康照顧）。Schema：
 {
   "angles": [
-    {"title":"切入點標題（10字內）", "detail":"50-80字具體建議", "harmony": 整數0-100, "friction": 整數0-100},
+    {"title":"切入點標題（10字內，要看得出是哪個具體場景）", "detail":"50-80字具體建議：什麼情境發生時、你該怎麼開口/反應", "harmony": 整數0-100, "friction": 整數0-100},
     {第二個},
     {第三個}
   ],
@@ -3190,20 +3214,24 @@ ${JSON.stringify(fa,null,2)}
 
 async function agentConversationAdvisor(c,fa,co){
   const _frameworkHint=APP.theme==='east'?'前面兩棒已用東方命理 framework 分析，你保持一致。':'前面兩棒已用西方占星 framework 分析，你保持一致。';
-  const sys=`你是對話顧問。根據前面分析，給使用者下次見對方時的具體建議：可問的問題、要避開的話題、後續可 follow-up 的點。${_frameworkHint}實用、可帶走、口語化。一律用繁體中文回應。`;
+  const sys=`你是對話顧問。根據前面分析，給使用者下次見對方時的具體建議：可問的問題、要避開的話題、後續可 follow-up 的點。建議要對應「對方身份」的常見情境（家人聚餐 vs 客戶會議 vs 同事午餐 場景完全不同）。如果對方有興趣資料，至少一個問題要圍繞興趣展開（搭起話題的軟切點）。${_frameworkHint}實用、可帶走、口語化。一律用繁體中文回應。`;
+  const _scenarioHint=_roleScenarioHint(c.role);
+  const _interests=(c.interests&&c.interests.length)?c.interests.join('、'):'';
   const user=`對方畫像：
 ${JSON.stringify(fa,null,2)}
 
 合作策略：
 ${JSON.stringify(co,null,2)}
 
+對方角色：${c.role||'—'}${_scenarioHint}
+對方興趣：${_interests||'—'}
 使用者對對方的筆記：${c.notes||'（無）'}
 
 請以 JSON 格式回傳，不要任何 JSON 之外的文字。Schema：
 {
-  "questions": ["可問問題1（口語化）", "可問問題2", "可問問題3"],
+  "questions": ["可問問題1（口語化，對應角色情境，若有興趣資料至少一題圍繞興趣）", "可問問題2", "可問問題3"],
   "avoidances": ["避開的話題1（後面附「為何」一句說明）", "避開2"],
-  "followUp": "40-60字描述下次見面後可以 follow-up 的一個具體動作"
+  "followUp": "40-60字描述下次見面後可以 follow-up 的一個具體動作（要符合該角色關係的常見後續，如客戶 → 整理 minutes 寄出、家人 → 三天內傳一張照片）"
 }`;
   return await callDeepAgent(sys,user);
 }

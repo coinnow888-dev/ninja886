@@ -705,6 +705,41 @@ body {
 
 .section-label::before { content: ''; width: 3px; height: 14px; background: var(--accent); border-radius: 1px; }
 
+/* Collapsible "more fields" in addSheet — keeps new-contact form scannable */
+.more-fields {
+  margin-top: 24px;
+  border-top: 1px solid var(--bg3);
+  padding-top: 8px;
+}
+.more-fields > summary {
+  list-style: none;
+  cursor: pointer;
+  font-size: 14px; font-weight: 600;
+  color: var(--fg2);
+  padding: 12px 0;
+  display: flex; align-items: center; gap: 8px;
+  user-select: none;
+  transition: color .2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.more-fields > summary::-webkit-details-marker { display: none; }
+.more-fields > summary::before {
+  content: '▸';
+  color: var(--accent);
+  font-size: 12px;
+  display: inline-block;
+  transition: transform .25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.more-fields[open] > summary::before { transform: rotate(90deg); }
+.more-fields > summary:hover { color: var(--fg); }
+.more-fields > summary .more-hint {
+  font-size: 12px; font-weight: 400;
+  color: var(--fg3);
+  margin-left: auto;
+}
+.more-fields[open] > summary .more-hint { opacity: 0; }
+.more-fields-body { padding-top: 4px; }
+.more-fields-body .section-label:first-child { margin-top: 12px; }
+
 .method-tabs {
   display: flex;
   background: var(--bg);
@@ -1337,33 +1372,38 @@ body {
     <div class="scan-result" id="scanResult"><div class="sr-title">✓ 已自動填入</div><div id="scanResultContent"></div></div>
 
     <div class="section-label">基本資料</div>
-    <div class="row row-2">
-      <div class="field"><label>姓名 <span class="req">*</span></label><input type="text" id="fName"></div>
-      <div class="field"><label>暱稱</label><input type="text" id="fAlias"></div>
-    </div>
-    <div class="row row-2">
-      <div class="field"><label>電話</label><input type="tel" id="fPhone"></div>
-      <div class="field"><label>Email</label><input type="email" id="fEmail"></div>
-    </div>
+    <div class="field"><label>姓名 <span class="req">*</span></label><input type="text" id="fName"></div>
     <div class="row row-2">
       <div class="field"><label>身份</label><select id="fRole"><option value="">未分類</option><option>客戶</option><option>同事</option><option>主管</option><option>下屬</option><option>合作夥伴</option><option>供應商</option><option>導師</option><option>朋友</option><option>同行</option><option>投資人</option></select></div>
       <div class="field"><label>領域</label><input type="text" id="fField"></div>
     </div>
-    <div class="field"><label>公司</label><input type="text" id="fCompany"></div>
-    <div class="field"><label>認識方式</label><input type="text" id="fSource"></div>
 
     <div class="section-label" id="fortuneSectionLabel">命理資料</div>
     <div class="method-tabs" id="methodTabs"></div>
     <div id="fortuneInputArea"></div>
 
-    <div class="section-label">主觀觀察</div>
-    <div class="field"><label>信任度</label><div class="trust-row" id="fTrustRow"><div class="trust-circle" data-t="1" onclick="setTrust(1)">1</div><div class="trust-circle" data-t="2" onclick="setTrust(2)">2</div><div class="trust-circle" data-t="3" onclick="setTrust(3)">3</div><div class="trust-circle" data-t="4" onclick="setTrust(4)">4</div><div class="trust-circle" data-t="5" onclick="setTrust(5)">5</div></div></div>
-    <div class="row row-2">
-      <div class="field"><label>互動頻率</label><select id="fFreq"><option value="">未填</option><option>每週</option><option>每月</option><option>每季</option><option>每年</option><option>少於每年</option></select></div>
-      <div class="field"><label>上次見面</label><input type="date" id="fLastSeen"></div>
-    </div>
-    <div class="field"><label>性格特質（逗號分隔）</label><input type="text" id="fTraits" placeholder="理性, 直接, 行動派"></div>
-    <div class="field"><label>筆記 <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()">🎤 語音</button></label><textarea id="fNotes" placeholder="第一印象、合作經驗..."></textarea></div>
+    <details class="more-fields" id="moreFields">
+      <summary>更多欄位（聯絡方式、互動、筆記）<span class="more-hint">點此展開</span></summary>
+      <div class="more-fields-body">
+        <div class="section-label">聯絡與認識</div>
+        <div class="field"><label>暱稱</label><input type="text" id="fAlias"></div>
+        <div class="row row-2">
+          <div class="field"><label>電話</label><input type="tel" id="fPhone"></div>
+          <div class="field"><label>Email</label><input type="email" id="fEmail"></div>
+        </div>
+        <div class="field"><label>公司</label><input type="text" id="fCompany"></div>
+        <div class="field"><label>認識方式</label><input type="text" id="fSource"></div>
+
+        <div class="section-label">主觀觀察</div>
+        <div class="field"><label>信任度</label><div class="trust-row" id="fTrustRow"><div class="trust-circle" data-t="1" onclick="setTrust(1)">1</div><div class="trust-circle" data-t="2" onclick="setTrust(2)">2</div><div class="trust-circle" data-t="3" onclick="setTrust(3)">3</div><div class="trust-circle" data-t="4" onclick="setTrust(4)">4</div><div class="trust-circle" data-t="5" onclick="setTrust(5)">5</div></div></div>
+        <div class="row row-2">
+          <div class="field"><label>互動頻率</label><select id="fFreq"><option value="">未填</option><option>每週</option><option>每月</option><option>每季</option><option>每年</option><option>少於每年</option></select></div>
+          <div class="field"><label>上次見面</label><input type="date" id="fLastSeen"></div>
+        </div>
+        <div class="field"><label>性格特質（逗號分隔）</label><input type="text" id="fTraits" placeholder="理性, 直接, 行動派"></div>
+        <div class="field"><label>筆記 <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()">🎤 語音</button></label><textarea id="fNotes" placeholder="第一印象、合作經驗..."></textarea></div>
+      </div>
+    </details>
   </div>
   <div class="sheet-footer">
     <button class="btn btn-secondary" onclick="closeSheet()">取消</button>
@@ -2021,7 +2061,6 @@ function dbGet(s,k){return _withDB(()=>new Promise((r,j)=>{const t=db.transactio
 function dbGetAll(s){return _withDB(()=>new Promise((r,j)=>{const t=db.transaction(s,'readonly');const q=t.objectStore(s).getAll();q.onsuccess=()=>r(q.result||[]);q.onerror=e=>j(q.error||e);t.onabort=e=>j(t.error||e);}));}
 function dbDel(s,k){return _withDB(()=>new Promise((r,j)=>{const t=db.transaction(s,'readwrite');t.objectStore(s).delete(k);t.oncomplete=()=>r();t.onerror=e=>j(t.error||e);t.onabort=e=>j(t.error||e);}));}
 function dbClear(s){return _withDB(()=>new Promise((r,j)=>{const t=db.transaction(s,'readwrite');t.objectStore(s).clear();t.oncomplete=()=>r();t.onerror=e=>j(t.error||e);t.onabort=e=>j(t.error||e);}));}
-function dbDelete(s,k){return _withDB(()=>new Promise((r,j)=>{const t=db.transaction(s,'readwrite');t.objectStore(s).delete(k);t.oncomplete=()=>r();t.onerror=e=>j(t.error||e);t.onabort=e=>j(t.error||e);}));}
 
 // ============================================================
 // APP STATE
@@ -2551,7 +2590,10 @@ function showDetail(id){
 function openAddSheet(){
   APP.editingId=null;
   $('sheetTitle').textContent=APP.theme==='east'?'新增人脈':'New Contact';
-  clearForm();renderScanArea();openSheet();
+  clearForm();renderScanArea();
+  // 新增模式：「更多」預設收起，讓使用者先填命理必要欄位
+  if($('moreFields'))$('moreFields').open=false;
+  openSheet();
 }
 
 function editEntry(id){
@@ -2580,6 +2622,11 @@ function editEntry(id){
   APP.trust=c.trust||0;
   document.querySelectorAll('#fTrustRow .trust-circle').forEach((el,i)=>el.classList.toggle('on',i<APP.trust));
   renderScanArea();
+  // 編輯模式：若「更多」區內有任何資料，自動展開（避免使用者以為資料消失）
+  if($('moreFields')){
+    const hasMore=!!(c.alias||c.phone||c.email||c.company||c.source||c.frequency||c.lastSeenAt||(c.traits&&c.traits.length)||c.notes||c.trust);
+    $('moreFields').open=hasMore;
+  }
   openSheet();
 }
 
@@ -2913,7 +2960,7 @@ async function clearApiKey(){
   const ok=await customConfirm('確定要清除 API Key？清除後將回到免費版（每日 IP 限 3 次）');
   if(!ok)return;
   APP.apiKey='';
-  try{await dbDelete('meta','apiKey');}catch(e){console.error('clearApiKey dbDelete failed',e);}
+  try{await dbDel('meta','apiKey');}catch(e){console.error('clearApiKey dbDel failed',e);}
   renderApiKeyUI();
   toast('已清除');
 }

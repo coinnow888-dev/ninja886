@@ -8,6 +8,9 @@
 |---|---|
 | `index.html` | **部署用** — Cloudflare 從根目錄提供服務的檔案。所有 commit 都必須讓這個檔保持最新 |
 | `人脈手札-v3.html` | 與 `index.html` 內容相同的版本歸檔副本（v1/v2 是早期版本，唯讀） |
+| `manifest.webmanifest` · `sw.js` · `icon.svg` | PWA 相關（可安裝到主畫面、Service Worker 快取） |
+| `worker.js` · `wrangler.jsonc` | Cloudflare Workers 入口與設定 |
+| `商業策略/*.html` · `商業策略/*.md` | 商業評估、訂閱/門檻模式比較、行銷策略、產品路線圖、需求優先序、UX 提案 |
 | `deploy/*.md` | 部署 & 持續優化的指南文件（給使用者本人看的） |
 | `待辦清單.md` | 工作清單，做完一項就勾起來，新功能寫進「💡 想做」段 |
 | `.claude/agents/*.md` | Claude Code 子代理定義（fortune-engine、ui-designer、deployer、reviewer、product-manager） |

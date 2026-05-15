@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>人脈手札 — 商業評估</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
+
+:root {
+  --bg: #0c0c0f;
+  --bg2: #16161c;
+  --bg3: #1e1e28;
+  --bg4: #2a2a38;
+  --fg: #e8e6f0;
+  --fg2: #a8a6b4;
+  --fg3: #6a6878;
+  --accent: #c43b3b;
+  --accent2: #8b6cc7;
+  --green: #4CAF50;
+  --orange: #FF9800;
+  --blue: #42a5f5;
+  --mono: 'JetBrains Mono', monospace;
+  --sans: 'Noto Sans TC', sans-serif;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { font-size: 15px; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--sans);
+  line-height: 1.7;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 40px 20px 100px;
+}
+
+h1 {
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  margin-bottom: 8px;
+}
+
+h1 span { color: var(--accent); }
+
+.subtitle {
+  color: var(--fg3);
+  font-size: 0.9rem;
+  margin-bottom: 40px;
+  font-family: var(--mono);
+}
+
+h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 48px 0 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--bg4);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+h2 .icon {
+  width: 28px; height: 28px;
+  background: var(--bg3);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+}
+
+/* Summary Cards */
+.summary-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.sum-card {
+  background: var(--bg2);
+  border: 1px solid var(--bg4);
+  border-radius: 14px;
+  padding: 20px;
+  transition: border-color 0.3s;
+}
+
+.sum-card:hover { border-color: var(--accent2); }
+.sum-card .label {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--fg3);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 6px;
+}
+.sum-card .value {
+  font-size: 1.6rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+.sum-card .unit {
+  font-size: 0.75rem;
+  color: var(--fg3);
+  margin-top: 2px;
+}
+
+.green { color: var(--green); }
+.red { color: var(--accent); }
+.blue { color: var(--blue); }
+.purple { color: var(--accent2); }
+.orange { color: var(--orange); }
+
+/* Input Controls */
+.controls {
+  background: var(--bg2);
+  border: 1px solid var(--bg4);
+  border-radius: 14px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.ctrl-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.ctrl-item label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--fg2);
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.ctrl-item input, .ctrl-item select {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--bg);
+  border: 1px solid var(--bg4);
+  border-radius: 10px;
+  color: var(--fg);
+  font-family: var(--mono);
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.ctrl-item input:focus, .ctrl-item select:focus {
+  border-color: var(--accent2);
+}
+
+.ctrl-item .hint {
+  font-size: 0.7rem;
+  color: var(--fg3);
+  margin-top: 4px;
+}
+
+/* Tables */
+.cost-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+}
+
+.cost-table th, .cost-table td {
+  text-align: left;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--bg3);
+  font-size: 0.9rem;
+}
+
+.cost-table th {
+  color: var(--fg3);
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 400;
+}
+
+.cost-table td:last-child {
+  text-align: right;
+  font-family: var(--mono);
+  font-weight: 700;
+}
+
+.cost-table tr.total {
+  border-top: 2px solid var(--bg4);
+}
+
+.cost-table tr.total td {
+  font-weight: 900;
+  font-size: 1rem;
+  color: var(--accent);
+}
+
+/* Chart */
+.chart-area {
+  background: var(--bg2);
+  border: 1px solid var(--bg4);
+  border-radius: 14px;
+  padding: 24px;
+  margin: 20px 0;
+}
+
+.chart-area canvas {
+  width: 100% !important;
+  height: 300px !important;
+}
+
+.bar-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 200px;
+  padding: 0 4px;
+  margin-top: 16px;
+}
+
+.bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.bar {
+  width: 100%;
+  max-width: 48px;
+  border-radius: 6px 6px 2px 2px;
+  transition: height 0.6s ease;
+  position: relative;
+}
+
+.bar-label {
+  font-size: 0.65rem;
+  color: var(--fg3);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.bar-value {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--fg2);
+  text-align: center;
+}
+
+/* Scenario Cards */
+.scenario-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin: 20px 0;
+}
+
+.scenario-card {
+  background: var(--bg2);
+  border: 1px solid var(--bg4);
+  border-radius: 14px;
+  padding: 24px;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.scenario-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent2);
+}
+
+.scenario-card .tag {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--bg);
+  padding: 3px 10px;
+  border-radius: 20px;
+  display: inline-block;
+  margin-bottom: 12px;
+}
+
+.scenario-card h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.scenario-card p {
+  font-size: 0.85rem;
+  color: var(--fg2);
+  line-height: 1.6;
+}
+
+.scenario-card .metric {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--bg3);
+  display: flex;
+  justify-content: space-between;
+}
+
+.scenario-card .metric span:first-child {
+  font-size: 0.8rem;
+  color: var(--fg3);
+}
+
+.scenario-card .metric span:last-child {
+  font-family: var(--mono);
+  font-weight: 700;
+}
+
+/* Verdict */
+.verdict {
+  background: linear-gradient(135deg, var(--bg2), var(--bg3));
+  border: 1px solid var(--bg4);
+  border-radius: 16px;
+  padding: 32px;
+  margin: 32px 0;
+  text-align: center;
+}
+
+.verdict .title {
+  font-size: 0.75rem;
+  font-family: var(--mono);
+  color: var(--fg3);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin-bottom: 12px;
+}
+
+.verdict .number {
+  font-size: 3rem;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
+
+.verdict .desc {
+  color: var(--fg2);
+  font-size: 0.9rem;
+  margin-top: 8px;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Notes */
+.note-box {
+  background: var(--bg2);
+  border-left: 3px solid var(--accent2);
+  border-radius: 0 10px 10px 0;
+  padding: 16px 20px;
+  margin: 16px 0;
+  font-size: 0.85rem;
+  color: var(--fg2);
+  line-height: 1.7;
+}
+
+.note-box strong { color: var(--fg); }
+
+/* Waterfall */
+.waterfall {
+  margin: 20px 0;
+}
+
+.wf-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.wf-label {
+  width: 140px;
+  font-size: 0.8rem;
+  color: var(--fg2);
+  flex-shrink: 0;
+}
+
+.wf-bar-area {
+  flex: 1;
+  height: 28px;
+  position: relative;
+}
+
+.wf-bar {
+  height: 100%;
+  border-radius: 6px;
+  position: absolute;
+  transition: width 0.6s ease;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  h1 { font-size: 1.5rem; }
+  .summary-row { grid-template-columns: 1fr 1fr; }
+  .ctrl-grid { grid-template-columns: 1fr; }
+  .scenario-grid { grid-template-columns: 1fr; }
+  .verdict .number { font-size: 2.2rem; }
+  .wf-label { width: 100px; font-size: 0.7rem; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1><span>人脈手札</span> 商業評估</h1>
+<p class="subtitle">Break-Even Analysis & Pricing Strategy</p>
+
+<!-- ==================== SUMMARY ==================== -->
+<div class="summary-row" id="summaryCards"></div>
+
+<!-- ==================== PRICING MODEL ==================== -->
+<h2><div class="icon">💰</div> 定價與成本參數</h2>
+<div class="controls">
+  <div class="ctrl-grid">
+    <div class="ctrl-item">
+      <label>月訂閱價格（TWD）</label>
+      <input type="number" id="price" value="149" min="0" oninput="recalc()">
+      <div class="hint">建議範圍 99-299 TWD/月</div>
+    </div>
+    <div class="ctrl-item">
+      <label>年付折扣</label>
+      <select id="annualDiscount" onchange="recalc()">
+        <option value="0.8">8折（常見）</option>
+        <option value="0.75">75折</option>
+        <option value="0.85">85折</option>
+        <option value="1">無折扣</option>
+      </select>
+    </div>
+    <div class="ctrl-item">
+      <label>免費用戶轉換率</label>
+      <select id="convRate" onchange="recalc()">
+        <option value="0.03">3%（保守）</option>
+        <option value="0.05" selected>5%（中等）</option>
+        <option value="0.08">8%（樂觀）</option>
+        <option value="0.12">12%（極佳產品）</option>
+      </select>
+    </div>
+    <div class="ctrl-item">
+      <label>每月新增註冊</label>
+      <input type="number" id="newUsers" value="500" min="0" oninput="recalc()">
+      <div class="hint">來自行銷推廣的自然增長</div>
+    </div>
+    <div class="ctrl-item">
+      <label>月流失率</label>
+      <select id="churnRate" onchange="recalc()">
+        <option value="0.03">3%（黏性強）</option>
+        <option value="0.05" selected>5%（SaaS 常見）</option>
+        <option value="0.08">8%（偏高）</option>
+        <option value="0.12">12%（需改善）</option>
+      </select>
+    </div>
+    <div class="ctrl-item">
+      <label>初始投入（TWD）</label>
+      <input type="number" id="initialCost" value="150000" min="0" oninput="recalc()">
+      <div class="hint">開發、設計、上架等一次性成本</div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== COST STRUCTURE ==================== -->
+<h2><div class="icon">📊</div> 成本結構</h2>
+
+<table class="cost-table" id="fixedCostTable">
+  <thead><tr><th>固定成本（月）</th><th>項目</th><th>金額 TWD</th></tr></thead>
+  <tbody></tbody>
+</table>
+
+<table class="cost-table" id="varCostTable">
+  <thead><tr><th>變動成本（每付費用戶/月）</th><th>說明</th><th>金額 TWD</th></tr></thead>
+  <tbody></tbody>
+</table>
+
+<!-- ==================== BREAK-EVEN ==================== -->
+<h2><div class="icon">🎯</div> 損益平衡分析</h2>
+
+<div class="verdict" id="breakEvenVerdict"></div>
+
+<div class="note-box" id="breakEvenNote"></div>
+
+<!-- ==================== WATERFALL ==================== -->
+<h2><div class="icon">📈</div> 單位經濟（每付費用戶/月）</h2>
+<div class="waterfall" id="waterfall"></div>
+
+<!-- ==================== 12-MONTH PROJECTION ==================== -->
+<h2><div class="icon">📅</div> 12 個月損益預估</h2>
+
+<div class="chart-area">
+  <div class="bar-chart" id="projChart"></div>
+</div>
+
+<table class="cost-table" id="projTable">
+  <thead><tr><th>月份</th><th>付費用戶</th><th>月營收</th><th>月成本</th><th>月淨利</th><th>累計</th></tr></thead>
+  <tbody></tbody>
+</table>
+
+<!-- ==================== SCENARIOS ==================== -->
+<h2><div class="icon">🔮</div> 定價方案比較</h2>
+<div class="scenario-grid" id="scenarios"></div>
+
+<!-- ==================== RECOMMENDATIONS ==================== -->
+<h2><div class="icon">💡</div> 策略建議</h2>
+<div id="recommendations"></div>
+
+</div>
+
+<script>
+// ============================================================
+// COST DATA
+// ============================================================
+const FIXED_COSTS = [
+  { name: '雲端主機（Vercel/Netlify）', detail: '靜態網站託管', cost: 0 },
+  { name: '網域 + SSL', detail: '.com 年費攤月', cost: 35 },
+  { name: '資料庫（Supabase Free→Pro）', detail: '用戶同步需要', cost: 800 },
+  { name: 'Claude API 基本額度', detail: 'OCR 功能底線消耗', cost: 300 },
+  { name: '第三方服務', detail: '寄信、分析、錯誤追蹤', cost: 500 },
+  { name: '行銷推廣', detail: 'SEO/社群/內容', cost: 5000 },
+  { name: '維護 & 客服', detail: '兼職或自己處理', cost: 8000 },
+];
+
+const VAR_COSTS = [
+  { name: 'Claude API（OCR）', detail: '每人月均5次掃描 ×$0.005', cost: 0.8 },
+  { name: '資料庫讀寫', detail: '每用戶月均儲存+查詢', cost: 0.5 },
+  { name: '頻寬 & CDN', detail: '資產傳輸', cost: 0.2 },
+  { name: '金流手續費', detail: '~2.5-3.5% 信用卡/Apple Pay', cost: 0 }, // calculated dynamically
+];
+
+// ============================================================
+// CALCULATION ENGINE
+// ============================================================
+function recalc() {
+  const price = +document.getElementById('price').value || 149;
+  const annualDiscount = +document.getElementById('annualDiscount').value;
+  const convRate = +document.getElementById('convRate').value;
+  const newUsers = +document.getElementById('newUsers').value || 500;
+  const churnRate = +document.getElementById('churnRate').value;
+  const initialCost = +document.getElementById('initialCost').value || 150000;
+
+  // Effective price (blend of monthly and annual)
+  const annualRatio = 0.4; // 40% choose annual
+  const effectivePrice = price * (1 - annualRatio * (1 - annualDiscount));
+  
+  // Payment processing fee
+  const paymentFeeRate = 0.03;
+  VAR_COSTS[3].cost = +(effectivePrice * paymentFeeRate).toFixed(1);
+
+  // Fixed cost total
+  const fixedTotal = FIXED_COSTS.reduce((s, c) => s + c.cost, 0);
+  
+  // Variable cost per user
+  const varTotal = VAR_COSTS.reduce((s, c) => s + c.cost, 0);
+  
+  // Revenue per paying user
+  const revenuePerUser = effectivePrice;
+  
+  // Contribution margin per user
+  const marginPerUser = revenuePerUser - varTotal;
+  
+  // Break-even paying users
+  const breakEvenUsers = Math.ceil(fixedTotal / marginPerUser);
+  
+  // Break-even total registrations needed (given conversion rate)
+  const breakEvenTotal = Math.ceil(breakEvenUsers / convRate);
+
+  // ---- Render Fixed Cost Table ----
+  let ftHtml = '';
+  FIXED_COSTS.forEach(c => {
+    ftHtml += `<tr><td>${c.name}</td><td style="color:var(--fg3)">${c.detail}</td><td>$${c.cost.toLocaleString()}</td></tr>`;
+  });
+  ftHtml += `<tr class="total"><td colspan="2">固定成本合計</td><td>$${fixedTotal.toLocaleString()}/月</td></tr>`;
+  document.getElementById('fixedCostTable').querySelector('tbody').innerHTML = ftHtml;
+
+  // ---- Render Variable Cost Table ----
+  let vtHtml = '';
+  VAR_COSTS.forEach(c => {
+    vtHtml += `<tr><td>${c.name}</td><td style="color:var(--fg3)">${c.detail}</td><td>$${c.cost.toFixed(1)}</td></tr>`;
+  });
+  vtHtml += `<tr class="total"><td colspan="2">每用戶變動成本合計</td><td>$${varTotal.toFixed(1)}/月</td></tr>`;
+  document.getElementById('varCostTable').querySelector('tbody').innerHTML = vtHtml;
+
+  // ---- Summary Cards ----
+  document.getElementById('summaryCards').innerHTML = `
+    <div class="sum-card"><div class="label">月訂閱價</div><div class="value">$${price}</div><div class="unit">TWD/月</div></div>
+    <div class="sum-card"><div class="label">有效均價</div><div class="value purple">$${effectivePrice.toFixed(0)}</div><div class="unit">含年付折扣加權</div></div>
+    <div class="sum-card"><div class="label">固定成本</div><div class="value red">$${(fixedTotal/1000).toFixed(1)}K</div><div class="unit">TWD/月</div></div>
+    <div class="sum-card"><div class="label">損益平衡</div><div class="value green">${breakEvenUsers}</div><div class="unit">付費用戶</div></div>
+  `;
+
+  // ---- Break-Even Verdict ----
+  document.getElementById('breakEvenVerdict').innerHTML = `
+    <div class="title">損益平衡點</div>
+    <div class="number green">${breakEvenUsers} <span style="font-size:1rem;color:var(--fg2)">付費用戶</span></div>
+    <div class="desc">需要 <strong>${breakEvenTotal.toLocaleString()}</strong> 位總註冊用戶（以 ${(convRate*100).toFixed(0)}% 轉換率計算），每月營收即可覆蓋全部成本。</div>
+  `;
+
+  // Months to break even
+  const monthsToBreakEven = calcMonthsToBreakEven(newUsers, convRate, churnRate, fixedTotal, varTotal, revenuePerUser);
+  
+  document.getElementById('breakEvenNote').innerHTML = `
+    <strong>以每月新增 ${newUsers} 位註冊用戶計算：</strong>約 <strong>${monthsToBreakEven}</strong> 個月可達損益平衡。
+    此時累計約 ${(newUsers * monthsToBreakEven).toLocaleString()} 位註冊用戶，其中約 ${Math.round(newUsers * monthsToBreakEven * convRate * 0.6)} 位持續付費中。
+    初始投入 $${(initialCost/1000).toFixed(0)}K TWD 約在第 ${Math.ceil(monthsToBreakEven * 1.5)} 個月回收。
+  `;
+
+  // ---- Unit Economics Waterfall ----
+  const maxBar = revenuePerUser;
+  const wfData = [
+    { label: '月均收入', value: revenuePerUser, color: 'var(--green)', pct: 100 },
+    { label: 'API 成本', value: -VAR_COSTS[0].cost, color: 'var(--accent)', pct: VAR_COSTS[0].cost/maxBar*100 },
+    { label: '資料庫', value: -VAR_COSTS[1].cost, color: 'var(--accent)', pct: VAR_COSTS[1].cost/maxBar*100 },
+    { label: '金流手續費', value: -VAR_COSTS[3].cost, color: 'var(--accent)', pct: VAR_COSTS[3].cost/maxBar*100 },
+    { label: '其他變動', value: -VAR_COSTS[2].cost, color: 'var(--accent)', pct: VAR_COSTS[2].cost/maxBar*100 },
+    { label: '貢獻利潤', value: marginPerUser, color: 'var(--accent2)', pct: marginPerUser/maxBar*100 },
+  ];
+  let wfHtml = '';
+  wfData.forEach(d => {
+    const w = Math.max(Math.abs(d.pct), 5);
+    wfHtml += `<div class="wf-row">
+      <div class="wf-label">${d.label}</div>
+      <div class="wf-bar-area"><div class="wf-bar" style="width:${w}%;background:${d.color}">${d.value>=0?'+':''}${d.value.toFixed(1)}</div></div>
+    </div>`;
+  });
+  document.getElementById('waterfall').innerHTML = wfHtml;
+
+  // ---- 12-Month Projection ----
+  const proj = [];
+  let payingUsers = 0;
+  let cumProfit = -initialCost;
+  for (let i = 1; i <= 12; i++) {
+    const newPaying = Math.round(newUsers * convRate);
+    const churned = Math.round(payingUsers * churnRate);
+    payingUsers = payingUsers + newPaying - churned;
+    if (payingUsers < 0) payingUsers = 0;
+    const revenue = payingUsers * revenuePerUser;
+    const totalCost = fixedTotal + payingUsers * varTotal;
+    const netProfit = revenue - totalCost;
+    cumProfit += netProfit;
+    proj.push({ month: i, users: payingUsers, revenue, cost: totalCost, net: netProfit, cum: cumProfit });
+  }
+
+  // Bar chart
+  const maxRev = Math.max(...proj.map(p => p.revenue), 1);
+  const maxCost = Math.max(...proj.map(p => p.cost), 1);
+  const chartMax = Math.max(maxRev, maxCost);
+  let chartHtml = '';
+  proj.forEach(p => {
+    const revH = (p.revenue / chartMax * 180);
+    const costH = (p.cost / chartMax * 180);
+    chartHtml += `<div class="bar-col">
+      <div class="bar-value">${p.net >= 0 ? '+' : ''}${(p.net/1000).toFixed(0)}K</div>
+      <div style="display:flex;align-items:flex-end;gap:2px;height:180px">
+        <div class="bar" style="height:${revH}px;background:${p.net>=0?'var(--green)':'var(--accent2)'};opacity:0.8;width:45%"></div>
+        <div class="bar" style="height:${costH}px;background:var(--accent);opacity:0.5;width:45%"></div>
+      </div>
+      <div class="bar-label">M${p.month}</div>
+    </div>`;
+  });
+  document.getElementById('projChart').innerHTML = chartHtml +
+    `<div style="position:absolute;bottom:-30px;right:0;display:flex;gap:16px;font-size:0.7rem;color:var(--fg3)">
+      <span>■ 營收</span><span style="color:var(--accent)">■ 成本</span>
+    </div>`;
+
+  // Table
+  let ptHtml = '';
+  proj.forEach(p => {
+    const nc = p.net >= 0 ? 'green' : 'red';
+    const cc = p.cum >= 0 ? 'green' : 'red';
+    ptHtml += `<tr>
+      <td>M${p.month}</td>
+      <td>${p.users}</td>
+      <td style="font-family:var(--mono)">$${(p.revenue/1000).toFixed(1)}K</td>
+      <td style="font-family:var(--mono);color:var(--accent)">$${(p.cost/1000).toFixed(1)}K</td>
+      <td class="${nc}" style="font-family:var(--mono);font-weight:700">${p.net>=0?'+':''}$${(p.net/1000).toFixed(1)}K</td>
+      <td class="${cc}" style="font-family:var(--mono)">${p.cum>=0?'+':''}$${(p.cum/1000).toFixed(1)}K</td>
+    </tr>`;
+  });
+  document.getElementById('projTable').querySelector('tbody').innerHTML = ptHtml;
+
+  // ---- Pricing Scenarios ----
+  const scenarios = [
+    { name: '輕量版', price: 79, tag: '低門檻', tagColor: 'var(--blue)', desc: '只開放基本命理分析和聯絡人管理。OCR 和進階合作分析需升級。適合先衝量再轉換。' },
+    { name: '標準版', price: 149, tag: '推薦', tagColor: 'var(--green)', desc: '完整功能包含 OCR、十神分析、合作場景推薦。月付 $149 或年付 $1,188（每月 $99）。' },
+    { name: '專業版', price: 299, tag: '高端', tagColor: 'var(--accent2)', desc: '加入 AI 人脈推薦、批量名片掃描、團隊共享、CRM 匯出。面向業務團隊和顧問。' },
+  ];
+
+  let scHtml = '';
+  scenarios.forEach(s => {
+    const sBE = Math.ceil(fixedTotal / (s.price * (1 - annualRatio * (1 - annualDiscount)) - varTotal));
+    const sTotal = Math.ceil(sBE / convRate);
+    scHtml += `<div class="scenario-card">
+      <span class="tag" style="background:${s.tagColor}">${s.tag}</span>
+      <h3>${s.name} — $${s.price}/月</h3>
+      <p>${s.desc}</p>
+      <div class="metric"><span>損益平衡</span><span class="green">${sBE} 付費用戶</span></div>
+      <div class="metric"><span>需總註冊</span><span class="purple">${sTotal.toLocaleString()} 人</span></div>
+    </div>`;
+  });
+  document.getElementById('scenarios').innerHTML = scHtml;
+
+  // ---- Recommendations ----
+  document.getElementById('recommendations').innerHTML = `
+    <div class="note-box" style="border-color:var(--green)">
+      <strong>🟢 Phase 1：免費先行（0-3個月）</strong><br>
+      先以完全免費版上架，快速累積用戶基數和口碑。此階段成本極低（靜態託管免費，無 API 開銷因為用戶自帶 Key）。目標：累積 2,000-5,000 註冊用戶，收集使用數據和功能回饋。
+    </div>
+    <div class="note-box" style="border-color:var(--accent2)">
+      <strong>🟣 Phase 2：Freemium 轉換（3-6個月）</strong><br>
+      推出付費版，核心差異化功能：① 雲端同步（多設備）② 內建 OCR（不需自備 API Key）③ AI 合作建議（更深度的命理報告）④ 匯出 PDF 報告。免費版保留基本功能，靠好的免費體驗自然轉換。以 $${price} TWD/月 定價，年付 $${Math.round(price*12*annualDiscount)} TWD 有折扣。
+    </div>
+    <div class="note-box" style="border-color:var(--orange)">
+      <strong>🟠 Phase 3：B2B 擴展（6-12個月）</strong><br>
+      推出團隊版（$499-999/月），面向：保險業務團隊、房仲團隊、企業 BD 部門、命理諮詢師。這些群體有明確的人脈管理需求且願意為工具付費。單一 B2B 客戶 = 5-20 個付費帳號，獲客效率遠高於 B2C。
+    </div>
+    <div class="note-box" style="border-color:var(--accent)">
+      <strong>🔴 關鍵風險</strong><br>
+      ① <strong>市場教育成本</strong>：「命理 × CRM」是新概念，需要花時間讓用戶理解價值<br>
+      ② <strong>競爭替代</strong>：用戶可能用 Excel + 免費算命網站達到類似效果<br>
+      ③ <strong>命理準確度</strong>：專業命理師可能質疑簡化算法，需要聲明定位是「參考工具」而非「專業命盤」<br>
+      ④ <strong>隱私顧慮</strong>：儲存他人生日等敏感資訊，需要明確的隱私政策
+    </div>
+  `;
+}
+
+function calcMonthsToBreakEven(newUsers, convRate, churnRate, fixedTotal, varTotal, revenuePerUser) {
+  let payingUsers = 0;
+  for (let m = 1; m <= 36; m++) {
+    const newPaying = Math.round(newUsers * convRate);
+    const churned = Math.round(payingUsers * churnRate);
+    payingUsers = payingUsers + newPaying - churned;
+    const revenue = payingUsers * revenuePerUser;
+    const totalCost = fixedTotal + payingUsers * varTotal;
+    if (revenue >= totalCost) return m;
+  }
+  return '36+';
+}
+
+// Initialize
+recalc();
+</script>
+</body>
+</html>

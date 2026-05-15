@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>人脈手札 — 行銷策略 & 800用戶增長計劃</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
+:root{
+  --bg:#0c0c0f;--bg2:#16161c;--bg3:#1e1e28;--bg4:#2a2a38;
+  --fg:#e8e6f0;--fg2:#a8a6b4;--fg3:#6a6878;
+  --accent:#c43b3b;--accent2:#8b6cc7;--green:#4CAF50;--orange:#FF9800;--blue:#42a5f5;--cyan:#26c6da;--pink:#e91e63;--lime:#8BC34A;
+  --mono:'JetBrains Mono',monospace;--sans:'Noto Sans TC',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);line-height:1.7}
+.container{max-width:960px;margin:0 auto;padding:40px 20px 120px}
+
+h1{font-size:1.9rem;font-weight:900;letter-spacing:-.03em;margin-bottom:6px}
+h1 span{color:var(--accent)}
+.sub{color:var(--fg3);font-size:.82rem;margin-bottom:40px;font-family:var(--mono)}
+
+h2{font-size:1.05rem;font-weight:700;margin:52px 0 20px;padding-bottom:10px;border-bottom:1px solid var(--bg4);display:flex;align-items:center;gap:10px}
+h2 .ic{width:28px;height:28px;background:var(--bg3);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px}
+
+h3{font-size:.95rem;font-weight:700;margin:24px 0 12px;color:var(--fg)}
+
+/* Cards */
+.cg{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px;margin-bottom:24px}
+.cd{background:var(--bg2);border:1px solid var(--bg4);border-radius:14px;padding:18px;transition:border-color .3s}
+.cd:hover{border-color:var(--accent2)}
+.cd .lb{font-family:var(--mono);font-size:.65rem;color:var(--fg3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}
+.cd .vl{font-size:1.4rem;font-weight:900;letter-spacing:-.02em}
+.cd .un{font-size:.7rem;color:var(--fg3);margin-top:2px}
+.grn{color:var(--green)}.red{color:var(--accent)}.blu{color:var(--blue)}.pur{color:var(--accent2)}.org{color:var(--orange)}.cyn{color:var(--cyan)}.pnk{color:var(--pink)}.lm{color:var(--lime)}
+
+/* Note */
+.note{background:var(--bg2);border-left:3px solid var(--accent2);border-radius:0 10px 10px 0;padding:16px 20px;margin:16px 0;font-size:.85rem;color:var(--fg2);line-height:1.8}
+.note strong{color:var(--fg)}
+.note.g{border-color:var(--green)}.note.o{border-color:var(--orange)}.note.r{border-color:var(--accent)}.note.b{border-color:var(--blue)}.note.c{border-color:var(--cyan)}.note.p{border-color:var(--pink)}
+
+/* Table */
+.tbl{width:100%;border-collapse:collapse;margin:16px 0}
+.tbl th,.tbl td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--bg3);font-size:.82rem}
+.tbl th{color:var(--fg3);font-family:var(--mono);font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;font-weight:400}
+.tbl td.mono{font-family:var(--mono)}
+.tbl tr.hi{background:rgba(76,175,80,.06)}
+.tbl tr.total td{font-weight:900;border-top:2px solid var(--bg4)}
+
+/* Channel Cards */
+.ch-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin:20px 0}
+.ch-card{background:var(--bg2);border:1px solid var(--bg4);border-radius:14px;padding:22px;transition:transform .2s,border-color .2s}
+.ch-card:hover{transform:translateY(-2px);border-color:var(--accent2)}
+.ch-card .head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.ch-card .tg{font-family:var(--mono);font-size:.6rem;padding:3px 10px;border-radius:20px;color:var(--bg);font-weight:700}
+.ch-card h4{font-size:.95rem;font-weight:700;margin-bottom:4px}
+.ch-card .desc{font-size:.82rem;color:var(--fg2);line-height:1.6;margin-bottom:14px}
+.ch-card .stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ch-card .stat{background:var(--bg);padding:8px 12px;border-radius:8px}
+.ch-card .stat .k{font-size:.62rem;color:var(--fg3);font-family:var(--mono);text-transform:uppercase}
+.ch-card .stat .v{font-size:.9rem;font-weight:700;margin-top:2px}
+
+/* Timeline */
+.tl{position:relative;padding-left:28px;margin:20px 0}
+.tl::before{content:'';position:absolute;left:8px;top:0;bottom:0;width:2px;background:var(--bg4)}
+.tl-item{position:relative;margin-bottom:28px}
+.tl-item::before{content:'';position:absolute;left:-24px;top:6px;width:14px;height:14px;border-radius:50%;border:2px solid var(--accent2);background:var(--bg)}
+.tl-item.active::before{background:var(--accent2)}
+.tl-item .phase{font-family:var(--mono);font-size:.7rem;color:var(--accent2);margin-bottom:4px}
+.tl-item h4{font-size:.92rem;font-weight:700;margin-bottom:6px}
+.tl-item p{font-size:.82rem;color:var(--fg2);line-height:1.7}
+.tl-item .metrics{display:flex;gap:16px;margin-top:10px;flex-wrap:wrap}
+.tl-item .mt{background:var(--bg2);padding:6px 14px;border-radius:8px;font-size:.75rem}
+.tl-item .mt strong{font-family:var(--mono)}
+
+/* Persona */
+.persona-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin:20px 0}
+.persona{background:var(--bg2);border:1px solid var(--bg4);border-radius:14px;padding:20px;text-align:center}
+.persona .avatar{font-size:2rem;margin-bottom:8px}
+.persona .name{font-weight:700;font-size:.9rem;margin-bottom:4px}
+.persona .role{font-size:.75rem;color:var(--fg3);margin-bottom:10px}
+.persona .traits{font-size:.78rem;color:var(--fg2);line-height:1.6;text-align:left}
+.persona .conv{margin-top:12px;padding-top:12px;border-top:1px solid var(--bg3);font-family:var(--mono);font-size:.8rem;font-weight:700}
+
+/* Bars */
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:200px;margin:20px 0}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
+.bar-col .bv{font-family:var(--mono);font-size:.6rem;color:var(--fg2)}
+.bar-col .br{width:80%;border-radius:6px 6px 2px 2px;transition:height .6s ease}
+.bar-col .bl{font-size:.6rem;color:var(--fg3)}
+
+/* Stacked bar */
+.stack-row{display:flex;align-items:center;margin-bottom:12px}
+.stack-label{width:60px;font-size:.75rem;color:var(--fg2);flex-shrink:0}
+.stack-track{flex:1;height:28px;background:var(--bg3);border-radius:6px;overflow:hidden;display:flex}
+.stack-seg{height:100%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.6rem;color:#fff;font-weight:700;transition:width .6s;min-width:0;overflow:hidden}
+.stack-total{width:60px;text-align:right;font-family:var(--mono);font-size:.78rem;color:var(--fg2);padding-left:8px}
+
+/* Referral loop */
+.loop{background:var(--bg2);border:1px solid var(--bg4);border-radius:16px;padding:24px;margin:20px 0;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}
+.loop-step{background:var(--bg);padding:12px 18px;border-radius:10px;font-size:.8rem;text-align:center;min-width:100px}
+.loop-step .emoji{font-size:1.5rem;margin-bottom:4px}
+.loop-step .text{color:var(--fg2);font-size:.72rem}
+.loop-arrow{color:var(--accent2);font-size:1.2rem}
+
+@media(max-width:600px){
+  h1{font-size:1.4rem}
+  .cg{grid-template-columns:1fr 1fr}
+  .ch-grid{grid-template-columns:1fr}
+  .persona-grid{grid-template-columns:1fr 1fr}
+  .loop{flex-direction:column}
+  .loop-arrow{transform:rotate(90deg)}
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1><span>人脈手札</span> 行銷增長策略</h1>
+<p class="sub">如何從 0 到月增 800 註冊 · 渠道拆解 · 預算分配 · 執行時程</p>
+
+<!-- ====== TARGET ====== -->
+<div class="cg">
+  <div class="cd"><div class="lb">月增長目標</div><div class="vl grn">800</div><div class="un">註冊用戶/月</div></div>
+  <div class="cd"><div class="lb">日均獲客</div><div class="vl blu">~27</div><div class="un">人/天</div></div>
+  <div class="cd"><div class="lb">目標 CAC</div><div class="vl org">$38</div><div class="un">TWD/註冊</div></div>
+  <div class="cd"><div class="lb">月行銷預算</div><div class="vl pur">$30K</div><div class="un">TWD（含人力）</div></div>
+  <div class="cd"><div class="lb">LTV:CAC</div><div class="vl cyn">>3:1</div><div class="un">健康指標</div></div>
+</div>
+
+<!-- ====== TAM ====== -->
+<h2><div class="ic">🌏</div> 目標市場規模</h2>
+
+<div class="note c">
+  <strong>台灣可觸及市場（TAM → SAM → SOM）</strong><br><br>
+  <strong>TAM（總潛在市場）：</strong>台灣對命理有興趣的成年人約 800-1,000 萬（根據各大命理平台流量推估，超過 60% 成年人至少每年算一次命）。<br><br>
+  <strong>SAM（可服務市場）：</strong>其中有「管理人脈」需求的職業人群約 150-200 萬人——包含業務、保險、房仲、顧問、自由工作者、創業者。<br><br>
+  <strong>SOM（短期可獲取）：</strong>第一年目標觸及 1-2 萬人（約 SAM 的 1%），這就足以達到每月 800 註冊的目標。
+</div>
+
+<!-- ====== PERSONA ====== -->
+<h2><div class="ic">👥</div> 目標客群畫像</h2>
+
+<div class="persona-grid">
+  <div class="persona">
+    <div class="avatar">💼</div>
+    <div class="name">保險業務 Amy</div>
+    <div class="role">28歲 · 壽險顧問 · 管理200+客戶</div>
+    <div class="traits">每天要記住客戶的生日、喜好、家庭狀況。用命理判斷客戶性格來調整銷售話術。目前用 Excel 管理，很痛苦。</div>
+    <div class="conv grn">轉換率: 最高</div>
+  </div>
+  <div class="persona">
+    <div class="avatar">🏠</div>
+    <div class="name">房仲 Kevin</div>
+    <div class="role">35歲 · 信義房屋 · 區域主管</div>
+    <div class="traits">靠人脈吃飯。相信命理（很多房仲看風水）。需要快速判斷新客戶合不合得來、怎麼溝通最有效。</div>
+    <div class="conv grn">轉換率: 高</div>
+  </div>
+  <div class="persona">
+    <div class="avatar">✨</div>
+    <div class="name">命理師 陳老師</div>
+    <div class="role">45歲 · 命理諮詢 · 500+個案</div>
+    <div class="traits">需要管理大量個案的生辰八字資料。目前用紙本筆記本。希望有工具能快速調出客戶命盤並做合盤分析。</div>
+    <div class="conv org">轉換率: 中高（需求精準）</div>
+  </div>
+  <div class="persona">
+    <div class="avatar">🚀</div>
+    <div class="name">創業者 Mei</div>
+    <div class="role">32歲 · 電商創辦人 · 管理合作廠商</div>
+    <div class="traits">到處社交、交換名片。對命理好奇但沒時間深入研究。希望有工具自動分析合作對象的適配度。</div>
+    <div class="conv blu">轉換率: 中</div>
+  </div>
+  <div class="persona">
+    <div class="avatar">🔮</div>
+    <div class="name">命理愛好者 小雅</div>
+    <div class="role">26歲 · 行政 · 星座重度愛好者</div>
+    <div class="traits">每天看星座運勢，朋友間用星座分析感情和工作關係。覺得把朋友的星座整理在一起超方便。</div>
+    <div class="conv blu">轉換率: 中（量大但付費意願低）</div>
+  </div>
+</div>
+
+<!-- ====== CHANNELS ====== -->
+<h2><div class="ic">📡</div> 渠道策略拆解</h2>
+
+<div class="note">
+  800 人/月 = 多渠道組合。不靠單一渠道，用「<strong>內容引擎 × 社群裂變 × 精準投放</strong>」三角模型，讓每個渠道互相放大。
+</div>
+
+<div class="ch-grid">
+  <!-- Channel 1: Content -->
+  <div class="ch-card">
+    <div class="head">
+      <div><h4>📝 SEO 內容行銷</h4><div style="font-size:.75rem;color:var(--fg3)">長期核心引擎</div></div>
+      <span class="tg" style="background:var(--green)">低成本</span>
+    </div>
+    <div class="desc">
+      寫命理相關的高搜尋量文章，每篇底部放產品 CTA。
+      <br>• <strong>關鍵字策略：</strong>「八字合婚」「星座配對」「合作夥伴怎麼選」「生意合夥人」等
+      <br>• <strong>內容形式：</strong>部落格 + 免費線上工具（如「輸入兩人生日看合作指數」）
+      <br>• <strong>產出頻率：</strong>每週 2-3 篇 SEO 文章
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="k">預估月流量</div><div class="v grn">3,000-8,000</div></div>
+      <div class="stat"><div class="k">轉註冊率</div><div class="v">3-5%</div></div>
+      <div class="stat"><div class="k">月獲客</div><div class="v grn">120-300</div></div>
+      <div class="stat"><div class="k">月成本</div><div class="v">$3,000</div></div>
+    </div>
+  </div>
+
+  <!-- Channel 2: Social -->
+  <div class="ch-card">
+    <div class="head">
+      <div><h4>📱 社群經營</h4><div style="font-size:.75rem;color:var(--fg3)">Facebook + IG + LINE</div></div>
+      <span class="tg" style="background:var(--blue)">中成本</span>
+    </div>
+    <div class="desc">
+      <strong>Facebook：</strong>在命理社團（紫微斗數、八字、星座討論）分享實用內容，不硬推產品。
+      <br>• 每日一則「今日合作指南」（如「今天適合找火象星座的人談合作」）
+      <br><strong>IG：</strong>命理小知識圖卡、用戶故事、操作短影片
+      <br><strong>LINE 官方帳號：</strong>推播每週運勢 + 產品更新
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="k">觸及/月</div><div class="v blu">15,000</div></div>
+      <div class="stat"><div class="k">轉註冊率</div><div class="v">1.5-2%</div></div>
+      <div class="stat"><div class="k">月獲客</div><div class="v blu">150-250</div></div>
+      <div class="stat"><div class="k">月成本</div><div class="v">$5,000</div></div>
+    </div>
+  </div>
+
+  <!-- Channel 3: KOL -->
+  <div class="ch-card">
+    <div class="head">
+      <div><h4>🎤 KOL / 命理師合作</h4><div style="font-size:.75rem;color:var(--fg3)">精準觸及</div></div>
+      <span class="tg" style="background:var(--accent2)">高 ROI</span>
+    </div>
+    <div class="desc">
+      <strong>命理 YouTuber / Podcaster：</strong>合作業配或聯名。台灣命理類 YT 頻道觀看量很高（簡少年、雨揚等百萬級）。
+      <br>• 找 5-10 位中型命理 KOL（1-10 萬粉）做評測
+      <br>• 提供「KOL 專屬邀請碼」追蹤效果
+      <br>• <strong>命理師成為 B2B 客戶：</strong>工具免費換取推薦
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="k">曝光/次</div><div class="v pur">5,000-20,000</div></div>
+      <div class="stat"><div class="k">轉註冊率</div><div class="v">5-8%</div></div>
+      <div class="stat"><div class="k">月獲客</div><div class="v pur">100-200</div></div>
+      <div class="stat"><div class="k">月成本</div><div class="v">$8,000</div></div>
+    </div>
+  </div>
+
+  <!-- Channel 4: Ads -->
+  <div class="ch-card">
+    <div class="head">
+      <div><h4>💰 精準廣告投放</h4><div style="font-size:.75rem;color:var(--fg3)">Facebook + Google Ads</div></div>
+      <span class="tg" style="background:var(--orange)">可控量</span>
+    </div>
+    <div class="desc">
+      <strong>Facebook Ads：</strong>鎖定興趣「命理/星座/八字」 × 職業「業務/保險/房仲」的交集受眾。
+      <br>• 素材：「30 秒看出合作對象適不適合你」短影片
+      <br>• CPA 目標：$30-50 TWD/註冊
+      <br><strong>Google Ads：</strong>競標「八字配對工具」「合作夥伴分析」等長尾關鍵字
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="k">月預算</div><div class="v org">$10,000</div></div>
+      <div class="stat"><div class="k">CPA</div><div class="v">$40-60</div></div>
+      <div class="stat"><div class="k">月獲客</div><div class="v org">170-250</div></div>
+      <div class="stat"><div class="k">可調性</div><div class="v grn">高</div></div>
+    </div>
+  </div>
+
+  <!-- Channel 5: Referral -->
+  <div class="ch-card">
+    <div class="head">
+      <div><h4>🔗 裂變推薦機制</h4><div style="font-size:.75rem;color:var(--fg3)">用戶帶用戶</div></div>
+      <span class="tg" style="background:var(--cyan)">零成本</span>
+    </div>
+    <div class="desc">
+      <strong>命理天生有社交裂變性：</strong>「幫朋友算一下」是最自然的分享動機。
+      <br>• 「邀請好友看你們的合作指數」— 被邀請者必須註冊才能看結果
+      <br>• 每成功邀請 1 人 → 免費多存 3 位聯絡人（延遲付費牆）
+      <br>• 分享命理報告到 LINE/FB 帶連結回流
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="k">病毒係數 K</div><div class="v cyn">0.3-0.5</div></div>
+      <div class="stat"><div class="k">額外放大</div><div class="v">30-50%</div></div>
+      <div class="stat"><div class="k">月獲客</div><div class="v cyn">100-200</div></div>
+      <div class="stat"><div class="k">月成本</div><div class="v grn">$0</div></div>
+    </div>
+  </div>
+
+  <!-- Channel 6: Community -->
+  <div class="ch-card">
+    <div class="head">
+      <div><h4>🏪 社群 & PTT & Dcard</h4><div style="font-size:.75rem;color:var(--fg3)">口碑滲透</div></div>
+      <span class="tg" style="background:var(--lime)">低成本</span>
+    </div>
+    <div class="desc">
+      <strong>PTT fortune 版 / Dcard 星座版：</strong>以「分享好用工具」的角度自然推薦。
+      <br>• 在相關討論串中提供有價值的命理分析，順帶提到工具
+      <br>• 建立自己的 Discord / LINE 社群，經營命理愛好者圈子
+      <br>• 命理類 Podcast 上節目分享（免費曝光）
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="k">觸及/月</div><div class="v lm">5,000</div></div>
+      <div class="stat"><div class="k">轉註冊率</div><div class="v">2-3%</div></div>
+      <div class="stat"><div class="k">月獲客</div><div class="v lm">80-120</div></div>
+      <div class="stat"><div class="k">月成本</div><div class="v">$2,000</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== CHANNEL MIX ====== -->
+<h2><div class="ic">🎛</div> 渠道配比 & 預算分配</h2>
+
+<div id="channelMix"></div>
+
+<table class="tbl" id="mixTable">
+  <thead><tr><th>渠道</th><th>月預算 TWD</th><th>預估獲客</th><th>CAC</th><th>佔比</th><th>成熟期</th></tr></thead>
+  <tbody></tbody>
+</table>
+
+<!-- ====== REFERRAL LOOP ====== -->
+<h2><div class="ic">🔄</div> 裂變增長飛輪</h2>
+
+<div class="note g">
+  命理產品天生具備<strong>社交裂變基因</strong>——「幫你算一下」是人類最自然的社交行為之一。設計好裂變機制，每個用戶能再帶來 0.3-0.5 個新用戶，等於免費放大所有渠道效果 30-50%。
+</div>
+
+<div class="loop">
+  <div class="loop-step"><div class="emoji">👤</div>用戶 A 註冊<div class="text">存了 15 位聯絡人</div></div>
+  <div class="loop-arrow">→</div>
+  <div class="loop-step"><div class="emoji">🔮</div>分析合作指數<div class="text">發現跟朋友 B 超合</div></div>
+  <div class="loop-arrow">→</div>
+  <div class="loop-step"><div class="emoji">📤</div>分享報告給 B<div class="text">「快來看我們的合作分析」</div></div>
+  <div class="loop-arrow">→</div>
+  <div class="loop-step"><div class="emoji">✅</div>B 註冊查看<div class="text">也開始用 → 再分享</div></div>
+  <div class="loop-arrow">→</div>
+  <div class="loop-step"><div class="emoji">🎁</div>A 獲得獎勵<div class="text">多 3 個免費名額</div></div>
+</div>
+
+<div class="note">
+  <strong>裂變設計要點：</strong><br>
+  ① 分享的是「有價值的內容」（合作分析報告）而不是「廣告連結」<br>
+  ② 被分享者有明確動機去查看（好奇自己跟對方的合作指數）<br>
+  ③ 獎勵機制自然（多存 3 人）而不是金錢折扣（避免吸引低質用戶）<br>
+  ④ 每次分享都帶品牌曝光但不會讓用戶覺得在幫你打廣告
+</div>
+
+<!-- ====== GROWTH TIMELINE ====== -->
+<h2><div class="ic">📈</div> 12 個月增長時程</h2>
+
+<div class="tl">
+  <div class="tl-item active">
+    <div class="phase">MONTH 1-2 · 種子期</div>
+    <h4>🌱 產品上線 + 種子用戶獲取</h4>
+    <p>
+      上線 MVP，在 3-5 個命理社團發布介紹文。聯繫 2-3 位命理師試用。
+      建立 LINE 官方帳號和 IG 帳號。開始寫第一批 SEO 文章（10 篇）。
+      <br>重點：收集早期用戶回饋，快速迭代產品。
+    </p>
+    <div class="metrics">
+      <div class="mt">月註冊: <strong class="grn">50-100</strong></div>
+      <div class="mt">花費: <strong>$5K</strong></div>
+      <div class="mt">重點: <strong class="blu">驗證 PMF</strong></div>
+    </div>
+  </div>
+  
+  <div class="tl-item active">
+    <div class="phase">MONTH 3-4 · 內容起飛期</div>
+    <h4>📝 SEO 文章開始帶流量 + 第一波 KOL</h4>
+    <p>
+      SEO 文章開始被 Google 收錄，自然流量起步。
+      邀請 3 位命理 KOL 試用並分享（提供免費 Pro 帳號交換）。
+      開啟 Facebook 小額廣告測試（$3K/月），找到最佳受眾和素材。
+      上線裂變推薦機制。
+    </p>
+    <div class="metrics">
+      <div class="mt">月註冊: <strong class="grn">200-350</strong></div>
+      <div class="mt">花費: <strong>$15K</strong></div>
+      <div class="mt">重點: <strong class="org">找到有效渠道</strong></div>
+    </div>
+  </div>
+  
+  <div class="tl-item">
+    <div class="phase">MONTH 5-7 · 加速期</div>
+    <h4>🚀 放大有效渠道 + 裂變開始發力</h4>
+    <p>
+      此時已經知道哪些渠道 ROI 最好。加大廣告投放預算。
+      SEO 流量進入成長期（長尾文章持續帶來自然流量）。
+      裂變機制貢獻開始明顯（病毒係數 K 接近 0.3）。
+      開始接觸保險公司、房仲品牌談 B2B 合作。
+    </p>
+    <div class="metrics">
+      <div class="mt">月註冊: <strong class="grn">500-700</strong></div>
+      <div class="mt">花費: <strong>$25K</strong></div>
+      <div class="mt">重點: <strong class="pur">規模化增長</strong></div>
+    </div>
+  </div>
+  
+  <div class="tl-item">
+    <div class="phase">MONTH 8-10 · 穩定期</div>
+    <h4>🎯 達到月增 800 目標</h4>
+    <p>
+      多渠道並行運作。SEO 成為穩定的自然流量來源（300+/月）。
+      KOL 合作持續帶來精準用戶。裂變貢獻 150-200/月。
+      廣告 CPA 因品牌認知度提升而下降。
+      開始有口碑自然增長（搜尋品牌名「人脈手札」的人增加）。
+    </p>
+    <div class="metrics">
+      <div class="mt">月註冊: <strong class="grn">800+</strong></div>
+      <div class="mt">花費: <strong>$30K</strong></div>
+      <div class="mt">重點: <strong class="grn">損益平衡</strong></div>
+    </div>
+  </div>
+  
+  <div class="tl-item">
+    <div class="phase">MONTH 11-12 · 擴展期</div>
+    <h4>💎 B2B + 高端化 + 國際化探索</h4>
+    <p>
+      推出團隊版，正式進攻 B2B 市場（保險團隊、房仲加盟店）。
+      探索香港、新加坡華人市場。
+      推出 APP（PWA 或 Native）提升留存率。
+      開始建立品牌護城河。
+    </p>
+    <div class="metrics">
+      <div class="mt">月註冊: <strong class="grn">1,000-1,500</strong></div>
+      <div class="mt">花費: <strong>$35K</strong></div>
+      <div class="mt">重點: <strong class="cyn">規模獲利</strong></div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== GROWTH CHART ====== -->
+<h2><div class="ic">📊</div> 月註冊數增長曲線</h2>
+<div style="background:var(--bg2);border:1px solid var(--bg4);border-radius:14px;padding:20px 16px">
+  <div class="bar-chart" id="growthChart"></div>
+</div>
+
+<!-- ====== CONTENT STRATEGY ====== -->
+<h2><div class="ic">✍</div> 內容行銷策略</h2>
+
+<div class="note b">
+  <strong>核心策略：成為「命理 × 商業」的第一知識品牌</strong><br><br>
+  不是推銷產品，而是教育市場。讓「用命理看合作關係」成為一個被認真對待的議題。當人們想到這個概念時，自然想到人脈手札。
+</div>
+
+<table class="tbl">
+  <thead><tr><th>內容類型</th><th>標題範例</th><th>目標受眾</th><th>SEO 月搜量</th><th>發布平台</th></tr></thead>
+  <tbody>
+    <tr><td>🔥 爆款文</td><td>「從八字看你適合跟誰合夥創業」</td><td>創業者</td><td class="mono">2,400</td><td>Blog + FB</td></tr>
+    <tr><td>🔥 爆款文</td><td>「12 星座老闆的管理風格（和他的地雷）」</td><td>上班族</td><td class="mono">5,100</td><td>Blog + IG</td></tr>
+    <tr><td>📊 工具文</td><td>「免費八字合盤計算器」</td><td>命理愛好者</td><td class="mono">3,200</td><td>獨立頁面</td></tr>
+    <tr><td>📊 工具文</td><td>「輸入生日看你們的合作指數」</td><td>所有人</td><td class="mono">1,800</td><td>獨立頁面</td></tr>
+    <tr><td>📖 深度文</td><td>「十神系統入門：如何用八字看人際關係」</td><td>命理師/進階</td><td class="mono">800</td><td>Blog</td></tr>
+    <tr><td>📖 深度文</td><td>「保險業務必看：用命理經營客戶關係」</td><td>保險業</td><td class="mono">320</td><td>Blog + LINE</td></tr>
+    <tr><td>🎬 短影片</td><td>「30 秒看出你跟合作對象合不合」</td><td>IG/TikTok</td><td class="mono">—</td><td>IG Reels</td></tr>
+    <tr><td>🎬 短影片</td><td>「名片掃進去自動算命？！」</td><td>科技愛好者</td><td class="mono">—</td><td>YT Shorts</td></tr>
+    <tr class="total"><td colspan="3">每月產出目標</td><td colspan="2">8-10 篇文章 + 4 支短影片</td></tr>
+  </tbody>
+</table>
+
+<!-- ====== KILLER FEATURES FOR GROWTH ====== -->
+<h2><div class="ic">🧲</div> 增長型功能設計</h2>
+
+<div class="ch-grid">
+  <div class="ch-card">
+    <div class="head"><div><h4>🆚 合作指數比較頁</h4></div><span class="tg" style="background:var(--pink)">裂變引擎</span></div>
+    <div class="desc">
+      獨立的公開頁面：輸入兩人生日 → 顯示合作指數和分析。
+      <strong>不需要註冊就能用</strong>，但看完整報告需要註冊。
+      這頁會在 LINE/FB 上被大量分享（「快來算我們合不合」）。
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="k">預估效果</div><div class="v pnk">200-400 註冊/月</div></div>
+      <div class="stat"><div class="k">開發成本</div><div class="v">3 天</div></div>
+    </div>
+  </div>
+  
+  <div class="ch-card">
+    <div class="head"><div><h4>📊 年度人脈報告</h4></div><span class="tg" style="background:var(--cyan)">留存+裂變</span></div>
+    <div class="desc">
+      年底 / 農曆新年 生成「你的人脈命理年報」：
+      今年新增了多少人脈、最合拍的合作對象 TOP 5、明年最適合合作的星座/日主...
+      做成精美圖卡，鼓勵分享到社群。類似 Spotify Wrapped。
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="k">分享率</div><div class="v cyn">30-50%</div></div>
+      <div class="stat"><div class="k">帶來新用戶</div><div class="v">每張帶 2-3 人</div></div>
+    </div>
+  </div>
+  
+  <div class="ch-card">
+    <div class="head"><div><h4>🎴 每日運勢推播</h4></div><span class="tg" style="background:var(--orange)">留存</span></div>
+    <div class="desc">
+      每天推送一句跟你命盤相關的合作提醒：
+      「今天偏財運旺，適合跟你人脈庫中的 XX 約吃飯談合作。」
+      讓用戶養成每天打開的習慣 → 提高留存 → 加速觸牆。
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="k">DAU 提升</div><div class="v org">+40%</div></div>
+      <div class="stat"><div class="k">觸牆加速</div><div class="v">2x</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== BUDGET SUMMARY ====== -->
+<h2><div class="ic">💵</div> 預算總覽（穩態期）</h2>
+
+<table class="tbl" id="budgetTable">
+  <thead><tr><th>項目</th><th>月費 TWD</th><th>佔比</th><th>備註</th></tr></thead>
+  <tbody>
+    <tr><td>📝 內容產製</td><td class="mono">$3,000</td><td class="mono">10%</td><td style="color:var(--fg3)">自己寫 + AI 輔助</td></tr>
+    <tr><td>📱 社群經營</td><td class="mono">$5,000</td><td class="mono">17%</td><td style="color:var(--fg3)">含圖卡設計、排程工具</td></tr>
+    <tr><td>🎤 KOL 合作</td><td class="mono">$8,000</td><td class="mono">27%</td><td style="color:var(--fg3)">2-3 位/月 中型 KOL</td></tr>
+    <tr><td>💰 廣告投放</td><td class="mono">$10,000</td><td class="mono">33%</td><td style="color:var(--fg3)">FB + Google Ads</td></tr>
+    <tr><td>🏪 社群 & PR</td><td class="mono">$2,000</td><td class="mono">7%</td><td style="color:var(--fg3)">PTT, Dcard, Podcast 上節目</td></tr>
+    <tr><td>🔧 工具費用</td><td class="mono">$2,000</td><td class="mono">7%</td><td style="color:var(--fg3)">Canva Pro, 排程工具, 分析工具</td></tr>
+    <tr class="total"><td>合計</td><td class="mono">$30,000</td><td class="mono">100%</td><td style="color:var(--fg3)">CAC ≈ $38/人</td></tr>
+  </tbody>
+</table>
+
+<div class="note g">
+  <strong>💡 省錢 Tips</strong><br><br>
+  • <strong>內容用 AI 輔助：</strong>用 Claude 生成初稿 → 人工潤飾 → 每篇從 3 小時縮短到 40 分鐘<br>
+  • <strong>KOL 用產品交換：</strong>命理師免費用 Pro 版 → 他們主動在粉專推薦（零現金成本）<br>
+  • <strong>裂變是零成本：</strong>設計好機制後，每個用戶平均帶來 0.3 個新用戶，等於所有渠道打 7 折<br>
+  • <strong>SEO 是長期資產：</strong>文章寫一次可以帶流量 2-3 年，CAC 隨時間趨近 $0
+</div>
+
+<!-- ====== RISK ====== -->
+<h2><div class="ic">⚡</div> 風險 & 對策</h2>
+
+<table class="tbl">
+  <thead><tr><th>風險</th><th>影響</th><th>對策</th></tr></thead>
+  <tbody>
+    <tr><td>SEO 文章排名上不去</td><td style="color:var(--orange)">失去最大免費流量源</td><td>轉攻長尾關鍵字 + 加大廣告預算補量</td></tr>
+    <tr><td>命理社團禁止推廣</td><td style="color:var(--orange)">損失社群渠道</td><td>改用「純知識分享」策略，不放連結，靠品牌搜索帶流量</td></tr>
+    <tr><td>大型 CRM 加入命理功能</td><td style="color:var(--accent)">直接競爭</td><td>深耕命理專業度，大公司不會認真做命理。打「專業度」差異化</td></tr>
+    <tr><td>用戶把數據存在本地不付費</td><td style="color:var(--orange)">轉換率低於預期</td><td>雲端同步 + 多裝置是付費殺手功能。讓「只存本地」不方便</td></tr>
+    <tr><td>命理準確度被質疑</td><td style="color:var(--accent)">品牌信譽</td><td>明確聲明「商業合作參考工具，非專業命盤」。邀請命理師背書</td></tr>
+  </tbody>
+</table>
+
+</div>
+
+<script>
+// Channel mix visualization
+const channels = [
+  { name: 'SEO 內容', budget: 3000, users: 200, color: 'var(--green)' },
+  { name: '社群經營', budget: 5000, users: 180, color: 'var(--blue)' },
+  { name: 'KOL 合作', budget: 8000, users: 150, color: 'var(--accent2)' },
+  { name: '廣告投放', budget: 10000, users: 200, color: 'var(--orange)' },
+  { name: '裂變推薦', budget: 0, users: 150, color: 'var(--cyan)' },
+  { name: '社群/PR', budget: 2000, users: 90, color: 'var(--lime)' },
+];
+
+const totalUsers = channels.reduce((s, c) => s + c.users, 0);
+
+// Stacked bar
+let mixHtml = '';
+channels.forEach(c => {
+  const pct = c.users / totalUsers * 100;
+  mixHtml += `<div class="stack-row">
+    <div class="stack-label">${c.name}</div>
+    <div class="stack-track">
+      <div class="stack-seg" style="width:${pct}%;background:${c.color}">${c.users}</div>
+      <div class="stack-seg" style="width:${100-pct}%;background:var(--bg3);color:var(--fg3)">${pct.toFixed(0)}%</div>
+    </div>
+    <div class="stack-total">$${(c.budget/1000).toFixed(0)}K</div>
+  </div>`;
+});
+document.getElementById('channelMix').innerHTML = mixHtml;
+
+// Mix table
+let mtHtml = '';
+const totalBudget = channels.reduce((s, c) => s + c.budget, 0);
+channels.forEach(c => {
+  const cac = c.budget > 0 ? Math.round(c.budget / c.users) : 0;
+  const pct = (c.users / totalUsers * 100).toFixed(0);
+  const months = c.name === 'SEO 內容' ? '3-4 個月' : c.name === '裂變推薦' ? '2-3 個月' : '即時';
+  mtHtml += `<tr ${c.users >= 180 ? 'class="hi"' : ''}>
+    <td>${c.name}</td>
+    <td class="mono">$${c.budget.toLocaleString()}</td>
+    <td class="mono grn">${c.users}</td>
+    <td class="mono">${c.budget > 0 ? '$' + cac : '免費'}</td>
+    <td class="mono">${pct}%</td>
+    <td style="color:var(--fg3)">${months}</td>
+  </tr>`;
+});
+mtHtml += `<tr class="total">
+  <td>合計</td>
+  <td class="mono">$${totalBudget.toLocaleString()}</td>
+  <td class="mono grn">${totalUsers}</td>
+  <td class="mono">$${Math.round(totalBudget / totalUsers)}</td>
+  <td class="mono">100%</td>
+  <td></td>
+</tr>`;
+document.getElementById('mixTable').querySelector('tbody').innerHTML = mtHtml;
+
+// Growth curve
+const monthlyGrowth = [60, 100, 250, 350, 500, 620, 720, 800, 850, 950, 1100, 1300];
+const maxG = Math.max(...monthlyGrowth);
+let gcHtml = '';
+monthlyGrowth.forEach((g, i) => {
+  const h = g / maxG * 180;
+  const isTarget = g >= 800;
+  gcHtml += `<div class="bar-col">
+    <div class="bv" style="color:${isTarget ? 'var(--green)' : 'var(--fg3)'}">${g}</div>
+    <div class="br" style="height:${h}px;background:${isTarget ? 'var(--green)' : 'var(--accent2)'};opacity:${isTarget ? 0.9 : 0.6}"></div>
+    <div class="bl">M${i + 1}</div>
+  </div>`;
+});
+document.getElementById('growthChart').innerHTML = gcHtml;
+</script>
+</body>
+</html>

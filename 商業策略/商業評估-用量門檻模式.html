@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>人脈手札 — 用量門檻商業模式分析</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
+
+:root {
+  --bg:#0c0c0f;--bg2:#16161c;--bg3:#1e1e28;--bg4:#2a2a38;
+  --fg:#e8e6f0;--fg2:#a8a6b4;--fg3:#6a6878;
+  --accent:#c43b3b;--accent2:#8b6cc7;--green:#4CAF50;--orange:#FF9800;--blue:#42a5f5;--cyan:#26c6da;
+  --mono:'JetBrains Mono',monospace;--sans:'Noto Sans TC',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);line-height:1.7;min-height:100vh}
+.container{max-width:940px;margin:0 auto;padding:40px 20px 100px}
+
+h1{font-size:2rem;font-weight:900;letter-spacing:-0.03em;margin-bottom:6px}
+h1 span{color:var(--accent)}
+.subtitle{color:var(--fg3);font-size:0.85rem;margin-bottom:40px;font-family:var(--mono)}
+
+h2{font-size:1.05rem;font-weight:700;margin:48px 0 20px;padding-bottom:10px;border-bottom:1px solid var(--bg4);display:flex;align-items:center;gap:10px}
+h2 .ic{width:28px;height:28px;background:var(--bg3);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px}
+
+/* Cards */
+.card-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px}
+.card{background:var(--bg2);border:1px solid var(--bg4);border-radius:14px;padding:18px;transition:border-color .3s}
+.card:hover{border-color:var(--accent2)}
+.card .lb{font-family:var(--mono);font-size:.68rem;color:var(--fg3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}
+.card .vl{font-size:1.5rem;font-weight:900;letter-spacing:-.02em}
+.card .un{font-size:.72rem;color:var(--fg3);margin-top:2px}
+
+.grn{color:var(--green)}.red{color:var(--accent)}.blu{color:var(--blue)}.pur{color:var(--accent2)}.org{color:var(--orange)}.cyn{color:var(--cyan)}
+
+/* Controls */
+.ctrl{background:var(--bg2);border:1px solid var(--bg4);border-radius:14px;padding:24px;margin-bottom:20px}
+.ctrl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px}
+.ctrl-item label{display:block;font-size:.8rem;color:var(--fg2);margin-bottom:6px;font-weight:500}
+.ctrl-item input,.ctrl-item select{width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--bg4);border-radius:10px;color:var(--fg);font-family:var(--mono);font-size:.95rem;outline:none;transition:border-color .2s}
+.ctrl-item input:focus,.ctrl-item select:focus{border-color:var(--accent2)}
+.ctrl-item .ht{font-size:.68rem;color:var(--fg3);margin-top:4px}
+
+/* Slider */
+.slider-wrap{margin:20px 0}
+.slider-wrap label{font-size:.85rem;color:var(--fg2);display:flex;justify-content:space-between;margin-bottom:8px}
+.slider-wrap label strong{color:var(--fg);font-family:var(--mono)}
+input[type=range]{-webkit-appearance:none;width:100%;height:6px;background:var(--bg4);border-radius:3px;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;background:var(--accent2);border-radius:50%;cursor:pointer;border:2px solid var(--bg)}
+
+/* Table */
+.tbl{width:100%;border-collapse:collapse;margin:16px 0}
+.tbl th,.tbl td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--bg3);font-size:.85rem}
+.tbl th{color:var(--fg3);font-family:var(--mono);font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;font-weight:400}
+.tbl td:not(:first-child){font-family:var(--mono);text-align:right}
+.tbl tr.best{background:rgba(76,175,80,.08);border-left:3px solid var(--green)}
+.tbl tr.total td{font-weight:900;border-top:2px solid var(--bg4)}
+
+/* Chart bars */
+.hbar{margin:8px 0}
+.hbar-row{display:flex;align-items:center;margin-bottom:10px}
+.hbar-lb{width:80px;font-size:.78rem;color:var(--fg2);flex-shrink:0}
+.hbar-track{flex:1;height:24px;background:var(--bg3);border-radius:6px;overflow:hidden;position:relative}
+.hbar-fill{height:100%;border-radius:6px;display:flex;align-items:center;padding:0 10px;font-family:var(--mono);font-size:.68rem;font-weight:700;color:#fff;white-space:nowrap;transition:width .6s ease}
+.hbar-right{width:70px;text-align:right;font-family:var(--mono);font-size:.78rem;color:var(--fg2);flex-shrink:0;padding-left:10px}
+
+/* Funnel */
+.funnel{display:flex;flex-direction:column;align-items:center;gap:4px;margin:24px 0}
+.funnel-step{display:flex;align-items:center;width:100%;max-width:600px;gap:12px}
+.funnel-bar{height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.78rem;font-weight:700;color:#fff;transition:width .6s ease;min-width:60px}
+.funnel-info{font-size:.78rem;color:var(--fg2);flex:1}
+.funnel-num{font-family:var(--mono);font-size:.85rem;font-weight:700;width:80px;text-align:right}
+
+/* Verdict */
+.verdict{background:linear-gradient(135deg,var(--bg2),var(--bg3));border:1px solid var(--bg4);border-radius:16px;padding:32px;margin:28px 0;text-align:center}
+.verdict .ti{font-size:.72rem;font-family:var(--mono);color:var(--fg3);text-transform:uppercase;letter-spacing:.15em;margin-bottom:10px}
+.verdict .num{font-size:2.8rem;font-weight:900;letter-spacing:-.03em}
+.verdict .ds{color:var(--fg2);font-size:.88rem;margin-top:8px;max-width:560px;margin-left:auto;margin-right:auto;line-height:1.7}
+
+/* Note */
+.note{background:var(--bg2);border-left:3px solid var(--accent2);border-radius:0 10px 10px 0;padding:16px 20px;margin:16px 0;font-size:.85rem;color:var(--fg2);line-height:1.7}
+.note strong{color:var(--fg)}
+
+/* Compare */
+.vs{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:20px 0}
+.vs-card{background:var(--bg2);border:1px solid var(--bg4);border-radius:14px;padding:24px;text-align:center}
+.vs-card h3{font-size:1rem;margin-bottom:12px}
+.vs-card .big{font-size:2rem;font-weight:900}
+.vs-card p{font-size:.8rem;color:var(--fg2);margin-top:8px;line-height:1.5}
+.vs-card.winner{border-color:var(--green);background:rgba(76,175,80,.05)}
+
+/* Scenario cards */
+.sc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin:20px 0}
+.sc-card{background:var(--bg2);border:1px solid var(--bg4);border-radius:14px;padding:22px;transition:transform .2s,border-color .2s}
+.sc-card:hover{transform:translateY(-2px);border-color:var(--accent2)}
+.sc-card .tg{font-family:var(--mono);font-size:.62rem;padding:3px 10px;border-radius:20px;display:inline-block;margin-bottom:10px;color:var(--bg);font-weight:700}
+.sc-card h3{font-size:.95rem;font-weight:700;margin-bottom:6px}
+.sc-card p{font-size:.82rem;color:var(--fg2);line-height:1.6}
+.sc-card .mt{margin-top:12px;padding-top:12px;border-top:1px solid var(--bg3);display:flex;justify-content:space-between;font-size:.8rem}
+.sc-card .mt span:first-child{color:var(--fg3)}
+.sc-card .mt span:last-child{font-family:var(--mono);font-weight:700}
+
+@media(max-width:600px){
+  h1{font-size:1.5rem}
+  .card-row{grid-template-columns:1fr 1fr}
+  .ctrl-grid{grid-template-columns:1fr}
+  .vs{grid-template-columns:1fr}
+  .sc-grid{grid-template-columns:1fr}
+  .verdict .num{font-size:2rem}
+  .funnel-step{flex-wrap:wrap}
+  .funnel-bar{min-width:40px}
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1><span>人脈手札</span> 用量門檻模式</h1>
+<p class="subtitle">免費 N 人 → 超過即付費 · 商業可行性分析</p>
+
+<!-- SUMMARY -->
+<div class="card-row" id="summary"></div>
+
+<!-- MODEL PARAMS -->
+<h2><div class="ic">⚙</div> 模型參數</h2>
+<div class="ctrl">
+  <div class="ctrl-grid">
+    <div class="ctrl-item">
+      <label>每月新增註冊</label>
+      <input type="number" id="pNewUsers" value="800" min="0" oninput="calc()">
+      <div class="ht">免費產品獲客更容易</div>
+    </div>
+    <div class="ctrl-item">
+      <label>解鎖付費價格（TWD）</label>
+      <select id="pPrice" onchange="calc()">
+        <option value="99">$99/月（低門檻）</option>
+        <option value="149" selected>$149/月（標準）</option>
+        <option value="199">$199/月（中高）</option>
+        <option value="299">$299/月（專業）</option>
+        <option value="599">$599 一次買斷</option>
+        <option value="999">$999 一次買斷</option>
+      </select>
+    </div>
+    <div class="ctrl-item">
+      <label>付費模式</label>
+      <select id="pModel" onchange="calc()">
+        <option value="sub" selected>月訂閱制</option>
+        <option value="once">一次買斷</option>
+      </select>
+    </div>
+    <div class="ctrl-item">
+      <label>月固定成本（TWD）</label>
+      <input type="number" id="pFixed" value="12000" min="0" oninput="calc()">
+      <div class="ht">主機+維護+行銷</div>
+    </div>
+    <div class="ctrl-item">
+      <label>每付費用戶變動成本</label>
+      <input type="number" id="pVar" value="3" min="0" step="0.5" oninput="calc()">
+      <div class="ht">API + 資料庫/月</div>
+    </div>
+    <div class="ctrl-item">
+      <label>付費用戶月流失率</label>
+      <select id="pChurn" onchange="calc()">
+        <option value="0.02">2%（極佳黏性）</option>
+        <option value="0.04" selected>4%（工具型產品）</option>
+        <option value="0.06">6%（一般）</option>
+        <option value="0.10">10%（偏高）</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<!-- FREE LIMIT SLIDER -->
+<h2><div class="ic">🎚</div> 免費人數上限</h2>
+<div class="ctrl">
+  <div class="slider-wrap">
+    <label>免費可儲存聯絡人數 <strong id="limitDisplay">20 人</strong></label>
+    <input type="range" id="pLimit" min="5" max="100" value="20" step="5" oninput="calc()">
+  </div>
+  <div style="display:flex;justify-content:space-between;font-size:.7rem;color:var(--fg3);font-family:var(--mono);margin-top:-8px">
+    <span>5人（激進）</span><span>30人（甜蜜點）</span><span>100人（寬鬆）</span>
+  </div>
+</div>
+
+<!-- CONVERSION FUNNEL -->
+<h2><div class="ic">🔽</div> 用戶漏斗分析</h2>
+<div class="note" id="funnelNote"></div>
+<div class="funnel" id="funnel"></div>
+
+<!-- LIMIT COMPARISON TABLE -->
+<h2><div class="ic">📊</div> 不同門檻對比</h2>
+<div class="note">門檻越低，觸及付費牆的人越多，但付費意願也越低（還沒感受到產品價值就被要求付費）。門檻越高，觸及的人少，但那些人已經是重度用戶，付費轉換率更高。</div>
+<table class="tbl" id="limitTable">
+  <thead><tr><th>免費上限</th><th>觸牆率</th><th>付費轉換</th><th>月付費用戶</th><th>月營收</th><th>月淨利</th><th>損益平衡月</th></tr></thead>
+  <tbody></tbody>
+</table>
+
+<!-- BREAK-EVEN -->
+<h2><div class="ic">🎯</div> 損益平衡</h2>
+<div class="verdict" id="verdict"></div>
+
+<!-- 12-MONTH PROJECTION -->
+<h2><div class="ic">📅</div> 12 個月預估</h2>
+<div class="ctrl" style="padding:20px 16px">
+  <div id="projBars" style="display:flex;align-items:flex-end;gap:4px;height:220px;margin-bottom:12px"></div>
+  <div style="display:flex;justify-content:space-between;font-size:.65rem;color:var(--fg3);font-family:var(--mono)">
+    <span>■ <span style="color:var(--green)">營收</span>　■ <span style="color:var(--accent)">成本</span></span>
+    <span id="projM12"></span>
+  </div>
+</div>
+
+<table class="tbl" id="projTable">
+  <thead><tr><th>月</th><th>總註冊</th><th>觸牆</th><th>付費中</th><th>月營收</th><th>月成本</th><th>淨利</th><th>累計</th></tr></thead>
+  <tbody></tbody>
+</table>
+
+<!-- VS SUBSCRIPTION -->
+<h2><div class="ic">⚖</div> 用量門檻 vs 純訂閱制</h2>
+<div class="vs" id="vsCards"></div>
+<div class="note" id="vsNote"></div>
+
+<!-- PRICING SCENARIOS -->
+<h2><div class="ic">💎</div> 推薦定價組合</h2>
+<div class="sc-grid" id="pricingCards"></div>
+
+<!-- STRATEGY -->
+<h2><div class="ic">🧭</div> 策略建議</h2>
+<div id="strategy"></div>
+
+</div>
+
+<script>
+// ============================================================
+// USER BEHAVIOR MODEL
+// Based on typical CRM/contact-app usage patterns
+// ============================================================
+
+// Given a free limit N, what % of active users will hit it?
+// And of those, what % will convert to paid?
+function behaviorModel(limit) {
+  // Contact accumulation follows a long-tail distribution:
+  // ~40% store 1-5, ~25% store 6-15, ~15% store 16-30, ~10% store 31-50, ~10% store 50+
+  // "Hit wall" = users who accumulate >= limit contacts
+  
+  // Cumulative distribution of contacts stored (empirical model)
+  // P(user stores >= N contacts) approximated by power law
+  const hitRate = Math.min(0.85, Math.max(0.05, 1.2 * Math.pow(limit, -0.55)));
+  
+  // Of those who hit the wall, willingness to pay depends on:
+  // - How much value they've already gotten (more contacts = more value)
+  // - Whether limit feels "fair" (too low = frustrating = churn)
+  
+  // Conversion rate of wall-hitters
+  let convOfHitters;
+  if (limit <= 5) convOfHitters = 0.08;       // too aggressive, users angry
+  else if (limit <= 10) convOfHitters = 0.15;  // low but some see value
+  else if (limit <= 20) convOfHitters = 0.25;  // sweet spot starts
+  else if (limit <= 30) convOfHitters = 0.32;  // good value demonstrated
+  else if (limit <= 50) convOfHitters = 0.38;  // power users, high intent
+  else if (limit <= 75) convOfHitters = 0.42;  // very engaged
+  else convOfHitters = 0.45;                    // extremely engaged but tiny pool
+  
+  // Overall conversion = hitRate × convOfHitters
+  const overallConv = hitRate * convOfHitters;
+  
+  // Retention bonus: users who stored more contacts before paying are stickier
+  const retentionBonus = Math.min(0.03, limit * 0.0008);
+  
+  return { hitRate, convOfHitters, overallConv, retentionBonus };
+}
+
+function calc() {
+  const newUsers = +document.getElementById('pNewUsers').value || 800;
+  const priceVal = +document.getElementById('pPrice').value || 149;
+  const model = document.getElementById('pModel').value;
+  const fixed = +document.getElementById('pFixed').value || 12000;
+  const varCost = +document.getElementById('pVar').value || 3;
+  const churn = +document.getElementById('pChurn').value;
+  const limit = +document.getElementById('pLimit').value || 20;
+  
+  const isOnce = model === 'once';
+  
+  document.getElementById('limitDisplay').textContent = limit + ' 人';
+  
+  const bm = behaviorModel(limit);
+  
+  // Effective monthly revenue per paying user
+  const monthlyPrice = isOnce ? 0 : priceVal;
+  const oneTimePrice = isOnce ? priceVal : 0;
+  
+  // ---- Summary Cards ----
+  const monthlyRevPerUser = isOnce ? (priceVal / 12) : priceVal; // amortized for comparison
+  const marginPerUser = monthlyRevPerUser - varCost;
+  const breakEvenUsers = Math.ceil(fixed / marginPerUser);
+  const breakEvenReg = Math.ceil(breakEvenUsers / bm.overallConv);
+  
+  document.getElementById('summary').innerHTML = `
+    <div class="card"><div class="lb">免費上限</div><div class="vl cyn">${limit} 人</div><div class="un">超過即觸發付費</div></div>
+    <div class="card"><div class="lb">觸牆率</div><div class="vl org">${(bm.hitRate*100).toFixed(0)}%</div><div class="un">會儲存 ≥${limit} 人的用戶比例</div></div>
+    <div class="card"><div class="lb">觸牆→付費</div><div class="vl pur">${(bm.convOfHitters*100).toFixed(0)}%</div><div class="un">碰到牆後願意付費</div></div>
+    <div class="card"><div class="lb">整體轉換率</div><div class="vl blu">${(bm.overallConv*100).toFixed(1)}%</div><div class="un">總註冊→付費</div></div>
+    <div class="card"><div class="lb">損益平衡</div><div class="vl grn">${breakEvenUsers}</div><div class="un">付費用戶數</div></div>
+  `;
+  
+  // ---- Funnel ----
+  const funnelData = [
+    { label: '月新增註冊', count: newUsers, pct: 100, color: 'var(--fg3)' },
+    { label: '活躍使用', count: Math.round(newUsers * 0.65), pct: 65, color: 'var(--blue)' },
+    { label: `儲存 ≥${limit} 人`, count: Math.round(newUsers * 0.65 * bm.hitRate), pct: Math.round(65 * bm.hitRate), color: 'var(--orange)' },
+    { label: '觸牆後付費', count: Math.round(newUsers * 0.65 * bm.hitRate * bm.convOfHitters), pct: Math.round(65 * bm.hitRate * bm.convOfHitters), color: 'var(--green)' },
+  ];
+  
+  document.getElementById('funnelNote').innerHTML = `
+    每月 <strong>${newUsers}</strong> 位新註冊中，約 <strong>65%</strong> 會活躍使用。
+    其中 <strong>${(bm.hitRate*100).toFixed(0)}%</strong> 的人會儲存超過 ${limit} 位聯絡人並觸及付費牆。
+    這些人中有 <strong>${(bm.convOfHitters*100).toFixed(0)}%</strong> 會選擇付費，
+    即每月新增約 <strong>${funnelData[3].count}</strong> 位付費用戶。
+  `;
+  
+  let funnelHtml = '';
+  funnelData.forEach(f => {
+    const w = Math.max(f.pct, 8);
+    funnelHtml += `<div class="funnel-step">
+      <div class="funnel-bar" style="width:${w}%;background:${f.color}">${f.pct}%</div>
+      <div class="funnel-info">${f.label}</div>
+      <div class="funnel-num">${f.count.toLocaleString()} 人</div>
+    </div>`;
+  });
+  document.getElementById('funnel').innerHTML = funnelHtml;
+  
+  // ---- Limit Comparison Table ----
+  const limits = [5, 10, 15, 20, 30, 50, 75, 100];
+  let ltHtml = '';
+  let bestLimit = 0, bestProfit = -Infinity;
+  
+  limits.forEach(l => {
+    const b = behaviorModel(l);
+    const newPaying = Math.round(newUsers * 0.65 * b.hitRate * b.convOfHitters);
+    // Steady-state paying users (after ~6 months of accumulation)
+    const steadyPaying = Math.round(newPaying / (churn - b.retentionBonus));
+    const mRev = isOnce ? (newPaying * priceVal) : (steadyPaying * priceVal);
+    const mCost = fixed + (isOnce ? newPaying : steadyPaying) * varCost;
+    const mNet = mRev - mCost;
+    const beMonth = calcBEMonth(newUsers, b, priceVal, isOnce, fixed, varCost, churn);
+    
+    if (mNet > bestProfit) { bestProfit = mNet; bestLimit = l; }
+    
+    const isBest = l === bestLimit;
+    const isSelected = l === limit;
+    ltHtml += `<tr ${isBest?'class="best"':''} style="${isSelected?'background:rgba(139,108,199,.1)':''}">
+      <td>${l} 人 ${isSelected?'◀':''}</td>
+      <td>${(b.hitRate*100).toFixed(0)}%</td>
+      <td>${(b.convOfHitters*100).toFixed(0)}%</td>
+      <td>${isOnce?newPaying+'/月新增':steadyPaying}</td>
+      <td>$${(mRev/1000).toFixed(1)}K</td>
+      <td class="${mNet>=0?'grn':'red'}">$${mNet>=0?'+':''}${(mNet/1000).toFixed(1)}K</td>
+      <td>${beMonth}</td>
+    </tr>`;
+  });
+  document.getElementById('limitTable').querySelector('tbody').innerHTML = ltHtml;
+  
+  // ---- Break-Even Verdict ----
+  const beMonth = calcBEMonth(newUsers, bm, priceVal, isOnce, fixed, varCost, churn);
+  const optBm = behaviorModel(bestLimit);
+  
+  document.getElementById('verdict').innerHTML = `
+    <div class="ti">目前設定 · 損益平衡</div>
+    <div class="num ${beMonth==='N/A'?'red':'grn'}">${beMonth==='N/A'?'無法達成':('第 '+beMonth+' 個月')}</div>
+    <div class="ds">
+      免費上限 <strong>${limit} 人</strong>，${isOnce?'一次買斷':'月訂閱'} <strong>$${priceVal}</strong>，
+      需累計 <strong>${breakEvenUsers}</strong> 位付費用戶。
+      ${bestLimit!==limit ? `<br>💡 最佳獲利門檻為 <strong>${bestLimit} 人</strong>（整體轉換率 ${(optBm.overallConv*100).toFixed(1)}%）` : '✅ 這已是最佳門檻設定'}
+    </div>
+  `;
+  
+  // ---- 12-Month Projection ----
+  const proj = [];
+  let totalReg = 0, payingActive = 0, cumProfit = 0;
+  
+  for (let m = 1; m <= 12; m++) {
+    totalReg += newUsers;
+    const activePool = totalReg * 0.65;
+    const wallHitters = Math.round(newUsers * 0.65 * bm.hitRate);
+    const newPaying = Math.round(wallHitters * bm.convOfHitters);
+    const churned = Math.round(payingActive * Math.max(0.01, churn - bm.retentionBonus));
+    
+    if (isOnce) {
+      // One-time: revenue comes from new conversions only
+      const rev = newPaying * priceVal;
+      const cost = fixed + newPaying * varCost;
+      const net = rev - cost;
+      cumProfit += net;
+      payingActive += newPaying; // for tracking, though they don't recur
+      proj.push({ m, reg: totalReg, wall: wallHitters, paying: newPaying, rev, cost, net, cum: cumProfit, label: `${newPaying}新` });
+    } else {
+      payingActive = payingActive + newPaying - churned;
+      if (payingActive < 0) payingActive = 0;
+      const rev = payingActive * priceVal;
+      const cost = fixed + payingActive * varCost;
+      const net = rev - cost;
+      cumProfit += net;
+      proj.push({ m, reg: totalReg, wall: wallHitters, paying: payingActive, rev, cost, net, cum: cumProfit, label: payingActive });
+    }
+  }
+  
+  // Bars
+  const maxVal = Math.max(...proj.map(p => Math.max(p.rev, p.cost)), 1);
+  let barsHtml = '';
+  proj.forEach(p => {
+    const rH = p.rev / maxVal * 190;
+    const cH = p.cost / maxVal * 190;
+    barsHtml += `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0">
+      <div style="font-family:var(--mono);font-size:.6rem;color:${p.net>=0?'var(--green)':'var(--accent)'}">${p.net>=0?'+':''}${(p.net/1000).toFixed(0)}K</div>
+      <div style="display:flex;align-items:flex-end;gap:1px;height:190px">
+        <div style="width:45%;height:${rH}px;background:${p.net>=0?'var(--green)':'var(--accent2)'};border-radius:4px 4px 1px 1px;opacity:.8"></div>
+        <div style="width:45%;height:${cH}px;background:var(--accent);border-radius:4px 4px 1px 1px;opacity:.45"></div>
+      </div>
+      <div style="font-size:.6rem;color:var(--fg3)">M${p.m}</div>
+    </div>`;
+  });
+  document.getElementById('projBars').innerHTML = barsHtml;
+  document.getElementById('projM12').textContent = `M12 累計: ${proj[11].cum>=0?'+':''}$${(proj[11].cum/1000).toFixed(0)}K`;
+  
+  // Table
+  let ptHtml = '';
+  proj.forEach(p => {
+    ptHtml += `<tr>
+      <td>M${p.m}</td>
+      <td>${p.reg.toLocaleString()}</td>
+      <td>${p.wall}</td>
+      <td>${typeof p.label==='string'?p.label:p.paying}</td>
+      <td style="font-family:var(--mono)">$${(p.rev/1000).toFixed(1)}K</td>
+      <td style="font-family:var(--mono);color:var(--accent)">$${(p.cost/1000).toFixed(1)}K</td>
+      <td class="${p.net>=0?'grn':'red'}" style="font-family:var(--mono);font-weight:700">${p.net>=0?'+':''}$${(p.net/1000).toFixed(1)}K</td>
+      <td class="${p.cum>=0?'grn':'red'}" style="font-family:var(--mono)">${p.cum>=0?'+':''}$${(p.cum/1000).toFixed(1)}K</td>
+    </tr>`;
+  });
+  document.getElementById('projTable').querySelector('tbody').innerHTML = ptHtml;
+  
+  // ---- VS Subscription ----
+  // Compare with pure subscription model (from previous analysis)
+  const subConv = 0.05; // typical freemium conversion
+  const subPrice = 149;
+  const subNewPaying = Math.round(newUsers * subConv);
+  const subSteady = Math.round(subNewPaying / churn);
+  const subRev = subSteady * subPrice;
+  const subCost = fixed + subSteady * varCost;
+  const subNet = subRev - subCost;
+  
+  const capNewPaying = Math.round(newUsers * 0.65 * bm.hitRate * bm.convOfHitters);
+  const capSteady = isOnce ? capNewPaying : Math.round(capNewPaying / Math.max(0.01, churn - bm.retentionBonus));
+  const capRev = isOnce ? capNewPaying * priceVal : capSteady * priceVal;
+  const capCost = fixed + (isOnce ? capNewPaying : capSteady) * varCost;
+  const capNet = capRev - capCost;
+  
+  const capWins = capNet > subNet;
+  
+  document.getElementById('vsCards').innerHTML = `
+    <div class="vs-card ${capWins?'winner':''}">
+      <h3>📱 用量門檻制</h3>
+      <div class="big ${capNet>=0?'grn':'red'}">${capNet>=0?'+':''}$${(capNet/1000).toFixed(1)}K</div>
+      <p>免費 ${limit} 人 → ${isOnce?'買斷':'訂閱'} $${priceVal}<br>
+      穩態 ${isOnce?capNewPaying+'人/月新增':capSteady+'人'} 付費<br>
+      整體轉換率 ${(bm.overallConv*100).toFixed(1)}%</p>
+    </div>
+    <div class="vs-card ${!capWins?'winner':''}">
+      <h3>💳 純訂閱制</h3>
+      <div class="big ${subNet>=0?'grn':'red'}">${subNet>=0?'+':''}$${(subNet/1000).toFixed(1)}K</div>
+      <p>功能限制 Freemium → $149/月<br>
+      穩態 ${subSteady} 人付費<br>
+      整體轉換率 5.0%</p>
+    </div>
+  `;
+  
+  document.getElementById('vsNote').innerHTML = `
+    <strong>${capWins?'✅ 用量門檻制在目前參數下更優':'⚠ 純訂閱制在目前參數下表現更好'}。</strong>
+    ${capWins
+      ? `用量門檻的優勢在於：用戶在付費前已經有實際使用體驗和數據投入，付費意願更強、流失率更低（沉沒成本效應）。門檻設在 ${limit} 人能篩出真正需要這個工具的重度用戶。`
+      : `純訂閱制的轉換機制更清晰，但用量門檻制可以通過調整免費上限來優化。試試將門檻設在 ${bestLimit} 人看看。`
+    }
+  `;
+  
+  // ---- Pricing Cards ----
+  document.getElementById('pricingCards').innerHTML = `
+    <div class="sc-card">
+      <span class="tg" style="background:var(--blue)">入門獲客</span>
+      <h3>免費 30 人 + $99/月</h3>
+      <p>低門檻吸引大量用戶嘗試。30人上限讓用戶充分體驗命理分析的價值後再決定付費。適合市場驗證階段。</p>
+      <div class="mt"><span>觸牆率</span><span class="org">${(behaviorModel(30).hitRate*100).toFixed(0)}%</span></div>
+      <div class="mt"><span>月淨利（穩態）</span><span class="grn">+$${((Math.round(newUsers*0.65*behaviorModel(30).hitRate*behaviorModel(30).convOfHitters/Math.max(0.01,churn-behaviorModel(30).retentionBonus))*99-fixed)/1000).toFixed(1)}K</span></div>
+    </div>
+    <div class="sc-card" style="border-color:var(--green)">
+      <span class="tg" style="background:var(--green)">推薦方案</span>
+      <h3>免費 20 人 + $149/月</h3>
+      <p>平衡的甜蜜點。20人夠讓用戶感受價值但又不會太寬鬆。$149 是台灣 SaaS 工具的心理舒適價位。</p>
+      <div class="mt"><span>觸牆率</span><span class="org">${(behaviorModel(20).hitRate*100).toFixed(0)}%</span></div>
+      <div class="mt"><span>月淨利（穩態）</span><span class="grn">+$${((Math.round(newUsers*0.65*behaviorModel(20).hitRate*behaviorModel(20).convOfHitters/Math.max(0.01,churn-behaviorModel(20).retentionBonus))*149-fixed)/1000).toFixed(1)}K</span></div>
+    </div>
+    <div class="sc-card">
+      <span class="tg" style="background:var(--accent2)">高端策略</span>
+      <h3>免費 10 人 + $199/月 + 買斷 $1,999</h3>
+      <p>雙軌制：訂閱或一次買斷。10人門檻較激進但篩出高意願用戶。買斷選項提供一次性大額收入。</p>
+      <div class="mt"><span>觸牆率</span><span class="org">${(behaviorModel(10).hitRate*100).toFixed(0)}%</span></div>
+      <div class="mt"><span>ARPU 更高</span><span class="pur">~$230/月均</span></div>
+    </div>
+  `;
+  
+  // ---- Strategy ----
+  document.getElementById('strategy').innerHTML = `
+    <div class="note" style="border-color:var(--cyan)">
+      <strong>🎯 為什麼「用量門檻」適合人脈手札？</strong><br><br>
+      <strong>1. 沉沒成本驅動轉換</strong> — 用戶在免費期間已經輸入了 ${limit} 位聯絡人的姓名、生日、命理資料和筆記。這些數據是無法帶走的投入，放棄的心理成本很高。這比「功能解鎖」的轉換動力更強。<br><br>
+      <strong>2. 自我篩選機制</strong> — 能存滿 ${limit} 位聯絡人的用戶，代表他真的在用這個工具做人脈管理，不是好奇試玩。這些人的付費意願和留存率都遠高於被廣告吸引來的用戶。<br><br>
+      <strong>3. 付費時機完美</strong> — 用戶剛好在「需要加入第 ${limit+1} 位聯絡人」的時刻被要求付費。這是一個有具體需求的場景——他手上有一張新名片要錄入，動力最強。<br><br>
+      <strong>4. 口碑免費擴散</strong> — 免費用戶仍然可以使用完整的命理分析功能（只是人數有限），他們體驗後會推薦給朋友，成為天然的推廣管道。
+    </div>
+    <div class="note" style="border-color:var(--orange)">
+      <strong>⚠ 注意事項</strong><br><br>
+      <strong>1. 付費牆的體驗設計至關重要</strong> — 不要用彈窗阻擋，而是在新增第 ${limit+1} 位時優雅地展示「解鎖完整版」，讓用戶看到他的數據很安全、升級很簡單。<br><br>
+      <strong>2. 考慮「軟牆」而非「硬牆」</strong> — 超過 ${limit} 人後，可以只限制新增（已有的資料仍可查看和編輯），避免用戶覺得被「綁架」。<br><br>
+      <strong>3. 提供匯出功能</strong> — 即使免費版也要能匯出 JSON/CSV。這反直覺但能增加信任——用戶知道數據不被鎖定，反而更願意付費。<br><br>
+      <strong>4. 年付優惠</strong> — 提供年付 8 折（$${Math.round(priceVal*12*0.8)}），可提前回收現金流並降低流失。
+    </div>
+    <div class="note" style="border-color:var(--green)">
+      <strong>✅ 建議最終定價</strong><br><br>
+      <strong>免費版：</strong>${bestLimit} 位聯絡人，完整命理分析功能<br>
+      <strong>Pro 月付：</strong>$149 TWD/月（無限聯絡人 + 雲端同步 + 內建 OCR）<br>
+      <strong>Pro 年付：</strong>$1,188 TWD/年（= $99/月，省 33%）<br>
+      <strong>團隊版：</strong>$499 TWD/月/人（共享人脈庫 + 管理後台）<br><br>
+      以每月 ${newUsers} 新增註冊計算，約第 <strong>${beMonth}</strong> 個月達損益平衡，
+      12 個月累計淨利約 <strong>${proj[11].cum>=0?'+':''}$${(proj[11].cum/1000).toFixed(0)}K TWD</strong>。
+    </div>
+  `;
+}
+
+function calcBEMonth(newUsers, bm, price, isOnce, fixed, varCost, churn) {
+  let paying = 0, cum = 0;
+  for (let m = 1; m <= 36; m++) {
+    const newP = Math.round(newUsers * 0.65 * bm.hitRate * bm.convOfHitters);
+    const churned = Math.round(paying * Math.max(0.01, churn - bm.retentionBonus));
+    if (isOnce) {
+      const rev = newP * price;
+      const cost = fixed + newP * varCost;
+      if (rev >= cost) return m;
+      paying += newP;
+    } else {
+      paying = paying + newP - churned;
+      const rev = paying * price;
+      const cost = fixed + paying * varCost;
+      if (rev >= cost) return m;
+    }
+  }
+  return 'N/A';
+}
+
+calc();
+</script>
+</body>
+</html>

@@ -1911,16 +1911,18 @@ const ZODIAC=[
 ];
 
 function getZodiac(month,day){
+  // 防呆：invalid 月/日（含 OCR 匯入錯誤資料）回 null，caller 顯示「無命理」而非誤算成摩羯
+  if(!month || !day || month<1 || month>12 || day<1 || day>31) return null;
   for(const z of ZODIAC){
     const[sm,sd,em,ed]=z.dateRange;
     if(sm<=em){if((month===sm&&day>=sd)||(month===em&&day<=ed)||(month>sm&&month<em))return z;}
     else{if((month===sm&&day>=sd)||(month===em&&day<=ed)||month>sm||month<em)return z;}
   }
-  return ZODIAC[9];
+  return null;
 }
 
 // 星座相位系統（比只看元素更精確）
-// 0=合 1=半六合 2=六分 3=刑 4=三合 5=對沖 6=梅花 etc.
+// diff=0 合相 / 1,11 半六合(30°) / 2,10 六分(60°) / 3,9 刑(90°) / 4,8 三合(120°) / 5,7 梅花(150°) / 6 對沖(180°)
 const ZODIAC_ASPECTS=(()=>{
   const signs=ZODIAC.map(z=>z.name);
   const aspects={};

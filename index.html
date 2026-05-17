@@ -1836,7 +1836,14 @@ const TRIGRAMS=[
   {name:'乾',lines:[1,1,1],element:'金',meaning:'剛健創始、天行健',detail:'乾卦代表天——最大的格局和最強的能量。此人有大志向、強執行力。但「亢龍有悔」——太強勢會招來反彈。合作時給予足夠尊重，但也要適時提醒他不要過度。',leadership:'權威型領導，需要學會傾聽'}
 ];
 
-function getNumTrigram(s){if(!s)return null;const d=String(s).replace(/\D/g,'').split('').map(Number);if(!d.length)return null;return TRIGRAMS[d.reduce((a,b)=>a+b,0)%8];}
+function getNumTrigram(s){
+  if(!s)return null;
+  // 去掉常見國碼前綴（+886 / 886）讓「0935...」與「+886 935...」算出同一卦
+  let str=String(s).trim().replace(/^\+?886/,'');
+  const d=str.replace(/\D/g,'').split('').map(Number);
+  if(!d.length)return null;
+  return TRIGRAMS[d.reduce((a,b)=>a+b,0)%8];
+}
 
 
 // ===== WEST: ZODIAC (占星) =====
@@ -3460,10 +3467,11 @@ if('serviceWorker' in navigator){
   });
 }
 
-// 八字算法版本 — 2026-05-17 修了 4 個核心 bug 後升到 2
-// 舊資料 (_fortuneAlgoVer 缺或 < 2) 用舊算法存的 fortune 是錯的
-// init 時自動 migrate（靜默重算 + 標版本號），讓使用者下次開 App 就拿到正確命理
-const FORTUNE_ALGO_V = 2;
+// 命理算法版本
+// v2 (2026-05-17): getSB 修了 4 個 bug（年柱立春 / 月柱節氣+月干 / 日柱 epoch / 子時跨日）
+// v3 (2026-05-17): getNumTrigram 加去國碼前綴（+886 / 886）
+// 既有 contact 若 _fortuneAlgoVer 落後當前 V，init 自動重算 + 標版本號
+const FORTUNE_ALGO_V = 3;
 
 async function migrateFortuneIfNeeded(){
   let migrated = 0;

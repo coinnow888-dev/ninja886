@@ -1326,6 +1326,7 @@ body {
         <div class="settings-group-title">資料管理</div>
         <div class="settings-item"><div><div class="si-label">匯出資料</div><div class="si-desc">JSON 備份</div></div><button class="btn btn-sm btn-secondary" onclick="exportData()">匯出</button></div>
         <div class="settings-item"><div><div class="si-label">匯入資料</div><div class="si-desc">從 JSON 還原</div></div><button class="btn btn-sm btn-secondary" onclick="document.getElementById('importFile').click()">匯入</button><input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)"></div>
+        <div class="settings-item"><div><div class="si-label">重算所有命理</div><div class="si-desc">用最新算法重新計算每筆人脈與自己</div></div><button class="btn btn-sm btn-secondary" onclick="recomputeAllFortunes()">重算</button></div>
         <div class="settings-item"><div><div class="si-label">清除所有資料</div></div><button class="btn btn-sm btn-danger" onclick="clearAllData()">清除</button></div>
       </div>
       <div class="settings-group">
@@ -1534,14 +1535,94 @@ function judgeStrength(sb, profile){
   return{strength:'中和',desc:'陰陽平衡，適應力強',need:'平衡型，各種關係都能適應',advice:'你的命格平衡。選擇合作對象的彈性較大，可以根據具體需求來配對。'};
 }
 
+// 太陽黃經（Meeus 低精度公式）→ 用來算節氣交接 instant
+function _sunLongitude(jd){
+  const T=(jd-2451545.0)/36525.0;
+  const L0=(280.46646+36000.76983*T+0.0003032*T*T)%360;
+  const M=((357.52911+35999.05029*T-0.0001537*T*T)%360)*Math.PI/180;
+  const C=(1.914602-0.004817*T-0.000014*T*T)*Math.sin(M)
+         +(0.019993-0.000101*T)*Math.sin(2*M)
+         +0.000289*Math.sin(3*M);
+  const omega=(125.04-1934.136*T)*Math.PI/180;
+  return ((L0+C-0.00569-0.00478*Math.sin(omega))%360+360)%360;
+}
+// 24 節氣中「節」（月柱分界）的太陽黃經與大致發生月份。
+// 月份索引 1..12 → 該月的「節」對應的太陽黃經
+const _JIEQI_LON=[null,285,315,345,15,45,75,105,135,165,195,225,255]; // Jan=小寒...Dec=大雪
+const _JIEQI_APPROX_DAY={285:[1,6],315:[2,4],345:[3,6],15:[4,5],45:[5,6],75:[6,6],105:[7,7],135:[8,8],165:[9,8],195:[10,8],225:[11,7],255:[12,7]};
+
+// 找出指定年的指定節氣交接的 JD (UTC)
+function _jieqiJD(year,targetLon){
+  const [mm,dd]=_JIEQI_APPROX_DAY[targetLon];
+  // Gregorian → JD at 0h UTC
+  const a=Math.floor((14-mm)/12);
+  const y2=year+4800-a;
+  const m2=mm+12*a-3;
+  let jd=dd+Math.floor((153*m2+2)/5)+365*y2+Math.floor(y2/4)-Math.floor(y2/100)+Math.floor(y2/400)-32045-0.5;
+  // Newton 迭代解 sun_longitude(jd) = targetLon
+  for(let i=0;i<20;i++){
+    const lon=_sunLongitude(jd);
+    let diff=((lon-targetLon+540)%360)-180;
+    if(Math.abs(diff)<1e-5)break;
+    jd-=diff/0.9856;
+  }
+  return jd;
+}
+
+// 把 JD (UTC) 轉成台灣時區（UTC+8）的 [年,月,日,時,分]
+function _jdToLocalTW(jd){
+  const jdL=jd+8/24;
+  const Z=Math.floor(jdL+0.5);
+  const F=(jdL+0.5)-Z;
+  let A;
+  if(Z<2299161)A=Z;
+  else{const alpha=Math.floor((Z-1867216.25)/36524.25);A=Z+1+alpha-Math.floor(alpha/4);}
+  const B=A+1524;
+  const C=Math.floor((B-122.1)/365.25);
+  const D=Math.floor(365.25*C);
+  const E=Math.floor((B-D)/30.6001);
+  const dayFrac=B-D-Math.floor(30.6001*E)+F;
+  const day=Math.floor(dayFrac);
+  const hourFrac=(dayFrac-day)*24;
+  const hour=Math.floor(hourFrac);
+  const minute=Math.floor((hourFrac-hour)*60);
+  const month=E<14?E-1:E-13;
+  const year=month>2?C-4716:C-4715;
+  return[year,month,day,hour,minute];
+}
+
 function getSB(y,m,d,h){
-  const ys=((y-4)%10+10)%10,yb=((y-4)%12+12)%12;
-  const ms=((ys%5)*2+m+1)%10,mb=(m+1)%12;
+  y=+y;m=+m;d=+d;
+  // 該月的「節」交接時刻（台灣本地時間）
+  const lon=_JIEQI_LON[m];
+  const jq=_jdToLocalTW(_jieqiJD(y,lon)); // [Y,M,D,h,min]
+  const hh=(h!=null&&h!=='')?+h:12; // 沒填時辰預設中午（不影響日/月柱跨界判斷）
+  const birthMin=d*1440+hh*60;
+  const jqMin=jq[2]*1440+jq[3]*60+jq[4];
+  const afterJQ=birthMin>=jqMin;
+  // 月支：過了該月的節氣就是 m%12，沒過就是上個月支
+  const mb=afterJQ?(m%12):((m-1+12)%12);
+  // 年柱：立春界
+  let yearForY=y;
+  if(m<2)yearForY=y-1;
+  else if(m===2&&!afterJQ)yearForY=y-1;
+  const ys=((yearForY-4)%10+10)%10;
+  const yb=((yearForY-4)%12+12)%12;
+  // 月干（五虎遁）：寅月起 stem = (ys%5)*2+2，再依月支偏移
+  const yinStem=((ys%5)*2+2)%10;
+  const mbOffset=((mb-2)%12+12)%12;
+  const ms=(yinStem+mbOffset)%10;
+  // 日柱：基準 1900-01-01 = 甲戌（60 甲子第 11 位，index 10）
   const base=new Date(1900,0,1),target=new Date(y,m-1,d);
-  const dd=Math.floor((target-base)/864e5);
-  const ds=((dd%10)+10)%10,db=((dd%12)+12)%12;
+  const ddRaw=Math.floor((target-base)/864e5);
+  // 子時跨日：23:00+ 屬隔日子時
+  const dayShift=(h!=null&&h!==''&&+h>=23)?1:0;
+  const dd=ddRaw+dayShift+10;
+  const ds=((dd%10)+10)%10;
+  const db=((dd%12)+12)%12;
+  // 時柱
   let ts=-1,tb=-1;
-  if(h!=null&&h!==''){const hh=+h;tb=Math.floor((hh+1)/2)%12;ts=((ds%5)*2+tb)%10;}
+  if(h!=null&&h!==''){const hv=+h;tb=Math.floor((hv+1)/2)%12;ts=((ds%5)*2+tb)%10;}
   return{year:{s:HS[ys],b:EB[yb]},month:{s:HS[ms],b:EB[mb]},day:{s:HS[ds],b:EB[db]},hour:ts>=0?{s:HS[ts],b:EB[tb]}:null};
 }
 
@@ -2989,6 +3070,29 @@ async function importData(e){
   e.target.value='';
 }
 
+async function recomputeAllFortunes(){
+  const ok=await customConfirm(`將用最新算法重算所有人脈與自己的命理。\n（既有「深入識人」AI 結果會標 stale，可選擇重新分析。）`);
+  if(!ok)return;
+  // 強制重算（不看 _fortuneAlgoVer），含 self
+  let n=0;
+  for(const c of APP.contacts){
+    if(!c.birthYear && !c.birthMonth)continue;
+    if(recomputeContactFortune(c)){
+      c._fortuneAlgoVer=FORTUNE_ALGO_V;
+      c.updatedAt=Date.now();
+      stampContact(c);
+      try{ await dbPut('contacts',c); n++; }catch(e){ console.error('recompute persist failed',e); }
+    }
+  }
+  if(APP.self && APP.self.month && APP.self.day){
+    recomputeSelfFortune();
+    APP.self._fortuneAlgoVer=FORTUNE_ALGO_V;
+    try{ await dbPut('meta',{key:'self',data:APP.self}); }catch(e){ console.error('recompute self persist failed',e); }
+  }
+  renderList();renderSelfSetup();
+  toast(`已重算 ${n} 筆人脈命理`);
+}
+
 async function clearAllData(){
   const ok=await customConfirm('確定要清除所有資料？此操作無法復原。');
   if(!ok)return;
@@ -3356,6 +3460,33 @@ if('serviceWorker' in navigator){
   });
 }
 
+// 八字算法版本 — 2026-05-17 修了 4 個核心 bug 後升到 2
+// 舊資料 (_fortuneAlgoVer 缺或 < 2) 用舊算法存的 fortune 是錯的
+// init 時自動 migrate（靜默重算 + 標版本號），讓使用者下次開 App 就拿到正確命理
+const FORTUNE_ALGO_V = 2;
+
+async function migrateFortuneIfNeeded(){
+  let migrated = 0;
+  for(const c of APP.contacts){
+    if(c._fortuneAlgoVer === FORTUNE_ALGO_V) continue;
+    if(!c.birthYear && !c.birthMonth) continue; // 沒生日資料，沒得算
+    if(recomputeContactFortune(c)){
+      c._fortuneAlgoVer = FORTUNE_ALGO_V;
+      c.updatedAt = Date.now();
+      stampContact(c);
+      try{ await dbPut('contacts', c); }catch(e){ console.error('migrate fortune persist failed', e); }
+      migrated++;
+    }
+  }
+  // self 也 migrate
+  if(APP.self && APP.self._fortuneAlgoVer !== FORTUNE_ALGO_V && APP.self.month && APP.self.day){
+    recomputeSelfFortune();
+    APP.self._fortuneAlgoVer = FORTUNE_ALGO_V;
+    try{ await dbPut('meta', {key:'self', data:APP.self}); }catch(e){ console.error('migrate self persist failed', e); }
+  }
+  return migrated;
+}
+
 (async function(){
   await openDB();
   APP.deviceId=await ensureDeviceId();
@@ -3380,6 +3511,16 @@ if('serviceWorker' in navigator){
     $('onboarding').style.display='flex';
   }
   APP.initialized=true;
+
+  // 八字算法升級 migration（靜默背景跑，跑完 toast 一次）
+  try{
+    const n = await migrateFortuneIfNeeded();
+    if(n > 0){
+      renderList();
+      // toast 等 UI ready 再顯示
+      setTimeout(()=>toast(`命理算法已升級 v2，重算 ${n} 筆人脈`), 1200);
+    }
+  }catch(e){console.error('fortune migration failed', e);}
 })();
 </script>
 </body>

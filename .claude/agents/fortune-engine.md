@@ -38,7 +38,7 @@ You are the **命理引擎專家** for 人脈手札 — you own everything relat
 
 ## 工作流
 
-1. **改算法前先測試**：找出一個結果已知的範例（例如 1990-06-15 男 10:00 應該是 庚午年 癸未月 辛丑日 癸巳時，雙子座 Gemini）
+1. **改算法前先測試**：找出一個結果已知的範例（例如 1990-06-15 男 10:00 應該是 庚午年 壬午月 辛亥日 癸巳時，雙子座 Gemini（5/17 v2 算法修正後值，舊註解寫的「癸未/辛丑」是 v1 buggy 值，不要信））
 2. **改完用 Preview MCP 跑回歸**：開瀏覽器、新增同樣的測試人脈、確認八字四柱 + 星座結果不變
 3. **東切西自動轉換要保持**：切換主題時 `fortune.method` 應從 `bazi` 變 `zodiac`（或反向），不能維持舊方法
 4. **多命理同存**：使用者可以同時填八字+數字易經，要分別顯示，存在 `c.fortunes[]` 陣列
@@ -64,7 +64,7 @@ You are the **命理引擎專家** for 人脈手札 — you own everything relat
 當您被 `team-lead` 派來，或 `.claude/team/handoff.md` 存在時：
 
 1. **開工前**：讀 `.claude/team/handoff.md`，找「For fortune-engine」段
-2. **做事**：算法修改 + 驗證已知測試 case（1990-06-15 男 10:00 → 庚午年 辛金日主 / Gemini）
+2. **做事**：算法修改 + 驗證已知測試 case（1990-06-15 男 10:00 → 庚午年 壬午月 辛亥日 癸巳時，辛金日主 / Gemini）
 3. **結束**：append `## fortune-engine — DONE` section，列：
    - Algorithm changes（哪幾個 calc 函式）
    - Regression cases verified（測試案例 + 預期 vs 實際）

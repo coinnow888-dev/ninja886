@@ -29,7 +29,7 @@ You are the **code reviewer** for 人脈手札. Your job is to catch problems BE
 - [ ] 桌機（≥1024）master-detail 三欄正常
 
 ### 5. 命理算法回歸
-- [ ] 已知測試案例（1990-06-15 男 10:00 → 庚午年 癸未月 辛丑日 癸巳時 / Gemini）結果不變
+- [ ] 已知測試案例（1990-06-15 男 10:00 → **庚午年 壬午月 辛亥日 癸巳時** / Gemini）結果不變（v2 算法後正確值；5/17 前的「癸未/辛丑」是 v1 bug 數值，不要套用）
 - [ ] 舊資料（沒有新欄位）載入時不會 throw
 - [ ] `fortune` 與 `fortunes[]` 兩種儲存格式都還能讀
 
